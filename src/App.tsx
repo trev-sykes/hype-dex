@@ -11,6 +11,7 @@ import CreateTokenForm from './pages/dashboard/create/CreateTokenForm'
 import { ExploreGrid } from './pages/dashboard/explore/ExploreGrid'
 import { TradePage } from './pages/dashboard/trade/TradePage'
 import { CoinInfo } from './pages/dashboard/coinInfo/CoinInfo'
+import { ScrollToTop } from './hooks/useScrollToTop'
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
     <WagmiProvider config={config} >
       <QueryClientProvider client={queryClient}>
         <BrowserRouter >
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
