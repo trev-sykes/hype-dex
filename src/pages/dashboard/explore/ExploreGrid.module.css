@@ -1,0 +1,623 @@
+/* Main Container */
+.coinsContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    font-family: var(--font-family-text);
+}
+
+.coinsHeader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Search Bar Styling */
+.searchContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* or flex-start, if you want left-aligned */
+    margin-bottom: 2rem;
+    width: 100%;
+    position: relative;
+    gap: 1rem;
+    /* Optional: adds spacing between input and logo */
+}
+
+.searchContainer>div {
+    position: relative;
+    flex: 1;
+}
+
+
+.searchInput {
+    width: 100%;
+    padding: 0.75rem 3rem 0.75rem 3rem;
+    font-size: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--color-neutral-300);
+    background-color: var(--color-neutral-100) !important;
+    color: var(--color-neutral-900) !important;
+    transition: all 0.3s ease;
+    font-family: var(--font-family-text) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--color-accent) !important;
+    box-shadow: 0 0 0 3px #1a5c9639;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-accent) !important;
+    width: 1.25rem;
+    height: 1.25rem;
+    pointer-events: none;
+}
+
+.searchClear {
+    position: absolute;
+    left: 47%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-neutral-600);
+    cursor: pointer;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.searchClear:hover {
+    background-color: var(--color-neutral-200);
+    color: var(--color-neutral-800);
+}
+
+.logoContainer {
+    text-align: center;
+}
+
+/* Title Styling */
+.title {
+    color: var(--color-neutral-900);
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 700;
+}
+
+/* Grid Layout - Responsive from the start */
+.gridContainer {
+    display: grid;
+    gap: 1.5rem;
+    /* Desktop: 5 columns */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.loaderContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    grid-column: 1 / -1;
+    padding: 2rem;
+}
+
+/* Perfected Coin Card Styling */
+.coinCard {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-neutral-900);
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    height: 100%;
+}
+
+.coinCard:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-accent);
+}
+
+.coinCard:active {
+    transform: translateY(-4px) scale(1.01);
+}
+
+/* Token Details Section */
+.tokenDetails {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.75rem;
+}
+
+.tokenDetails h4 {
+    font-size: 1.1rem;
+    margin: 0;
+    color: var(--color-accent);
+    font-weight: 600;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6rem;
+}
+
+.tokenDetails p {
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.4;
+    color: var(--color-neutral-700);
+}
+
+.tokenDetails strong {
+    color: var(--color-neutral-800);
+    font-weight: 600;
+}
+
+/* Symbol styling - make it prominent */
+.symbolText {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
+    color: var(--color-neutral-900);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+/* Description text */
+.descriptionText {
+    color: var(--color-neutral-600) !important;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex-grow: 1;
+    margin-bottom: 1rem;
+}
+
+/* Image Container - Perfect aspect ratio */
+.imageContainer {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 1;
+    /* Optional: keeps it consistent */
+    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--color-neutral-300), var(--color-neutral-200));
+    position: relative;
+}
+
+
+.coinImage {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+}
+
+
+.coinCard:hover .coinImage {
+    transform: scale(1.05);
+}
+
+/* Price Section */
+.priceSection {
+    background: linear-gradient(135deg, rgba(242, 169, 0, 0.1), rgba(242, 169, 0, 0.05));
+    padding: 0.75rem;
+    border-radius: 12px;
+    margin-top: auto;
+    border: 1px solid rgba(242, 169, 0, 0.2);
+}
+
+.priceSection p {
+    color: var(--color-neutral-800);
+    font-size: 0.9rem;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.priceSection strong {
+    color: var(--color-accent-light);
+    font-weight: 700;
+}
+
+.priceValue {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.percentUp {
+    color: green;
+    font-weight: bold;
+}
+
+.percentDown {
+    color: red;
+    font-weight: bold;
+}
+
+/* Trade Button */
+.tradeContainer {
+    margin-top: 0.75rem;
+    text-align: center;
+}
+
+.tradeContainer p {
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light)) !important;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tradeContainer p:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px #1c67a83b;
+}
+
+/* Loading States */
+.loading {
+    text-align: center;
+    padding: 3rem 0;
+    color: var(--color-neutral-600);
+    font-size: 1.25rem;
+    grid-column: 1 / -1;
+}
+
+.error {
+    background-color: #fecaca;
+    color: #b91c1c;
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 600px;
+    margin: 2rem auto;
+    grid-column: 1 / -1;
+}
+
+.noResults {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-neutral-600);
+    font-size: 1.1rem;
+    grid-column: 1 / -1;
+    background: var(--color-neutral-100);
+    border-radius: 12px;
+    border: 2px dashed var(--color-neutral-300);
+}
+
+/* Loading animation */
+.loading::after {
+    content: '';
+    animation: ellipsis 1.5s infinite;
+}
+
+@keyframes ellipsis {
+    0% {
+        content: '.';
+    }
+
+    33% {
+        content: '..';
+    }
+
+    66% {
+        content: '...';
+    }
+}
+
+.offlineContainer {
+    width: 100%;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--color-neutral-600);
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.coinCard.loading {
+    background: linear-gradient(90deg,
+            var(--color-neutral-100) 25%,
+            var(--color-neutral-200) 50%,
+            var(--color-neutral-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Card entrance animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.coinCard {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Staggered animation */
+.gridContainer .coinCard:nth-child(5n+1) {
+    animation-delay: 0.1s;
+}
+
+.gridContainer .coinCard:nth-child(5n+2) {
+    animation-delay: 0.2s;
+}
+
+.gridContainer .coinCard:nth-child(5n+3) {
+    animation-delay: 0.3s;
+}
+
+.gridContainer .coinCard:nth-child(5n+4) {
+    animation-delay: 0.4s;
+}
+
+.gridContainer .coinCard:nth-child(5n+5) {
+    animation-delay: 0.5s;
+}
+
+/* Scroll to Top Button */
+.scrollToTopButton {
+    width: 56px;
+    height: 56px;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+}
+
+.scrollToTopButton.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scrollToTopButton:hover {
+    transform: translateY(-4px) scale(1.1);
+    box-shadow: 0 12px 32px #1c67a83b;
+}
+
+/* RESPONSIVE BREAKPOINTS */
+
+/* Large tablets and small laptops (≤ 1024px) */
+@media (max-width: 1024px) {
+    .gridContainer {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .coinCard {
+        min-height: 260px;
+    }
+}
+
+/* Standard tablets (≤ 768px) */
+@media (max-width: 768px) {
+    .coinsContainer {
+        padding: 1rem;
+    }
+
+    .title {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .gridContainer {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+
+    .coinCard {
+        padding: 1rem;
+        min-height: 240px;
+    }
+
+    .imageContainer {
+        height: 70px;
+        margin: 0.75rem 0;
+    }
+
+    .scrollToTopButton {
+        width: 48px;
+        height: 48px;
+        bottom: 1.5rem;
+        right: 1.5rem;
+    }
+}
+
+/* Mobile landscape and small tablets (≤ 640px) */
+@media (max-width: 640px) {
+    .gridContainer {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.875rem;
+    }
+
+    .coinCard {
+        padding: 0.875rem;
+        min-height: 220px;
+    }
+
+    .tokenDetails h4 {
+        font-size: 1rem;
+        min-height: 2.4rem;
+    }
+
+    .imageContainer {
+        height: 60px;
+    }
+
+    .searchInput {
+        padding: 0.625rem 2.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile portrait (≤ 480px) */
+@media (max-width: 480px) {
+    .coinsContainer {
+        padding: 0.75rem;
+    }
+
+    .searchClear {
+        left: 40%;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .gridContainer {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .coinCard {
+        padding: 0.75rem;
+        min-height: 200px;
+        border-radius: 12px;
+    }
+
+    .tokenDetails h4 {
+        font-size: 0.9rem;
+        min-height: 2.2rem;
+    }
+
+    .tokenDetails p {
+        font-size: 0.8rem;
+    }
+
+    .imageContainer {
+        height: 50px;
+        margin: 0.5rem 0;
+    }
+
+    .symbolText {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+    }
+
+    .priceSection {
+        padding: 0.5rem;
+    }
+
+    .priceSection p {
+        font-size: 0.8rem;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: flex-start;
+    }
+
+    .priceValue {
+        font-size: 0.9rem;
+    }
+
+    .tradeContainer p {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+    }
+
+    .scrollToTopButton {
+        width: 44px;
+        height: 44px;
+        bottom: 1rem;
+        right: 1rem;
+        font-size: 1.25rem;
+    }
+
+    .searchInput {
+        padding: 0.5rem 2.25rem;
+        font-size: 0.85rem;
+    }
+
+    .searchIcon {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+/* Extra small screens (≤ 360px) */
+@media (max-width: 360px) {
+    .gridContainer {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .coinCard {
+        min-height: 180px;
+        padding: 0.625rem;
+    }
+
+    .imageContainer {
+        height: 45px;
+    }
+}

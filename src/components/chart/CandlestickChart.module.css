@@ -1,0 +1,148 @@
+.container {
+    width: 100%;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    background-color: #1c1c1c;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border: 1px solid #333;
+    gap: 1rem;
+}
+
+.assetInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.symbol {
+    color: var(--color-neutral-400);
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.label {
+    margin-right: 0.5rem;
+    color: var(--color-neutral-500);
+    font-weight: 500;
+}
+
+.select {
+    background-color: #2d2d2d;
+    color: white;
+    border: 1px solid #4b4b4b;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.select:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 5px #2196f3;
+}
+
+.chartContainer {
+    width: 100%;
+    height: 500px;
+    position: relative;
+}
+
+.image {
+    width: 75px;
+    height: 75px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin: 0.25rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.intervalControl {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.seriesToggles {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.toggle input {
+    accent-color: #2196f3;
+    cursor: pointer;
+}
+
+.priceContainer {
+    width: 100%;
+    text-align: center;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--color-neutral-100);
+}
+
+.priceLabel {
+    margin-right: 0.25rem;
+    color: var(--color-neutral-400);
+}
+
+.priceValue {
+    color: var(--color-neutral-300);
+    font-weight: 600;
+}
+
+.noDataOverlay {
+    position: absolute;
+    top: 59%;
+    left: 50%;
+    transform: translate(-50%, -46%);
+    color: #888;
+    font-size: 1rem;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 1rem 1rem;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+
+@media (max-width: 450px) {
+    .image {
+        width: 50px;
+        height: 50px;
+    }
+
+    .symbol {
+        font-size: 1rem;
+    }
+
+    .controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .intervalControl {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .seriesToggles {
+        justify-content: flex-start;
+        width: 100%;
+    }
+}

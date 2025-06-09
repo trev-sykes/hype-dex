@@ -1,0 +1,115 @@
+.nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background-color: var(--color-neutral-300);
+    border-top: 1px solid var(--color-neutral-100);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+
+.toggleButton {
+    background: none;
+    border: none;
+    color: var(--color-neutral-900);
+    cursor: pointer;
+    padding: 0.75rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.toggleButton:hover,
+.toggleButton:focus {
+    background-color: var(--color-neutral-200);
+    color: var(--color-neutral-600);
+}
+
+.navContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    flex-wrap: wrap;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    opacity: 1;
+    max-height: 200px;
+    /* Adjust based on your content height */
+}
+
+.navContent.hidden {
+    opacity: 0;
+    max-height: 0;
+    padding: 0 2rem;
+}
+
+.navLinks {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.navLink {
+    color: var(--color-neutral-900);
+    text-decoration: none;
+    font-family: var(--font-family-text);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.4rem;
+}
+
+.navLink:hover,
+.navLink:focus {
+    background-color: var(--color-neutral-200);
+    color: var(--color-neutral-600);
+}
+
+.active {
+    color: var(--color-primary-700);
+    background-color: var(--color-neutral-100);
+    font-weight: 700;
+}
+
+.profileContainer {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+    .navContent {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.5rem 1rem;
+        gap: 0.5rem;
+    }
+
+    .navContent.hidden {
+        padding: 0 1rem;
+    }
+
+    .navLinks {
+        justify-content: center;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+
+    .navLink {
+        font-size: 0.95rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .profileContainer {
+        justify-content: center;
+        margin-left: 0;
+    }
+}

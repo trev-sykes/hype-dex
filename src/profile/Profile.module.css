@@ -1,0 +1,71 @@
+.profileContainer {
+
+    color: var(--color-neutral-900);
+    border-radius: 8px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section {
+    width: 450px;
+}
+
+.label {
+    font-weight: 600;
+    color: var(--color-neutral-700);
+    margin-right: 6px;
+    font-size: 0.875rem;
+}
+
+.address {
+    font-family: 'Courier New', monospace;
+    color: var(--color-neutral-900);
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+    cursor: pointer;
+    word-wrap: break-word;
+    width: 75px;
+}
+
+.address:hover {
+    color: var(--color-neutral-700);
+}
+
+.disconnectButton {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    background-color: var(--color-error);
+    color: var(--color-neutral-900);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 150px;
+}
+
+.disconnectButton:hover {
+    background-color: red;
+}
+
+/* For better responsiveness */
+@media (max-width: 480px) {
+    .profileContainer {
+        padding: 10px;
+        max-width: 75px;
+    }
+
+    .label {
+        font-size: 0.8rem;
+    }
+
+    .address {
+        font-size: 0.85rem;
+    }
+
+    .disconnectButton {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+    }
+}
