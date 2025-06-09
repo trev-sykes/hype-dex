@@ -25,6 +25,7 @@ const CreateTokenForm = () => {
     const [successPage, setSuccessPage] = useState(false);
     const [imageBuffer, setImageBuffer] = useState<any>(null);
     const [isDragging, setIsDragging] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [tokenId, setTokenId] = useState(null);
     const { setAlert } = useAlertStore();
@@ -161,7 +162,9 @@ const CreateTokenForm = () => {
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return; // prevent double-click
         setUploadError(null);
+        setIsSubmitting(true);
         if (!address || !imageBuffer) {
             // Error will be shown in UI
             console.log(
@@ -201,6 +204,9 @@ const CreateTokenForm = () => {
                     type: 'error',
                     message: contractError ? contractError.toString() : message
                 });
+                setIsSubmitting(false)
+            } finally {
+                setIsSubmitting(false);
             }
         }
     };
@@ -316,8 +322,8 @@ const CreateTokenForm = () => {
                         <span>0.0001</span>
                     </label>
 
-                    <button type="submit" disabled={isPending || !isOnline}>
-                        {isPending ? "Submitting..." : "Create Token"}
+                    <button type="submit" disabled={isSubmitting || isPending || !isOnline}>
+                        {isSubmitting || isPending ? "Submitting..." : "Create Token"}
                     </button>
                     {uploadError}
                 </form>
