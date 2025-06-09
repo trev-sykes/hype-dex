@@ -46,16 +46,6 @@ export const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
-                <div className={styles.section}>
-                    <h2 className={styles.subtitle}>Built on ERC6909</h2>
-                    <p className={styles.text}>
-                        A modern token standard for multi-token apps — ERC20-compatible,
-                        optimized for DeFi, and ready for your ecosystem.
-                    </p>
-                    <span className={styles.badge}>ERC6909</span>
-                </div>
-
                 <div className={styles.cta}>
                     <h3 className={styles.ctaTitle}>Ready to mint your first token?</h3>
                     <div className={styles.ctaButtons}>
