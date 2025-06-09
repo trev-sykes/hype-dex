@@ -11,7 +11,7 @@ const LandingPage = () => {
             </div>
             <div className={styles.content}>
                 <div className={styles.logoContainer}>
-                    <Logo width="8rem" height="8rem" />
+                    <Logo size={'8rem'} />
                 </div>
                 <div className={styles.textContent}>
                     <h1 className={styles.title}>Welcome to Hype</h1>
