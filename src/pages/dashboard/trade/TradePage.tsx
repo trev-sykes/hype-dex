@@ -92,7 +92,8 @@ export const TradePage: React.FC = () => {
         args: [tokenId],
         value: parseEther(ethInput),
       });
-
+      setBurnAmount('')
+      setEthInput('')
     } catch (error: any) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       setAlert({
@@ -100,6 +101,9 @@ export const TradePage: React.FC = () => {
         type: 'error',
         message: contractError ? contractError.toString() : message
       });
+      txTypeRef.current = null;
+      setBurnAmount('')
+      setEthInput('')
     }
   };
 
@@ -125,6 +129,8 @@ export const TradePage: React.FC = () => {
       });
       if (!isTxLoading && isTxSuccess) {
       }
+      setBurnAmount('')
+      setEthInput('')
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       setAlert({
@@ -133,6 +139,8 @@ export const TradePage: React.FC = () => {
         message: contractError ? contractError.toString() : message
       });
       txTypeRef.current = null;
+      setBurnAmount('')
+      setEthInput('')
     }
   };
 
