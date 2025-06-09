@@ -65,7 +65,9 @@ export const ExploreGrid: React.FC = () => {
         setVisibleCoins((prev) => [...prev, ...nextCoins]);
         setIsLoadingPage(false);
     }, [tokens, searchTerm]);
-
+    useEffect(() => {
+        console.log('[ExploreGrid] tokens length:', tokens.length);
+    }, [tokens]);
     // Filter coins
     useEffect(() => {
         if (!searchTerm.trim()) {

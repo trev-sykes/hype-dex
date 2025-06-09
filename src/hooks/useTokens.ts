@@ -7,23 +7,14 @@ import { createPublicClient, http } from 'viem';
 import { sepolia } from 'viem/chains';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../services/ETHBackedTokenMinter';
 import { convertToIpfsUrl } from '../utils/ipfs';
+
 const IPFS_GATEWAYS = [
     "https://cloudflare-ipfs.com/ipfs/",
     "https://gateway.pinata.cloud/ipfs/",
     "https://ipfs.io/ipfs/",
 ];
-type TokenCreated = {
-    id: string;
-    tokenId: string;
-    name: string;
-    symbol: string;
-    blockTimestamp: string;
-};
 
-type TokenCreatedResponse = {
-    tokenCreateds: TokenCreated[];
-};
-const rpcUrl = import.meta.env.VITE_SEPOLIA_RPC
+const rpcUrl = import.meta.env.VITE_SEPOLIA_RPC;
 const publicClient = createPublicClient({
     chain: sepolia,
     transport: http(rpcUrl),
@@ -44,7 +35,6 @@ const tokenCreatedQuery = gql`
 }
 `;
 
-
 async function fetchPrice(tokenId: bigint) {
     try {
         return await publicClient.readContract({
@@ -59,7 +49,7 @@ async function fetchPrice(tokenId: bigint) {
     }
 }
 
-async function fetchAllTokenIds(): Promise<any> {
+async function fetchAllTokenIds() {
     try {
         return await publicClient.readContract({
             address: ETHBackedTokenMinterAddress,
@@ -88,44 +78,42 @@ async function fetchTokenMetadataRange(start: number, count: number) {
 
 async function getMetadataFromURI(uri: string): Promise<any | null> {
     const cid = uri.replace(/^ipfs:\/\//, "").replace("ipfs/", "");
-    for (const gateway of IPFS_GATEWAYS) {
-        const url = `${gateway}${cid}`;
+    const cached = localStorage.getItem(`ipfs_${cid}`);
+    if (cached) {
         try {
-            const res = await fetch(url, { cache: "no-store" }); // disable caching in prod
-            if (res.ok) return await res.json();
-            console.warn(`Gateway ${gateway} failed with status ${res.status}`);
-        } catch (err) {
-            console.warn(`Gateway ${gateway} error:`, err);
-        }
+            return JSON.parse(cached);
+        } catch { }
     }
-    console.error("All IPFS gateways failed for CID:", cid);
+
+    for (const gateway of IPFS_GATEWAYS) {
+        try {
+            const res = await fetch(`${gateway}${cid}`, { cache: "no-store" });
+            if (res.ok) {
+                const json = await res.json();
+                localStorage.setItem(`ipfs_${cid}`, JSON.stringify(json));
+                return json;
+            }
+        } catch { }
+    }
     return null;
 }
 
-// Fetch metadata for a single tokenId on-chain, including price & ipfs data
+
 async function fetchSingleToken(tokenId: string | bigint) {
     const idStr = tokenId.toString();
     try {
-        // Fetch all tokenIds (to find metadata index)
-        const allTokenIds: bigint[] = await fetchAllTokenIds();
-        const index = allTokenIds.findIndex(id => id.toString() === idStr);
-        if (index === -1) {
-            console.warn(`TokenId ${idStr} not found in on - chain token IDs.`);
-            return null;
-        }
-        // Fetch metadata for this token only (start=index, count=1)
+        const allTokenIds: any = await fetchAllTokenIds();
+        const index = allTokenIds.findIndex((id: any) => id.toString() === idStr);
+        if (index === -1) return null;
+
         const [meta]: any = await fetchTokenMetadataRange(index, 1);
-        if (!meta) {
-            console.warn(`No metadata found for tokenId ${idStr}`);
-            return null;
-        }
+        if (!meta) return null;
 
         const [price, metaJson] = await Promise.all([
             fetchPrice(BigInt(idStr)),
             getMetadataFromURI(meta.uri),
         ]);
 
-        // Return enriched token data
         return {
             tokenId: idStr,
             uri: meta.uri,
@@ -144,44 +132,50 @@ async function fetchSingleToken(tokenId: string | bigint) {
 }
 
 export function useTokens(tokenId?: string) {
-    const tokens = useTokenStore(state => state.tokens);
-    const setTokens = useTokenStore(state => state.setTokens);
-    const addToken = useTokenStore(state => state.addToken);
+    const tokens = useTokenStore((state: any) => state.tokens);
+    const setTokens = useTokenStore((state: any) => state.setTokens);
+    const addToken = useTokenStore((state: any) => state.addToken);
+    const clearTokens = useTokenStore((state: any) => state.clearTokens);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
-    const [token, setToken] = useState<any>(null); // single token when tokenId passed
+    const [token, setToken] = useState<any>(null);
 
-    // --- 1) If tokenId provided: fetch single token on-chain data ---
+    const { data, isSuccess, refetch: refetchGraphQL }: any = useQuery({
+        queryKey: ['tokens'],
+        queryFn: () => request(url, tokenCreatedQuery, {}, headers),
+        refetchInterval: false,
+        refetchOnWindowFocus: false,
+        enabled: !tokenId && tokens.length === 0,
+    });
+
+    const newTokens: any = useMemo(() => {
+        if (!data || !isSuccess) return [];
+        return data.tokenCreateds;
+    }, [data, isSuccess]);
+
     const fetchSingle = useCallback(async () => {
         if (!tokenId) return;
         setLoading(true);
         setError(null);
 
+        const cached = tokens.find((t: any) => t.tokenId === tokenId);
+        if (cached) {
+            setToken(cached);
+            setLoading(false);
+            return;
+        }
+
         try {
-            const result: any = await fetchSingleToken(tokenId);
+            const result = await fetchSingleToken(tokenId);
             setToken(result);
-            if (result) addToken(result); // add/update store
+            if (result) addToken(result);
         } catch (err: any) {
             setError(err);
         } finally {
             setLoading(false);
         }
-    }, [tokenId, addToken]);
-
-    // --- 2) If no tokenId, fetch all tokens via GraphQL + enrich on-chain ---
-    const { data, isSuccess, error: gqlError, refetch: refetchGraphQL } = useQuery<any, Error, TokenCreatedResponse, any>({
-        queryKey: ['tokens'],
-        queryFn: () => request<TokenCreatedResponse>(url, tokenCreatedQuery, {}, headers),
-        refetchInterval: 10_000,
-        refetchOnWindowFocus: true,
-        enabled: !tokenId,
-    });
-
-    const newTokens = useMemo(() => {
-        if (!data || !isSuccess) return [];
-        return data.tokenCreateds;
-    }, [data, isSuccess]);
+    }, [tokenId, tokens, addToken]);
 
     const fetchAllAndEnrich = useCallback(async () => {
         if (!newTokens.length) return;
@@ -189,17 +183,10 @@ export function useTokens(tokenId?: string) {
         setError(null);
 
         try {
-            const tokenIds = await fetchAllTokenIds();
+            const tokenIds: any = await fetchAllTokenIds();
             const count = tokenIds.length;
-            if (count === 0) {
-                console.warn("No token IDs found.");
-                setLoading(false);
-                return;
-            }
-
             const rawMetadata: any = await fetchTokenMetadataRange(0, count);
 
-            // 👇 Throttle expensive fetchPrice() calls
             const throttledFetchPrice = pThrottle({
                 limit: 5,
                 interval: 1000,
@@ -208,18 +195,17 @@ export function useTokens(tokenId?: string) {
             const enriched = await Promise.all(
                 newTokens.map(async (token: any) => {
                     const tokenIdStr = token.tokenId.toString();
+
+                    if (tokens.some((t: any) => t.tokenId === tokenIdStr)) return null;
+
                     const match = rawMetadata.find((m: any) => m.tokenId.toString() === tokenIdStr);
-                    if (!match) {
-                        console.warn("No metadata match for tokenId:", token.tokenId);
-                        return { ...token, price: null, percentChange: null, description: null, imageUrl: null };
-                    }
+                    if (!match) return null;
 
                     const [price, metaJson] = await Promise.all([
                         throttledFetchPrice(BigInt(token.tokenId)),
                         getMetadataFromURI(match.uri),
                     ]);
 
-                    // 🧮 Calculate percentChange inside map after basePrice is available
                     const base = parseFloat(match.basePrice?.toString() || '0');
                     const current = parseFloat(price?.toString() || '0');
                     const percentChange = base > 0 ? ((current - base) / base) * 100 : null;
@@ -239,25 +225,17 @@ export function useTokens(tokenId?: string) {
                 })
             );
 
-            if (tokens.length === 0) {
-                setTokens(enriched);
-            } else {
-                enriched.forEach((token) => {
-                    if (!tokens.find((t) => t.tokenId === token.tokenId)) {
-                        addToken(token);
-                    }
-                });
+            const enrichedToAdd = enriched.filter(Boolean);
+            if (enrichedToAdd.length > 0) {
+                setTokens([...tokens, ...enrichedToAdd]);
             }
         } catch (err: any) {
             setError(err);
         } finally {
             setLoading(false);
         }
-    }, [newTokens, tokens, setTokens, addToken]);
+    }, [newTokens, tokens, setTokens]);
 
-
-
-    // Run fetch functions depending on presence of tokenId
     useEffect(() => {
         if (tokenId) {
             fetchSingle();
@@ -266,7 +244,6 @@ export function useTokens(tokenId?: string) {
         }
     }, [tokenId, newTokens, fetchSingle, fetchAllAndEnrich]);
 
-    // Refetch function exposed for manual refresh
     const refetch = useCallback(() => {
         if (tokenId) {
             fetchSingle();
@@ -276,14 +253,12 @@ export function useTokens(tokenId?: string) {
         }
     }, [tokenId, fetchSingle, refetchGraphQL, fetchAllAndEnrich]);
 
-    if (gqlError) console.error('[useTokens] GraphQL error:', gqlError);
-    if (error) console.error('[useTokens] error:', error);
-
     return {
         tokens: tokenId ? [] : tokens,
         token: tokenId ? token : null,
         loading,
         error,
         refetch,
+        clearTokens,
     };
 }
