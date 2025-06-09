@@ -7,7 +7,11 @@ import { createPublicClient, http } from 'viem';
 import { sepolia } from 'viem/chains';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../services/ETHBackedTokenMinter';
 import { convertToIpfsUrl } from '../utils/ipfs';
-
+const IPFS_GATEWAYS = [
+    "https://cloudflare-ipfs.com/ipfs/",
+    "https://gateway.pinata.cloud/ipfs/",
+    "https://ipfs.io/ipfs/",
+];
 type TokenCreated = {
     id: string;
     tokenId: string;
@@ -82,16 +86,20 @@ async function fetchTokenMetadataRange(start: number, count: number) {
     }
 }
 
-async function getMetadataFromURI(uri: string) {
-    const url = convertToIpfsUrl(uri);
-    try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`Failed to fetch IPFS data: ${res.statusText}`);
-        return await res.json();
-    } catch (err) {
-        console.error("getMetadataFromURI error:", err);
-        return null;
+async function getMetadataFromURI(uri: string): Promise<any | null> {
+    const cid = uri.replace(/^ipfs:\/\//, "").replace("ipfs/", "");
+    for (const gateway of IPFS_GATEWAYS) {
+        const url = `${gateway}${cid}`;
+        try {
+            const res = await fetch(url, { cache: "no-store" }); // disable caching in prod
+            if (res.ok) return await res.json();
+            console.warn(`Gateway ${gateway} failed with status ${res.status}`);
+        } catch (err) {
+            console.warn(`Gateway ${gateway} error:`, err);
+        }
     }
+    console.error("All IPFS gateways failed for CID:", cid);
+    return null;
 }
 
 // Fetch metadata for a single tokenId on-chain, including price & ipfs data
