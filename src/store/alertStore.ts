@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { burnConfetti, createConfetti, mintConfetti } from '../components/confetti/CustomConfetti';
-export type AlertType = 'success' | 'error' | 'info' | 'pending' | 'persist';
+export type AlertType = 'success' | 'error' | 'info' | 'pending' | 'persist' | 'network';
+
 export type ActionType = 'create' | 'mint' | 'burn' | 'persist';
 
 export interface Alert {
@@ -19,20 +20,31 @@ interface AlertStore {
 
 export const useAlertStore = create<AlertStore>((set, get) => ({
     alerts: [],
-    setAlert: ({ action, message, type, timeout = 20000 }) => {
+    setAlert: ({ action, message, type, timeout }) => {
         const id = crypto.randomUUID();
-        const newAlert: Alert = { action, id, message, type, timeout };
+
+        // Automatically set shorter timeout for network alerts
+        const defaultTimeout =
+            type === 'network' ? 4000 :
+                type === 'persist' ? 0 :
+                    20000;
+
+        const newAlert: Alert = {
+            action,
+            id,
+            message,
+            type,
+            timeout: timeout ?? defaultTimeout,
+        };
 
         set((state) => {
             let updatedAlerts = [...state.alerts];
             if (type === 'success') {
-                if (action == 'create')
-                    createConfetti()
-                if (action == 'mint')
-                    mintConfetti()
-                if (action == 'burn')
-                    burnConfetti()
+                if (action === 'create') createConfetti();
+                if (action === 'mint') mintConfetti();
+                if (action === 'burn') burnConfetti();
             }
+
             if ((type === 'success' || type === 'error') && state.alerts.length > 0) {
                 const pendingAlert = state.alerts.find((a) => a.type === 'pending');
                 if (pendingAlert) {
@@ -48,9 +60,10 @@ export const useAlertStore = create<AlertStore>((set, get) => ({
         if (type !== 'persist') {
             setTimeout(() => {
                 get().clearAlert(id);
-            }, timeout);
+            }, newAlert.timeout);
         }
-    },
+    }
+    ,
 
     clearAlert: (id) =>
         set((state) => ({

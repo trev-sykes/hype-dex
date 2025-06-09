@@ -49,6 +49,16 @@
     /* yellow-400 */
 }
 
+.persist {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.network {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
 .pendingMessage::after {
     content: '';
     display: inline-block;
