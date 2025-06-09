@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 export const useTokenStore = create(
     persist(
-        (set, get) => ({
+        (set) => ({
             tokens: [],
             setTokens: (tokens: any) => {
                 console.log('[Store] Setting tokens:', tokens);
