@@ -26,6 +26,6 @@
     "noUncheckedSideEffectImports": true
   },
   "include": [
-    "hype-dex/src"
+    "src"
   ]
 }
