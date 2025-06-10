@@ -29,6 +29,8 @@ export const TradePage: React.FC = () => {
   const [burnAmount, setBurnAmount] = useState('');
   const [isSellActive, setIsSellActive] = useState<boolean>(false);
   const txTypeRef = useRef<ActionType | null>(null);
+  const amountRef = useRef<any>(null);
+  const actionTypeRef = useRef<any>(null);
 
 
   // Convert coin?.tokenId to BigInt if it's a string
@@ -64,14 +66,14 @@ export const TradePage: React.FC = () => {
       setAlert({
         action: txTypeRef.current,
         type: 'pending',
-        message: `${txTypeRef.current} pending`
+        message: `${txTypeRef.current}ing ${amountRef.current} ${actionTypeRef.current && actionTypeRef.current.length > 6 ? actionTypeRef.current.slice(0, 6) : actionTypeRef.current}`
       })
     }
     if (isTxSuccess) {
       setAlert({
         action: txTypeRef.current,
         type: 'success',
-        message: `${txTypeRef.current} successful!`
+        message: `You ${txTypeRef.current}ed ${amountRef.current} ${actionTypeRef.current && actionTypeRef.current.length > 6 ? actionTypeRef.current.slice(0, 6) : actionTypeRef.current}!`
       })
 
       refetchBalance()
@@ -84,6 +86,8 @@ export const TradePage: React.FC = () => {
       return;
     }
     txTypeRef.current = 'mint';
+    actionTypeRef.current = coin?.symbol;
+    amountRef.current = mintEstimation?.tokensToMint ?? 0; // Use mintEstimation from hook
     try {
       await writeContract({
         address: ETHBackedTokenMinterAddress,
@@ -102,6 +106,8 @@ export const TradePage: React.FC = () => {
         message: contractError ? contractError.toString() : message
       });
       txTypeRef.current = null;
+      actionTypeRef.current = null;
+      amountRef.current = null;
       setBurnAmount('')
       setEthInput('')
     }
@@ -109,6 +115,8 @@ export const TradePage: React.FC = () => {
 
   const handleBurn = async () => {
     txTypeRef.current = 'burn';
+    actionTypeRef.current = coin?.symbol;
+    amountRef.current = burnEstimation?.burnAmount ?? 0; // Use burnEstimation from hook
     if (!tokenId || !burnAmount || parseFloat(burnAmount) <= 0) {
       return;
     }
@@ -139,6 +147,8 @@ export const TradePage: React.FC = () => {
         message: contractError ? contractError.toString() : message
       });
       txTypeRef.current = null;
+      actionTypeRef.current = null;
+      amountRef.current = null;
       setBurnAmount('')
       setEthInput('')
     }
@@ -152,7 +162,7 @@ export const TradePage: React.FC = () => {
         </Link>
 
         <div className={styles.header}>
-          <h2 className={styles.title}>Trade {coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
+          <h2 className={styles.title}>Trade {coin && coin.name.length > 10 ? coin.name.slice(0, 10) : coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
             <Info />
           </Link></span></h2>
         </div>
