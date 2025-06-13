@@ -11,9 +11,15 @@
 }
 
 .left {
-    max-width: 400px;
-    flex: 1;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: 2rem;
+}
+
+.cContainer {
+    max-width: 500px;
 }
 
 .header {

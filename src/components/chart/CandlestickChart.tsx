@@ -203,7 +203,7 @@ export default function CandlestickChart({ trades, interval = 3600 }: Props) {
             .then(({ createChart }) => {
                 const container = chartContainerRef.current!;
                 const chart = createChart(container, {
-                    width: container.clientWidth || 600,
+                    width: (container.clientWidth - 25) || 600,
                     height: 500,
                     layout: {
                         background: { color: '#000' },

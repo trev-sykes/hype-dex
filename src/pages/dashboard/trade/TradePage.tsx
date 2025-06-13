@@ -66,21 +66,25 @@ export const TradePage: React.FC = () => {
       setAlert({
         action: txTypeRef.current,
         type: 'pending',
-        message: `${txTypeRef.current}ing ${amountRef.current} ${actionTypeRef.current && actionTypeRef.current.length > 6 ? actionTypeRef.current.slice(0, 6) : actionTypeRef.current}`
-      })
+        message: `${txTypeRef.current}ing ${amountRef.current} ${actionTypeRef.current?.slice(0, 6) ?? ''}`
+      });
     }
+  }, [isTxLoading]);
+
+  useEffect(() => {
     if (isTxSuccess) {
       setAlert({
         action: txTypeRef.current,
         type: 'success',
-        message: `You ${txTypeRef.current}ed ${amountRef.current} ${actionTypeRef.current && actionTypeRef.current.length > 6 ? actionTypeRef.current.slice(0, 6) : actionTypeRef.current}!`
-      })
+        message: `You ${txTypeRef.current}ed ${amountRef.current} ${actionTypeRef.current?.slice(0, 6) ?? ''}!`
+      });
 
-      refetchBalance()
-      refetchAll()
+      refetchBalance();
+      refetchAll();
       refetch();
     }
-  }, [isTxLoading, isTxSuccess])
+  }, [isTxSuccess]);
+
   const handleMint = async () => {
     if (!tokenId || !ethInput || parseFloat(ethInput) <= 0) {
       return;
@@ -157,100 +161,101 @@ export const TradePage: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.left}>
-        <Link to={`/dashboard/explore/`}>
-          <MoveLeftIcon /><span>back to explore</span>
-        </Link>
+        <div className={styles.cContainer}>
+          <Link to={`/dashboard/explore/`}>
+            <MoveLeftIcon /><span>back to explore</span>
+          </Link>
 
-        <div className={styles.header}>
-          <h2 className={styles.title}>Trade {coin && coin.name.length > 10 ? coin.name.slice(0, 10) : coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
-            <Info />
-          </Link></span></h2>
-        </div>
-        <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
+          <div className={styles.header}>
+            <h2 className={styles.title}>Trade {coin && coin.name.length > 10 ? coin.name.slice(0, 10) : coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
+              <Info />
+            </Link></span></h2>
+          </div>
+          <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
 
-        <div className={styles.tradeCompact}>
+          <div className={styles.tradeCompact}>
 
-          <div className={styles.tradeHeader}>
-            <div className={styles.tradeModeIndicator}>
-              <span>Mode:</span>
-              <span className={`${styles.modeLabel} ${isSellActive ? styles.sellMode : styles.buyMode}`}>
-                {isSellActive ? 'Sell' : 'Buy'}
-              </span>
-            </div>
+            <div className={styles.tradeHeader}>
+              <div className={styles.tradeModeIndicator}>
+                <span>Mode:</span>
+                <span className={`${styles.modeLabel} ${isSellActive ? styles.sellMode : styles.buyMode}`}>
+                  {isSellActive ? 'Sell' : 'Buy'}
+                </span>
+              </div>
 
-            <div className={styles.tradeToggle}>
-              <span>Switch</span>
-              <div className={styles.buySell} onClick={() => setIsSellActive(prev => !prev)}>
-                <RotateCwIcon size={20} />
+              <div className={styles.tradeToggle}>
+                <span>Switch</span>
+                <div className={styles.buySell} onClick={() => setIsSellActive(prev => !prev)}>
+                  <RotateCwIcon size={20} />
+                </div>
               </div>
             </div>
+
+            <div className={styles.tradeBox}>
+              <input
+                type="number"
+                placeholder={isSellActive ? 'Enter token amount' : 'Enter ETH amount'}
+                className={styles.inputCompact}
+                value={isSellActive ? burnAmount : ethInput}
+                onChange={(e) => (isSellActive ? setBurnAmount(e.target.value) : setEthInput(e.target.value))}
+              />
+              <button
+                className={`${styles.buttonCompact} ${isSellActive ? styles.sell : ''}`}
+                onClick={isSellActive ? handleBurn : handleMint}
+                disabled={isPending}
+              >
+                {viewportWidth > 370
+                  ? isPending
+                    ? '....'
+                    : isSellActive
+                      ? `Sell ${coin?.symbol}`
+                      : `Buy ${coin?.symbol}`
+                  : isPending
+                    ? '...'
+                    : isSellActive
+                      ? 'Sell'
+                      : 'Buy'}
+              </button>
+            </div>
           </div>
 
-          <div className={styles.tradeBox}>
-            <input
-              type="number"
-              placeholder={isSellActive ? 'Enter token amount' : 'Enter ETH amount'}
-              className={styles.inputCompact}
-              value={isSellActive ? burnAmount : ethInput}
-              onChange={(e) => (isSellActive ? setBurnAmount(e.target.value) : setEthInput(e.target.value))}
-            />
-            <button
-              className={`${styles.buttonCompact} ${isSellActive ? styles.sell : ''}`}
-              onClick={isSellActive ? handleBurn : handleMint}
-              disabled={isPending}
-            >
-              {viewportWidth > 370
-                ? isPending
-                  ? '....'
-                  : isSellActive
-                    ? `Sell ${coin?.symbol}`
-                    : `Buy ${coin?.symbol}`
-                : isPending
-                  ? '...'
-                  : isSellActive
-                    ? 'Sell'
-                    : 'Buy'}
-            </button>
-          </div>
+          {/* <p>{ethPrice && (<p>ETH Price: ${ethPrice}</p>)}</p> */}
+          {mintEstimation && !isSellActive && (
+            <div className={styles.calculationPreview}>
+              <p>
+                You will receive: <strong>{mintEstimation.tokensToMint}</strong> tokens
+              </p>
+              <p>
+                Total cost: <strong>{mintEstimation.totalCostETH.toFixed(6)}</strong> ETH
+              </p>
+              <p>
+                Refund: <strong>{mintEstimation.refundETH.toFixed(6)}</strong> ETH
+              </p>
+            </div>
+          )}
+          {burnEstimation && isSellActive && (
+            <div className={styles.calculationPreview}>
+              {balance < burnAmount && (
+                <p>Insufficient balance</p>
+              )}
+              <p>
+                Your Balance: <strong>{balance} {coin?.symbol}</strong>
+              </p>
+              {balance >= burnAmount && (
+                <>
+                  <p>
+                    You will receive: <strong>{burnEstimation.ethToReceive.toFixed(6)}</strong> ETH
+                  </p>
+                  <p>
+                    Tokens to burn: <strong>{burnEstimation.burnAmount}</strong>
+                  </p>
+                </>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* <p>{ethPrice && (<p>ETH Price: ${ethPrice}</p>)}</p> */}
-        {mintEstimation && !isSellActive && (
-          <div className={styles.calculationPreview}>
-            <p>
-              You will receive: <strong>{mintEstimation.tokensToMint}</strong> tokens
-            </p>
-            <p>
-              Total cost: <strong>{mintEstimation.totalCostETH.toFixed(6)}</strong> ETH
-            </p>
-            <p>
-              Refund: <strong>{mintEstimation.refundETH.toFixed(6)}</strong> ETH
-            </p>
-          </div>
-        )}
-        {burnEstimation && isSellActive && (
-          <div className={styles.calculationPreview}>
-            {balance < burnAmount && (
-              <p>Insufficient balance</p>
-            )}
-            <p>
-              Your Balance: <strong>{balance} {coin?.symbol}</strong>
-            </p>
-            {balance >= burnAmount && (
-              <>
-                <p>
-                  You will receive: <strong>{burnEstimation.ethToReceive.toFixed(6)}</strong> ETH
-                </p>
-                <p>
-                  Tokens to burn: <strong>{burnEstimation.burnAmount}</strong>
-                </p>
-              </>
-            )}
-          </div>
-        )}
-
       </div>
-      <div>
+      <div className={styles.right}>
         {trades.length > 0 &&
           <div className={styles.stats}>
             {!isLoading ? (
@@ -272,6 +277,6 @@ export const TradePage: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
