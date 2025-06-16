@@ -120,7 +120,7 @@
 .inputCompact {
     flex: 1;
     padding: 1rem 1.25rem;
-    font-size: 1rem;
+    font-size: 16px;
     border: none;
     background: transparent;
     color: var(--color-neutral-900);
@@ -262,7 +262,7 @@ input[type="number"] {
 
     .inputCompact {
         padding: 0.875rem 1rem;
-        font-size: 0.95rem;
+        font-size: 16px;
     }
 
     .buttonCompact {
