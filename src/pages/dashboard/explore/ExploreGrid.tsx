@@ -10,7 +10,8 @@ import { useOnline } from '../../../hooks/useOnline';
 import { WifiOffIcon } from 'lucide-react';
 import { useTokens } from '../../../hooks/useTokens';
 import Logo from '../../../components/logo/Logo';
-const ITEMS_PER_PAGE = 25;
+import { useWitdh } from '../../../hooks/useWidth';
+const ITEMS_PER_PAGE = 20;
 
 export const ExploreGrid: React.FC = () => {
     const isOnline = useOnline();
@@ -24,7 +25,7 @@ export const ExploreGrid: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
-    const [width, setWidth] = useState(window.innerWidth);
+    const width = useWitdh();
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isLoadingPage, setIsLoadingPage] = useState(false);
 
@@ -33,11 +34,6 @@ export const ExploreGrid: React.FC = () => {
         threshold: 0.2,
     });
 
-    useEffect(() => {
-        const handleResize = () => setWidth(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     useEffect(() => {
         const handleScroll = () => setShowScrollButton(window.scrollY > 200);
@@ -181,7 +177,7 @@ export const ExploreGrid: React.FC = () => {
                                                 {coin.uri && (
                                                     <img
                                                         src={coin.imageUrl}
-                                                        onError={(e) => (e.currentTarget.src = '/favicon-light.png')}
+                                                        onError={(e) => (e.currentTarget.src = '/logo.png')}
                                                         alt={`${coin.name || 'Coin'} icon`}
                                                         className={styles.coinImage}
                                                         loading="lazy"

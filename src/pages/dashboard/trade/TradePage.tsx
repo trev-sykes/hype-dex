@@ -31,6 +31,7 @@ export const TradePage: React.FC = () => {
   const txTypeRef = useRef<ActionType | null>(null);
   const amountRef = useRef<any>(null);
   const actionTypeRef = useRef<any>(null);
+  const width = useWitdh();
 
 
   // Convert coin?.tokenId to BigInt if it's a string
@@ -167,9 +168,13 @@ export const TradePage: React.FC = () => {
           </Link>
 
           <div className={styles.header}>
-            <h2 className={styles.title}>Trade {coin && coin.name.length > 10 ? coin.name.slice(0, 10) : coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
+            {width < 600 ? <h2 className={styles.title}>Trade {coin && coin.name.length > 10 ? coin.name.slice(0, 10) : coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
               <Info />
-            </Link></span></h2>
+            </Link></span></h2> :
+              <h2 className={styles.title}>Trade {coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
+                <Info />
+              </Link></span></h2>
+            }
           </div>
           <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
 
