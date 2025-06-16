@@ -82,7 +82,9 @@ async function getMetadataFromURI(uri: string): Promise<any | null> {
     if (cached) {
         try {
             return JSON.parse(cached);
-        } catch { }
+        } catch (err: any) {
+            console.error('Error parsing cached uri data', err.message)
+        }
     }
 
     for (const gateway of IPFS_GATEWAYS) {
@@ -93,7 +95,9 @@ async function getMetadataFromURI(uri: string): Promise<any | null> {
                 localStorage.setItem(`ipfs_${cid}`, JSON.stringify(json));
                 return json;
             }
-        } catch { }
+        } catch (err: any) {
+            console.error('Error getting metadata form URI ', err.message);
+        }
     }
     return null;
 }

@@ -2,7 +2,7 @@ import { useAccount, useReadContract } from 'wagmi';
 import { useCoinStore } from '../store/coinStore';
 import { ERC6909ABI, ERC6909Address } from '../services/ERC6909Metadata';
 
-export const useTokenBalance = () => {
+export const useUserTokenBalance = () => {
     const { coin } = useCoinStore();
     const { address } = useAccount();
 

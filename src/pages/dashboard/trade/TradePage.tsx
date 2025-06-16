@@ -13,18 +13,18 @@ import { useWitdh } from '../../../hooks/useWidth'; // Note: Corrected typo 'use
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { TradeHistoryBento } from './TradeHistoryBento';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
-import { useTokenBalance } from '../../../hooks/useTokenBalance';
+import { useUserTokenBalance } from '../../../hooks/useUserBalance';
 import { FadeLoader } from 'react-spinners';
 import { useTokens } from '../../../hooks/useTokens';
-import { useTokenData } from '../../../hooks/useTokenData';
+import { useTokenPriceData } from '../../../hooks/useTokenPriceData';
 export const TradePage: React.FC = () => {
   const viewportWidth = useWitdh();
   const { address } = useAccount();
   const { coin } = useCoinStore();
   const { refetch } = useTokens();
   const { setAlert } = useAlertStore();
-  const { refetchBalance, balance, isLoading }: any = useTokenBalance();
-  const { refetchAll, reserve, totalSupply } = useTokenData();
+  const { refetchBalance, balance, isLoading }: any = useUserTokenBalance();
+  const { refetchAll, reserve, totalSupply } = useTokenPriceData();
   const [ethInput, setEthInput] = useState('');
   const [burnAmount, setBurnAmount] = useState('');
   const [isSellActive, setIsSellActive] = useState<boolean>(false);

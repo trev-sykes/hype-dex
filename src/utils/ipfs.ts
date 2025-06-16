@@ -12,6 +12,5 @@ export function convertToIpfsUrl(uri: string, gateway = 'https://ipfs.io/ipfs/')
     }
 
     const fullUrl = `${gateway}${hash}`;
-    console.log(`convertToIpfsUrl: input = ${uri}, output = ${fullUrl}`);
     return fullUrl;
 }

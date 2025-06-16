@@ -10,8 +10,7 @@ import { useOnline } from '../../../hooks/useOnline';
 import { WifiOffIcon } from 'lucide-react';
 import { useTokens } from '../../../hooks/useTokens';
 import Logo from '../../../components/logo/Logo';
-import { useWitdh } from '../../../hooks/useWidth';
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 25;
 
 export const ExploreGrid: React.FC = () => {
     const isOnline = useOnline();
@@ -25,15 +24,34 @@ export const ExploreGrid: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
-    const width = useWitdh();
+    const [width, setWidth] = useState(window.innerWidth);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isLoadingPage, setIsLoadingPage] = useState(false);
+    const [loadStates, setLoadStates] = useState<boolean[]>([]);
+
+
+    const handleLoad = (index: any, status: any) => {
+        setLoadStates((prev: any) =>
+            prev.map((s: any, i: any) => (i === index ? status : s))
+        );
+    };
+    useEffect(() => {
+        if (tokens && tokens.length) {
+            setLoadStates(Array(tokens.length).fill(null)); // null = not loaded yet
+        }
+    }, [tokens]);
+
 
     const { ref, inView } = useInView({
         triggerOnce: false,
         threshold: 0.2,
     });
 
+    useEffect(() => {
+        const handleResize = () => setWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => setShowScrollButton(window.scrollY > 200);
@@ -177,11 +195,17 @@ export const ExploreGrid: React.FC = () => {
                                                 {coin.uri && (
                                                     <img
                                                         src={coin.imageUrl}
-                                                        onError={(e) => (e.currentTarget.src = '/logo.png')}
+                                                        onLoad={() => handleLoad(index, true)}
+                                                        onError={() => handleLoad(index, false)}
                                                         alt={`${coin.name || 'Coin'} icon`}
                                                         className={styles.coinImage}
-                                                        loading="lazy"
+
                                                     />
+                                                )}
+                                                {!coin.imageUrl && loadStates[index] === false && (
+                                                    <div className={styles.imageFallback}>
+                                                        {coin.name}
+                                                    </div>
                                                 )}
                                             </div>
 

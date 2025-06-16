@@ -4,7 +4,7 @@ import { ERC6909ABI, ERC6909Address } from "../services/ERC6909Metadata";
 import { useCoinStore } from "../store/coinStore";
 import { useEffect, useCallback } from "react";
 
-export const useTokenData = () => {
+export const useTokenPriceData = () => {
     const { coin, setCoin } = useCoinStore();
     const tokenId = coin?.tokenId;
     const {

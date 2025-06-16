@@ -5,20 +5,13 @@ import styles from './DashboardLayout.module.css';
 import Alert from '../../components/alert/Alert';
 import { useOnline } from '../../hooks/useOnline';
 import { useAlertStore } from '../../store/alertStore';
-import { useAccount, useConnect } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { ConnectWallet } from '../../wallet/ConnectWallet';
 
 const DashboardLayout = () => {
     const [isConnectorOpen, setIsConnectorOpen] = useState(true);
     const isOnline = useOnline();
-    const { status } = useConnect();
     const account = useAccount();
-
-    useEffect(() => {
-        console.log('Connection Status', account.status);
-        console.log('Current Status', status);
-    }, [account]);
-
     useEffect(() => {
         const alertStore = useAlertStore.getState();
 

@@ -5,9 +5,9 @@ import { useCoinStore } from '../../store/coinStore';
 import { useWitdh } from '../../hooks/useWidth';
 import { FadeLoader } from 'react-spinners';
 import { formatEther } from 'ethers';
-import { useTokenBalance } from '../../hooks/useTokenBalance';
+import { useUserTokenBalance } from '../../hooks/useUserBalance';
 import { useTradeStore } from '../../store/tradeStore';
-import { useTokenData } from '../../hooks/useTokenData';
+import { useTokenPriceData } from '../../hooks/useTokenPriceData';
 
 interface Trade {
     tokenId: bigint;
@@ -26,7 +26,7 @@ interface Props {
 
 export default function CandlestickChart({ trades, interval = 3600 }: Props) {
     const { coin } = useCoinStore();
-    const { balance }: any = useTokenBalance();
+    const { balance }: any = useUserTokenBalance();
     const viewportWidth = useWitdh();
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -38,7 +38,7 @@ export default function CandlestickChart({ trades, interval = 3600 }: Props) {
     const [showLine, setShowLine] = useState(true);
     const [showCandles, setShowCandles] = useState(true);
     const { setTrades } = useTradeStore();
-    const { price } = useTokenData();
+    const { price } = useTokenPriceData();
 
     useEffect(() => {
         if (candleSeriesRef.current) {
