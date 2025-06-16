@@ -36,7 +36,7 @@ async function fetchAllTokenIds(): Promise<any> {
 }
 
 async function getMetadataFromURI(uri: string) {
-    const url = convertToIpfsUrl(uri);
+    const url: any = convertToIpfsUrl(uri);
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`Failed to fetch IPFS data: ${response.statusText}`);
