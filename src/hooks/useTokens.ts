@@ -217,6 +217,16 @@ export function useTokens(tokenId?: string) {
         if (!hydrated || tokenId || tokens.length === 0 || pricesLoaded) return;
         fetchAllPrices(tokens);
     }, [hydrated, tokenId, tokens.length, pricesLoaded, fetchAllPrices]);
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (!hydrated && tokens.length === 0) {
+                console.warn('[Hydration] Zustand did not rehydrate in time, forcing fetch...');
+                fetchStaticMetadata();
+            }
+        }, 2000); // 2 seconds timeout
+
+        return () => clearTimeout(timeout);
+    }, [hydrated, tokens.length]);
 
     const refetch = useCallback(() => {
         if (!hydrated) return;

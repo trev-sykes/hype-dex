@@ -17,17 +17,17 @@ export const useTokenStore = create<TokenStore>()(
             tokens: [],
             hydrated: false,
 
-            setTokens: (tokens) => {
+            setTokens: (tokens: any) => {
                 console.log('Setting tokens:', tokens);
                 set({ tokens })
             },
-            addToken: (token) =>
-                set((state) => ({
+            addToken: (token: any) =>
+                set((state: any) => ({
                     tokens: [...state.tokens, token],
                 })),
-            updateToken: (tokenId, newData) => {
-                set((state) => {
-                    const updatedTokens = state.tokens.map((t) =>
+            updateToken: (tokenId: any, newData: any) => {
+                set((state: any) => {
+                    const updatedTokens = state.tokens.map((t: any) =>
                         t.tokenId.toString() === tokenId.toString() ? { ...t, ...newData } : t
                     );
                     console.log('Updated tokens:', updatedTokens);
@@ -39,10 +39,12 @@ export const useTokenStore = create<TokenStore>()(
         }),
         {
             name: 'token-storage',
-            onRehydrateStorage: () => (state) => {
+            onRehydrateStorage: () => (state: any) => {
                 console.log('[Store] Rehydrated state:', state);
-                return { hydrated: true };  // <-- set hydrated true by returning partial state
+                // ✅ Explicitly mark the store as hydrated
+                state.hydrated = true;
             },
+
         }
     )
 );
