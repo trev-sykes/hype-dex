@@ -202,8 +202,21 @@ export function useTokens(tokenId?: string) {
     // Effect for initial token loading (when no tokenId and no tokens exist)
     useEffect(() => {
         if (tokenId || tokens.length > 0) return;
-        fetchStaticMetadata();
-    }, [tokenId, tokens.length, fetchStaticMetadata]);
+
+        const loadEverything = async () => {
+            setLoading(true);
+            try {
+                const staticTokens = await fetchStaticMetadata();
+                await fetchAllPrices(staticTokens);
+            } catch (err) {
+                console.error('Error loading metadata and prices', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadEverything();
+    }, [tokenId, tokens.length, fetchStaticMetadata, fetchAllPrices]);
 
 
     // Effect for single token loading (when tokenId is provided)
@@ -213,10 +226,10 @@ export function useTokens(tokenId?: string) {
     }, [hydrated, tokenId, fetchSingle]);
 
     // Effect for price loading (when tokens exist but prices aren't loaded)
-    useEffect(() => {
-        if (!hydrated || tokenId || tokens.length === 0 || pricesLoaded) return;
-        fetchAllPrices(tokens);
-    }, [hydrated, tokenId, tokens.length, pricesLoaded, fetchAllPrices]);
+    // useEffect(() => {
+    //     if (!hydrated || tokenId || tokens.length === 0 || pricesLoaded) return;
+    //     fetchAllPrices(tokens);
+    // }, [hydrated, tokenId, tokens.length, pricesLoaded, fetchAllPrices]);
     useEffect(() => {
         const timeout = setTimeout(() => {
             if (!hydrated && tokens.length === 0) {
