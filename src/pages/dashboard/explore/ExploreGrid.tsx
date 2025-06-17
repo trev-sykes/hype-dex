@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useInView } from 'react-intersection-observer';
 import styles from './ExploreGrid.module.css';
 import { scrollToTop } from '../../../utils/scroll';
 import { BarLoader, FadeLoader } from 'react-spinners';
@@ -10,6 +9,7 @@ import { useOnline } from '../../../hooks/useOnline';
 import { WifiOffIcon } from 'lucide-react';
 import { useTokens } from '../../../hooks/useTokens';
 import Logo from '../../../components/logo/Logo';
+
 const ITEMS_PER_PAGE = 25;
 
 export const ExploreGrid: React.FC = () => {
@@ -29,24 +29,18 @@ export const ExploreGrid: React.FC = () => {
     const [isLoadingPage, setIsLoadingPage] = useState(false);
     const [loadStates, setLoadStates] = useState<boolean[]>([]);
 
-
     const handleLoad = (index: any, status: any) => {
         setLoadStates((prev: any) =>
             prev.map((s: any, i: any) => (i === index ? status : s))
         );
     };
+
+    // Reset load states when tokens change
     useEffect(() => {
         if (tokens && tokens.length) {
             setLoadStates(Array(tokens.length).fill(null)); // null = not loaded yet
         }
     }, [tokens]);
-
-
-    const { ref, inView } = useInView({
-        triggerOnce: false,
-        threshold: 0.2,
-    });
-
     useEffect(() => {
         const handleResize = () => setWidth(window.innerWidth);
         window.addEventListener('resize', handleResize);
@@ -59,30 +53,58 @@ export const ExploreGrid: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Reset pagination when tokens first load or search term changes
+    useEffect(() => {
+        if (tokens && tokens.length > 0) {
+            setPage(0);
+            setVisibleCoins([]);
+        }
+    }, [tokens.length]); // Only depend on tokens.length, not tokens array
+
+    // Reset pagination when search term changes
+    useEffect(() => {
+        if (!searchTerm) {
+            setPage(0);
+            setVisibleCoins([]);
+        }
+    }, [searchTerm]);
 
     // Pagination loading when user scrolls
     useEffect(() => {
-        if (inView && tokens && !searchTerm && !isLoadingPage) {
+        if (tokens && tokens.length > 0 && !searchTerm && !isLoadingPage) {
             setIsLoadingPage(true);
             setPage((prev) => prev + 1);
         }
-    }, [inView, tokens, searchTerm, isLoadingPage]);
+    }, [tokens.length, searchTerm, isLoadingPage]);
 
-    // Load visible coins based on current page
+    // Load visible coins based on current page - FIXED VERSION
     useEffect(() => {
-        if (!tokens || searchTerm) return;
+        if (!tokens || tokens.length === 0 || searchTerm) return;
 
         const start = page * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
         const nextCoins = tokens.slice(start, end);
 
-        setVisibleCoins((prev) => [...prev, ...nextCoins]);
+        if (page === 0) {
+            // First page - replace all visible coins
+            setVisibleCoins(nextCoins);
+        } else {
+            // Subsequent pages - append only if we have new coins
+            setVisibleCoins((prev) => {
+                const existingIds = new Set(prev.map(coin => coin.tokenId));
+                const newCoins = nextCoins.filter(coin => !existingIds.has(coin.tokenId));
+                return [...prev, ...newCoins];
+            });
+        }
         setIsLoadingPage(false);
-    }, [tokens, searchTerm]);
+    }, [tokens, page, searchTerm]); // ✅ Now includes 'page' dependency
+
+    // Debug log
     useEffect(() => {
-        console.log('[ExploreGrid] tokens length:', tokens.length);
-    }, [tokens]);
-    // Filter coins
+        console.log('[ExploreGrid] tokens length:', tokens.length, 'visible coins:', visibleCoins.length);
+    }, [tokens.length, visibleCoins.length]);
+
+    // Filter coins with debounce
     useEffect(() => {
         if (!searchTerm.trim()) {
             setFilteredCoins([]);
@@ -105,7 +127,6 @@ export const ExploreGrid: React.FC = () => {
 
         return () => clearTimeout(handler);
     }, [tokens, searchTerm]);
-
 
     const coinsToDisplay = searchTerm ? filteredCoins : visibleCoins;
 
@@ -160,7 +181,6 @@ export const ExploreGrid: React.FC = () => {
                     ) : coinsToDisplay.length > 0 ? (
                         <div className={styles.gridContainer}>
                             {coinsToDisplay.map((coin, index) => {
-                                const isLast = index === coinsToDisplay.length - 1;
                                 return (
                                     <Link
                                         to={`/dashboard/explore/${coin.tokenId}`}
@@ -170,7 +190,6 @@ export const ExploreGrid: React.FC = () => {
                                             setCoin(coin);
                                             navigate(`/dashboard/trade/${coin.name}`);
                                         }}
-                                        ref={!searchTerm && isLast ? ref : null}
                                     >
                                         <div className={styles.tokenDetails}>
                                             {/* Name - Always show on larger screens */}
@@ -194,13 +213,14 @@ export const ExploreGrid: React.FC = () => {
                                             <div className={styles.imageContainer}>
                                                 {coin.uri && (
                                                     <img
+                                                        loading="lazy"
                                                         src={coin.imageUrl}
                                                         onLoad={() => handleLoad(index, true)}
                                                         onError={() => handleLoad(index, false)}
                                                         alt={`${coin.name || 'Coin'} icon`}
                                                         className={styles.coinImage}
-
                                                     />
+
                                                 )}
                                                 {!coin.imageUrl && loadStates[index] === false && (
                                                     <div className={styles.imageFallback}>
@@ -227,7 +247,6 @@ export const ExploreGrid: React.FC = () => {
                                                         {coin.percentChange.toFixed(2)}%
                                                     </p>
                                                 )}
-
                                             </div>
 
                                             {/* Trade Button */}
@@ -280,5 +299,4 @@ export const ExploreGrid: React.FC = () => {
             )}
         </div>
     );
-
 };
