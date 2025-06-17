@@ -201,9 +201,10 @@ export function useTokens(tokenId?: string) {
 
     // Effect for initial token loading (when no tokenId and no tokens exist)
     useEffect(() => {
-        if (!hydrated || tokenId || tokens.length > 0) return;
+        if (tokenId || tokens.length > 0) return;
         fetchStaticMetadata();
-    }, [hydrated, tokenId, tokens.length, fetchStaticMetadata]);
+    }, [tokenId, tokens.length, fetchStaticMetadata]);
+
 
     // Effect for single token loading (when tokenId is provided)
     useEffect(() => {
