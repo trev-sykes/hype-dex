@@ -1,3 +1,4 @@
+
 import pThrottle from 'p-throttle';
 import { useEffect, useCallback, useState } from 'react';
 import { useTokenStore } from '../store/allTokensStore';
@@ -38,25 +39,48 @@ export function useTokens(tokenId?: string) {
     const [token, setToken] = useState<any>(null);
     const [pricesLoaded, setPricesLoaded] = useState(false);
 
+    // ✅ Fix: Allow GraphQL query to run even when tokens exist to fetch new ones
     const { data, isSuccess, refetch: refetchGraphQL }: any = useQuery({
         queryKey: ['tokens'],
         queryFn: () => request(url, tokenCreatedQuery, {}, headers),
-        refetchInterval: false,
+        refetchInterval: 10000,
         refetchOnWindowFocus: false,
-        enabled: !tokenId && tokens.length === 0,
+        enabled: !tokenId, // Only disable when fetching a specific token
     });
 
-    // Fetch static token metadata once the GraphQL data is available
+    // ✅ Fix: Compare GraphQL data with store to detect new tokens
     const fetchStaticMetadata = useCallback(async () => {
         if (!isSuccess || !data?.tokenCreateds?.length) return;
+
+        // Check if we have new tokens from GraphQL that aren't in our store
+        const existingTokenIds = new Set(tokens.map(t => t.tokenId.toString()));
+        const newTokensFromGraphQL = data.tokenCreateds.filter(
+            (token: any) => !existingTokenIds.has(token.tokenId.toString())
+        );
+
+        // If no new tokens, return existing tokens
+        if (newTokensFromGraphQL.length === 0 && tokens.length > 0) {
+            console.log('No new tokens detected from GraphQL');
+            return tokens;
+        }
+
+        console.log(`Found ${newTokensFromGraphQL.length} new tokens from GraphQL`);
 
         const tokenIds: any = await fetchAllTokenIds();
         const rawMetadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
 
+        // Process all tokens from GraphQL (both existing and new)
         const staticTokens = await Promise.all(
             data.tokenCreateds.map(async (token: any) => {
+                // Check if this token already exists in store with complete data
+                const existingToken = tokens.find(t => t.tokenId.toString() === token.tokenId.toString());
+                if (existingToken && existingToken.imageUrl !== null) {
+                    // Return existing token if it has complete metadata
+                    return existingToken;
+                }
+
                 const match = rawMetadata.find((m: any) => m.tokenId.toString() === token.tokenId.toString());
-                if (!match) return null;
+                if (!match) return existingToken || null;
 
                 const ipfsData = await fetchIpfsMetadata(match.uri);
                 return {
@@ -67,21 +91,27 @@ export function useTokens(tokenId?: string) {
                     uri: match.uri,
                     description: ipfsData?.description ?? null,
                     imageUrl: ipfsData?.image ? convertToIpfsUrl(ipfsData.image) : null,
-                    // Initialize price fields as null
-                    basePrice: null,
-                    slope: null,
-                    reserve: null,
-                    totalSupply: null,
-                    price: null,
-                    percentChange: null,
+                    // Preserve existing price data if available
+                    basePrice: existingToken?.basePrice || null,
+                    slope: existingToken?.slope || null,
+                    reserve: existingToken?.reserve || null,
+                    totalSupply: existingToken?.totalSupply || null,
+                    price: existingToken?.price || null,
+                    percentChange: existingToken?.percentChange || null,
                 };
             })
         );
 
         const filtered = staticTokens.filter(Boolean);
-        setTokens(filtered as any);
+
+        // Only update store if we have new data
+        if (filtered.length !== tokens.length || newTokensFromGraphQL.length > 0) {
+            console.log('Updating store with new/updated tokens');
+            setTokens(filtered as any);
+        }
+
         return filtered;
-    }, [data, isSuccess, setTokens]);
+    }, [data, isSuccess, setTokens, tokens]);
 
     // Fetch all prices for tokens in bulk
     const fetchAllPrices = useCallback(async (tokens?: any[]) => {
@@ -102,6 +132,11 @@ export function useTokens(tokenId?: string) {
                 await Promise.all(
                     batch.map(async (token: any) => {
                         try {
+                            // Skip if this token already has price data
+                            if (token.price !== null && token.price !== undefined) {
+                                return;
+                            }
+
                             const meta = metadata.find((m: any) =>
                                 m.tokenId.toString() === token.tokenId.toString()
                             );
@@ -199,15 +234,21 @@ export function useTokens(tokenId?: string) {
         }
     }, [tokenId, tokens, fetchStaticMetadata, enrichToken]);
 
-    // Effect for initial token loading (when no tokenId and no tokens exist)
+    // ✅ Fix: Handle both initial load and updates from GraphQL
     useEffect(() => {
-        if (tokenId || tokens.length > 0) return;
+        if (tokenId) return; // Skip if fetching specific token
 
-        const loadEverything = async () => {
+        const loadTokens = async () => {
+            if (!hydrated) return; // Wait for hydration
+
             setLoading(true);
             try {
-                const staticTokens = await fetchStaticMetadata();
-                await fetchAllPrices(staticTokens);
+                const updatedTokens = await fetchStaticMetadata();
+
+                // Only fetch prices for new tokens or if no prices loaded yet
+                if (updatedTokens && (!pricesLoaded || updatedTokens.length > tokens.length)) {
+                    await fetchAllPrices(updatedTokens);
+                }
             } catch (err) {
                 console.error('Error loading metadata and prices', err);
             } finally {
@@ -215,9 +256,8 @@ export function useTokens(tokenId?: string) {
             }
         };
 
-        loadEverything();
-    }, [tokenId, tokens.length, fetchStaticMetadata, fetchAllPrices]);
-
+        loadTokens();
+    }, [hydrated, data, isSuccess, tokenId, fetchStaticMetadata, fetchAllPrices, pricesLoaded]);
 
     // Effect for single token loading (when tokenId is provided)
     useEffect(() => {
@@ -225,11 +265,24 @@ export function useTokens(tokenId?: string) {
         fetchSingle();
     }, [hydrated, tokenId, fetchSingle]);
 
-    // Effect for price loading (when tokens exist but prices aren't loaded)
-    // useEffect(() => {
-    //     if (!hydrated || tokenId || tokens.length === 0 || pricesLoaded) return;
-    //     fetchAllPrices(tokens);
-    // }, [hydrated, tokenId, tokens.length, pricesLoaded, fetchAllPrices]);
+    // ✅ Add effect to handle GraphQL data changes
+    useEffect(() => {
+        if (!hydrated || tokenId || !data?.tokenCreateds) return;
+
+        // Check if GraphQL returned new tokens
+        // const graphQLTokenIds = new Set(data.tokenCreateds.map((t: any) => t.tokenId.toString()));
+        const storeTokenIds = new Set(tokens.map(t => t.tokenId.toString()));
+
+        const hasNewTokens = data.tokenCreateds.some((t: any) =>
+            !storeTokenIds.has(t.tokenId.toString())
+        );
+
+        if (hasNewTokens) {
+            console.log('New tokens detected from GraphQL, updating...');
+            fetchStaticMetadata();
+        }
+    }, [data, hydrated, tokenId, tokens, fetchStaticMetadata]);
+
     useEffect(() => {
         const timeout = setTimeout(() => {
             if (!hydrated && tokens.length === 0) {
@@ -239,7 +292,7 @@ export function useTokens(tokenId?: string) {
         }, 2000); // 2 seconds timeout
 
         return () => clearTimeout(timeout);
-    }, [hydrated, tokens.length]);
+    }, [hydrated, tokens.length, fetchStaticMetadata]);
 
     const refetch = useCallback(() => {
         if (!hydrated) return;
