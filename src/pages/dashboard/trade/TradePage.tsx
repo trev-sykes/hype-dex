@@ -31,7 +31,6 @@ export const TradePage: React.FC = () => {
   const txTypeRef = useRef<ActionType | null>(null);
   const amountRef = useRef<any>(null);
   const actionTypeRef = useRef<any>(null);
-  const width = useWitdh();
 
 
   // Convert coin?.tokenId to BigInt if it's a string
@@ -168,13 +167,10 @@ export const TradePage: React.FC = () => {
           </Link>
 
           <div className={styles.header}>
-            {width < 600 ? <h2 className={styles.title}>Trade {coin && coin.name.length > 10 ? coin.name.slice(0, 10) : coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
+            <h2 className={styles.title}>Trade {coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
               <Info />
-            </Link></span></h2> :
-              <h2 className={styles.title}>Trade {coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
-                <Info />
-              </Link></span></h2>
-            }
+            </Link></span></h2>
+
           </div>
           <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
 
@@ -184,7 +180,7 @@ export const TradePage: React.FC = () => {
               <div className={styles.tradeModeIndicator}>
                 <span>Mode:</span>
                 <span className={`${styles.modeLabel} ${isSellActive ? styles.sellMode : styles.buyMode}`}>
-                  {isSellActive ? 'Sell' : 'Buy'}
+                  {isSellActive ? `Sell ${coin?.symbol}` : `Buy ${coin?.symbol}`}
                 </span>
               </div>
 
@@ -209,17 +205,11 @@ export const TradePage: React.FC = () => {
                 onClick={isSellActive ? handleBurn : handleMint}
                 disabled={isPending}
               >
-                {viewportWidth > 370
-                  ? isPending
-                    ? '....'
-                    : isSellActive
-                      ? `Sell ${coin?.symbol}`
-                      : `Buy ${coin?.symbol}`
-                  : isPending
-                    ? '...'
-                    : isSellActive
-                      ? 'Sell'
-                      : 'Buy'}
+                {isPending
+                  ? '...'
+                  : isSellActive
+                    ? 'Sell'
+                    : 'Buy'}
               </button>
             </div>
           </div>
@@ -265,7 +255,7 @@ export const TradePage: React.FC = () => {
           <div className={styles.stats}>
             {!isLoading ? (
               <>
-                <p>Supply: {totalSupply?.toString() ?? '—'}</p>
+                <p>Total Supply: {totalSupply?.toString() ?? '—'}</p>
                 <p>Reserve: {reserve ? `${typeof (reserve) == 'bigint' ? formatEther(reserve) : reserve} ETH` : '—'}</p>
               </>
             ) : (
