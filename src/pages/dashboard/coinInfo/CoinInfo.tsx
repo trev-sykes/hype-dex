@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCoinStore } from '../../../store/coinStore';
 import styles from './CoinInfo.module.css';
-import { MoveLeftIcon } from 'lucide-react';
+import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 export const CoinInfo: React.FC = () => {
@@ -11,13 +11,7 @@ export const CoinInfo: React.FC = () => {
             {coin ? (
                 <>
                     {/* Back Button */}
-                    <div className={styles.exploreButtonContainer}>
-                        <Link className={styles.exploreButton} to={"/dashboard/explore"}>
-                            <MoveLeftIcon />
-                            <span>Back to Explore</span>
-                        </Link>
-                    </div>
-
+                    <ExploreButton />
                     {/* Header Section */}
                     <div className={styles.headerSection}>
                         <div className={styles.imageContainer}>

@@ -5,7 +5,7 @@ import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import styles from './TradePage.module.css';
 import { useCoinStore } from '../../../store/coinStore';
-import { Info, MoveLeftIcon, RotateCwIcon } from 'lucide-react';
+import { Info, RotateCwIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TokenCandlestickChart from '../../../components/chart/CandlestickChart';
 import { useTokenActivity } from '../../../hooks/useTokenActivity';
@@ -17,6 +17,7 @@ import { useUserTokenBalance } from '../../../hooks/useUserBalance';
 import { FadeLoader } from 'react-spinners';
 import { useTokens } from '../../../hooks/useTokens';
 import { useTokenPriceData } from '../../../hooks/useTokenPriceData';
+import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 export const TradePage: React.FC = () => {
   const viewportWidth = useWitdh();
   const { address } = useAccount();
@@ -162,10 +163,7 @@ export const TradePage: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.left}>
         <div className={styles.cContainer}>
-          <Link to={`/dashboard/explore/`}>
-            <MoveLeftIcon /><span>back to explore</span>
-          </Link>
-
+          <ExploreButton />
           <div className={styles.header}>
             <h2 className={styles.title}>Trade {coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
               <Info />

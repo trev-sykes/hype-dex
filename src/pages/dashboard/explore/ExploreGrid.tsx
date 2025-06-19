@@ -57,9 +57,10 @@ export const ExploreGrid: React.FC = () => {
     useEffect(() => {
         if (tokens && tokens.length > 0) {
             setPage(0);
-            setVisibleCoins([]);
+            setVisibleCoins(tokens.slice(0, ITEMS_PER_PAGE));
         }
-    }, [tokens.length]); // Only depend on tokens.length, not tokens array
+    }, [tokens]); // <-- instead of [tokens.length]
+
 
     // Reset pagination when search term changes
     useEffect(() => {

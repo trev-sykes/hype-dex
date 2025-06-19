@@ -1,0 +1,33 @@
+/* Back Button */
+.exploreButtonContainer {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.exploreButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    color: var(--color-neutral-700);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.exploreButton:hover {
+    color: var(--color-accent);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 450px) {
+    .exploreButton {
+        padding: 0.625rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 10px;
+    }
+
+}
