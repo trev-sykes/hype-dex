@@ -1,8 +1,3 @@
-const IPFS_GATEWAYS = [
-    "https://cloudflare-ipfs.com/ipfs/",
-    "https://gateway.pinata.cloud/ipfs/",
-    "https://ipfs.io/ipfs/",
-];
 
 
 export function convertToIpfsUrl(uri: string, gateway = 'https://ipfs.io/ipfs/') {
@@ -21,29 +16,61 @@ export function convertToIpfsUrl(uri: string, gateway = 'https://ipfs.io/ipfs/')
     const fullUrl = `${gateway}${hash}`;
     return fullUrl;
 }
+const IPFS_GATEWAYS = [
+    'https://cloudflare-ipfs.com/ipfs/',
+    'https://ipfs.io/ipfs/',
+    'https://gateway.pinata.cloud/ipfs/',
+    'https://dweb.link/ipfs/',
+];
+
+function extractCid(uri: string): string {
+    return uri.replace(/^ipfs:\/\/ipfs\//, '')
+        .replace(/^ipfs:\/\//, '')
+        .replace(/^ipfs\//, '')
+        .replace(/^https?:\/\/[^/]+\/ipfs\//, '');
+}
+
+function fetchWithTimeout(resource: string, options = {}, timeout = 5000) {
+    return new Promise<Response>((resolve, reject) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+
+        fetch(resource, { ...options, signal: controller.signal })
+            .then(resolve)
+            .catch(reject)
+            .finally(() => clearTimeout(id));
+    });
+}
+
 export async function fetchIpfsMetadata(uri: string): Promise<any | null> {
-    const cid = uri.replace(/^ipfs:\/\//, "").replace("ipfs/", "");
-    const cached = localStorage.getItem(`ipfs_${cid}`);
+    const cid = extractCid(uri);
+    const cacheKey = `ipfs_${cid}`;
+
+    const cached = localStorage.getItem(cacheKey);
     if (cached) {
         try {
-            console.log('[ipfs cid locale storage]', JSON.parse(cached))
-            return JSON.parse(cached);
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.image) return parsed;
         } catch (err: any) {
-            console.error('Error parsing cached uri data', err.message)
+            console.warn('[ipfs cache parse error]', err.message);
         }
     }
 
     for (const gateway of IPFS_GATEWAYS) {
         try {
-            const res = await fetch(`${gateway}${cid}`, { cache: "no-store" });
+            const res = await fetchWithTimeout(`${gateway}${cid}`, { cache: "no-store" }, 5000);
             if (res.ok) {
                 const json = await res.json();
-                localStorage.setItem(`ipfs_${cid}`, JSON.stringify(json));
+                if (json && json.image) {
+                    localStorage.setItem(cacheKey, JSON.stringify(json));
+                }
                 return json;
             }
         } catch (err: any) {
-            console.error('Error getting metadata form URI ', err.message);
+            console.warn(`[ipfs fetch error from ${gateway}]`, err.message);
         }
     }
+
     return null;
 }
+

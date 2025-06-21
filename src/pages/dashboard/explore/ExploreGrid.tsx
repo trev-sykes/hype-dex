@@ -17,7 +17,6 @@ export const ExploreGrid: React.FC = () => {
     const navigate = useNavigate();
     const { tokens } = useTokens();
     const error = null;
-
     const { setCoin } = useCoinStore();
     const [page, setPage] = useState(0);
     const [visibleCoins, setVisibleCoins] = useState<any[]>([]);
@@ -34,7 +33,9 @@ export const ExploreGrid: React.FC = () => {
             prev.map((s: any, i: any) => (i === index ? status : s))
         );
     };
-
+    useEffect(() => {
+        console.log("Page loading status: ", isLoadingPage);
+    }, [isLoadingPage]);
     // Reset load states when tokens change
     useEffect(() => {
         if (tokens && tokens.length) {
@@ -57,10 +58,9 @@ export const ExploreGrid: React.FC = () => {
     useEffect(() => {
         if (tokens && tokens.length > 0) {
             setPage(0);
-            setVisibleCoins(tokens.slice(0, ITEMS_PER_PAGE));
+            setVisibleCoins([]);
         }
-    }, [tokens]); // <-- instead of [tokens.length]
-
+    }, [tokens.length]);
 
     // Reset pagination when search term changes
     useEffect(() => {
@@ -72,13 +72,15 @@ export const ExploreGrid: React.FC = () => {
 
     // Pagination loading when user scrolls
     useEffect(() => {
-        if (tokens && tokens.length > 0 && !searchTerm && !isLoadingPage) {
-            setIsLoadingPage(true);
-            setPage((prev) => prev + 1);
+        if (tokens && tokens.length > 0 && !searchTerm) {
+            setPage(0);
+            setVisibleCoins(tokens.slice(0, ITEMS_PER_PAGE));
+            setIsLoadingPage(false);
         }
-    }, [tokens.length, searchTerm, isLoadingPage]);
+    }, [tokens]);
 
-    // Load visible coins based on current page - FIXED VERSION
+
+    // Load visible coins based on current page
     useEffect(() => {
         if (!tokens || tokens.length === 0 || searchTerm) return;
 
@@ -98,7 +100,7 @@ export const ExploreGrid: React.FC = () => {
             });
         }
         setIsLoadingPage(false);
-    }, [tokens, page, searchTerm]); // ✅ Now includes 'page' dependency
+    }, [tokens, page, searchTerm]);
 
     // Debug log
     useEffect(() => {
@@ -212,7 +214,7 @@ export const ExploreGrid: React.FC = () => {
 
                                             {/* Image Container */}
                                             <div className={styles.imageContainer}>
-                                                {coin.uri && (
+                                                {/* {coin.uri && (
                                                     <img
                                                         loading="lazy"
                                                         src={coin.imageUrl}
@@ -226,6 +228,27 @@ export const ExploreGrid: React.FC = () => {
                                                 {!coin.imageUrl && loadStates[index] === false && (
                                                     <div className={styles.imageFallback}>
                                                         {coin.name}
+                                                    </div>
+                                                )} */}
+                                                {loadStates[index] === null && (
+                                                    <div className={styles.imageLoadingFallback}>
+                                                        <FadeLoader height={8} width={4} />
+                                                        <span className={styles.symbolOverlay}>{coin.symbol}</span>
+                                                    </div>
+                                                )}
+                                                {(loadStates[index] === true || loadStates[index] === null) && coin.imageUrl && (
+                                                    <img
+                                                        loading="lazy"
+                                                        src={coin.imageUrl}
+                                                        onLoad={() => handleLoad(index, true)}
+                                                        onError={() => handleLoad(index, false)}
+                                                        alt={`${coin.name || 'Coin'}`}
+                                                        className={`${styles.coinImage} ${loadStates[index] === null ? styles.imageHidden : ''}`}
+                                                    />
+                                                )}
+                                                {loadStates[index] === false && (
+                                                    <div className={styles.imageFallback}>
+                                                        {coin.symbol}
                                                     </div>
                                                 )}
                                             </div>

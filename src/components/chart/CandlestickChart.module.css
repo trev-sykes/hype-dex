@@ -7,11 +7,12 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
+    width: 99.99%;
     padding: 0.75rem 1rem;
     background-color: #1c1c1c;
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
-    border: 1px solid #333;
+    /* border: 1px solid #333; */
     gap: 1rem;
 }
 
@@ -120,6 +121,11 @@
     z-index: 10;
 }
 
+@media (max-width: 500px) {
+    .controls {
+        width: 99.7%;
+    }
+}
 
 @media (max-width: 450px) {
     .chartContainer {
@@ -148,5 +154,11 @@
     .seriesToggles {
         justify-content: flex-start;
         width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .controls {
+        width: 99.75%;
     }
 }
