@@ -15,7 +15,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 2rem;
+
 }
 
 .cContainer {
@@ -44,7 +44,6 @@
 }
 
 .stats {
-    margin-bottom: 2rem;
     text-align: center;
     font-size: 0.95rem;
     color: var(--color-neutral-700);

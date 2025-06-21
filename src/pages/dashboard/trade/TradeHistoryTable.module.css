@@ -1,6 +1,9 @@
 .bentoWrapper {
     padding: 1rem;
     overflow-x: auto;
+    max-width: 900px;
+    margin: 0 auto;
+
 }
 
 .scrollArea {

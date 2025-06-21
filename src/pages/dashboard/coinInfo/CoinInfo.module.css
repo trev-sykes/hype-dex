@@ -268,6 +268,11 @@
     animation: spin 1s linear infinite;
 }
 
+.historyToggle {
+    text-align: center;
+    margin: 1rem;
+}
+
 @keyframes spin {
     0% {
         transform: rotate(0deg);

@@ -4,11 +4,13 @@ import styles from './CoinInfo.module.css';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 import { useState } from 'react';
 import { FadeLoader } from 'react-spinners';
+import { TradeHistoryTable } from '../trade/TradeHistoryTable';
 
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 export const CoinInfo: React.FC = () => {
     const { coin } = useCoinStore();
-    const [imageLoaded, setImageLoaded] = useState<boolean | null>(null); // null = loading, true = loaded, false = error
+    const [imageLoaded, setImageLoaded] = useState<boolean | null>(null);
+    const [isHistoryOpened, setIsHistoryOpened] = useState<boolean>(false);
 
     return (
         <div className={styles.container}>
@@ -102,6 +104,12 @@ export const CoinInfo: React.FC = () => {
                             Trade Now
                         </Link>
                     </div>
+                    <div className={styles.historyToggle} onClick={() => setIsHistoryOpened(prev => !prev)}>
+                        {isHistoryOpened ? "Close Trade History" : "View Trade History"}
+                    </div>
+                    {isHistoryOpened &&
+                        <TradeHistoryTable coin={coin} />
+                    }
                 </>
             ) : (
                 <div className={styles.loadingContainer}>

@@ -168,6 +168,7 @@ export const TradePage: React.FC = () => {
                 <Info />
               </Link></span></h2>
             </div>
+
             <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
             <div className={styles.tradeCompact}>
               <div className={styles.tradeHeader}>
@@ -242,23 +243,21 @@ export const TradePage: React.FC = () => {
             )}
           </div>
         </div>
-        <div className={styles.right}>
-          {trades.length > 0 &&
-            <div className={styles.stats}>
-              {!isLoading ? (
-                <>
-                  <p>Total Supply: {totalSupply?.toString() ?? '—'}</p>
-                  <p>Reserve: {reserve ? `${typeof (reserve) == 'bigint' ? formatEther(reserve) : reserve} ETH` : '—'}</p>
-                </>
-              ) : (
-                <div className={styles.fadeLoader}>
-                  <FadeLoader width={10} />
-                </div>
-              )}
-
-            </div>}
-        </div>
       </div >
+      {trades.length > 0 &&
+        <div className={styles.stats}>
+          {!isLoading ? (
+            <>
+              <p>Total Supply: {totalSupply?.toString() ?? '—'}</p>
+              <p>Reserve: {reserve ? `${typeof (reserve) == 'bigint' ? formatEther(reserve) : reserve} ETH` : '—'}</p>
+            </>
+          ) : (
+            <div className={styles.fadeLoader}>
+              <FadeLoader width={10} />
+            </div>
+          )}
+
+        </div>}
       <TradeHistoryTable coin={coin} />
     </>
   );
