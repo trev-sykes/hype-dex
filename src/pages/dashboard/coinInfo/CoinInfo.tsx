@@ -2,10 +2,14 @@ import { Link } from 'react-router-dom';
 import { useCoinStore } from '../../../store/coinStore';
 import styles from './CoinInfo.module.css';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
+import { useState } from 'react';
+import { FadeLoader } from 'react-spinners';
 
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 export const CoinInfo: React.FC = () => {
     const { coin } = useCoinStore();
+    const [imageLoaded, setImageLoaded] = useState<boolean | null>(null); // null = loading, true = loaded, false = error
+
     return (
         <div className={styles.container}>
             {coin ? (
@@ -15,14 +19,27 @@ export const CoinInfo: React.FC = () => {
                     {/* Header Section */}
                     <div className={styles.headerSection}>
                         <div className={styles.imageContainer}>
+                            {imageLoaded === null && (
+                                <div className={styles.imageLoadingFallback}>
+                                    <FadeLoader height={8} width={4} />
+                                    <span className={styles.symbolOverlay}>{coin.symbol}</span>
+                                </div>
+                            )}
+
                             <img
                                 src={coin.imageUrl}
                                 alt={coin.name}
-                                className={styles.image}
-                                onError={(e) => (e.currentTarget.src = '/favicon-light.png')}
+                                className={`${styles.image} ${imageLoaded !== true ? styles.hidden : ''}`}
+                                onLoad={() => setImageLoaded(true)}
+                                onError={() => setImageLoaded(false)}
                             />
-                        </div>
 
+                            {imageLoaded === false && (
+                                <div className={styles.imageFallback}>
+                                    {coin.symbol}
+                                </div>
+                            )}
+                        </div>
                         <h1 className={styles.title}>{coin.name}</h1>
                         <span className={styles.symbol}>{coin.symbol}</span>
 

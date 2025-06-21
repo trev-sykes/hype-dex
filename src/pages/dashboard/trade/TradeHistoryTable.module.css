@@ -1,0 +1,35 @@
+.bentoWrapper {
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.scrollArea {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.tradeTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.tradeTable th,
+.tradeTable td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tradeTable th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.tradeTable tr:nth-child(even) {
+    background-color: #f5f5f5;
+}

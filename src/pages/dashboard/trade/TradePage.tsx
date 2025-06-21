@@ -9,17 +9,15 @@ import { Info, RotateCwIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TokenCandlestickChart from '../../../components/chart/CandlestickChart';
 import { useTokenActivity } from '../../../hooks/useTokenActivity';
-import { useWitdh } from '../../../hooks/useWidth'; // Note: Corrected typo 'useWitdh' to 'useWidth'
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
-import { TradeHistoryBento } from './TradeHistoryBento';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
 import { useUserTokenBalance } from '../../../hooks/useUserBalance';
 import { FadeLoader } from 'react-spinners';
 import { useTokens } from '../../../hooks/useTokens';
 import { useTokenPriceData } from '../../../hooks/useTokenPriceData';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
+import { TradeHistoryTable } from './TradeHistoryTable';
 export const TradePage: React.FC = () => {
-  const viewportWidth = useWitdh();
   const { address } = useAccount();
   const { coin } = useCoinStore();
   const { refetch } = useTokens();
@@ -121,7 +119,7 @@ export const TradePage: React.FC = () => {
   const handleBurn = async () => {
     txTypeRef.current = 'burn';
     actionTypeRef.current = coin?.symbol;
-    amountRef.current = burnEstimation?.burnAmount ?? 0; // Use burnEstimation from hook
+    amountRef.current = burnEstimation?.burnAmount ?? 0;
     if (!tokenId || !burnAmount || parseFloat(burnAmount) <= 0) {
       return;
     }
@@ -160,116 +158,108 @@ export const TradePage: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.left}>
-        <div className={styles.cContainer}>
-          <ExploreButton />
-          <div className={styles.header}>
-            <h2 className={styles.title}>Trade {coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
-              <Info />
-            </Link></span></h2>
+    <>
+      <div className={styles.container}>
+        <div className={styles.left}>
+          <div className={styles.cContainer}>
+            <ExploreButton />
+            <div className={styles.header}>
+              <h2 className={styles.title}>Trade {coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
+                <Info />
+              </Link></span></h2>
+            </div>
+            <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
+            <div className={styles.tradeCompact}>
+              <div className={styles.tradeHeader}>
+                <div className={styles.tradeModeIndicator}>
+                  <span>Mode:</span>
+                  <span className={`${styles.modeLabel} ${isSellActive ? styles.sellMode : styles.buyMode}`}>
+                    {isSellActive ? `Sell ${coin?.symbol}` : `Buy ${coin?.symbol}`}
+                  </span>
+                </div>
 
-          </div>
-          <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
-
-          <div className={styles.tradeCompact}>
-
-            <div className={styles.tradeHeader}>
-              <div className={styles.tradeModeIndicator}>
-                <span>Mode:</span>
-                <span className={`${styles.modeLabel} ${isSellActive ? styles.sellMode : styles.buyMode}`}>
-                  {isSellActive ? `Sell ${coin?.symbol}` : `Buy ${coin?.symbol}`}
-                </span>
-              </div>
-
-              <div className={styles.tradeToggle}>
-                <span>Switch</span>
-                <div className={styles.buySell} onClick={() => setIsSellActive(prev => !prev)}>
-                  <RotateCwIcon size={20} />
+                <div className={styles.tradeToggle}>
+                  <span>Switch</span>
+                  <div className={styles.buySell} onClick={() => setIsSellActive(prev => !prev)}>
+                    <RotateCwIcon size={20} />
+                  </div>
                 </div>
               </div>
+              <div className={styles.tradeBox}>
+                <input
+                  type="number"
+                  placeholder={isSellActive ? 'Enter token amount' : 'Enter ETH amount'}
+                  className={styles.inputCompact}
+                  value={isSellActive ? burnAmount : ethInput}
+                  onChange={(e) => (isSellActive ? setBurnAmount(e.target.value) : setEthInput(e.target.value))}
+                />
+                <button
+                  className={`${styles.buttonCompact} ${isSellActive ? styles.sell : ''}`}
+                  onClick={isSellActive ? handleBurn : handleMint}
+                  disabled={isPending}
+                >
+                  {isPending
+                    ? '...'
+                    : isSellActive
+                      ? 'Sell'
+                      : 'Buy'}
+                </button>
+              </div>
             </div>
-
-            <div className={styles.tradeBox}>
-              <input
-                type="number"
-                placeholder={isSellActive ? 'Enter token amount' : 'Enter ETH amount'}
-                className={styles.inputCompact}
-                value={isSellActive ? burnAmount : ethInput}
-                onChange={(e) => (isSellActive ? setBurnAmount(e.target.value) : setEthInput(e.target.value))}
-              />
-              <button
-                className={`${styles.buttonCompact} ${isSellActive ? styles.sell : ''}`}
-                onClick={isSellActive ? handleBurn : handleMint}
-                disabled={isPending}
-              >
-                {isPending
-                  ? '...'
-                  : isSellActive
-                    ? 'Sell'
-                    : 'Buy'}
-              </button>
-            </div>
-          </div>
-
-          {/* <p>{ethPrice && (<p>ETH Price: ${ethPrice}</p>)}</p> */}
-          {mintEstimation && !isSellActive && (
-            <div className={styles.calculationPreview}>
-              <p>
-                You will receive: <strong>{mintEstimation.tokensToMint}</strong> tokens
-              </p>
-              <p>
-                Total cost: <strong>{mintEstimation.totalCostETH.toFixed(6)}</strong> ETH
-              </p>
-              <p>
-                Refund: <strong>{mintEstimation.refundETH.toFixed(6)}</strong> ETH
-              </p>
-            </div>
-          )}
-          {burnEstimation && isSellActive && (
-            <div className={styles.calculationPreview}>
-              {balance < burnAmount && (
-                <p>Insufficient balance</p>
-              )}
-              <p>
-                Your Balance: <strong>{balance} {coin?.symbol}</strong>
-              </p>
-              {balance >= burnAmount && (
-                <>
-                  <p>
-                    You will receive: <strong>{burnEstimation.ethToReceive.toFixed(6)}</strong> ETH
-                  </p>
-                  <p>
-                    Tokens to burn: <strong>{burnEstimation.burnAmount}</strong>
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className={styles.right}>
-        {trades.length > 0 &&
-          <div className={styles.stats}>
-            {!isLoading ? (
-              <>
-                <p>Total Supply: {totalSupply?.toString() ?? '—'}</p>
-                <p>Reserve: {reserve ? `${typeof (reserve) == 'bigint' ? formatEther(reserve) : reserve} ETH` : '—'}</p>
-              </>
-            ) : (
-              <div className={styles.fadeLoader}>
-                <FadeLoader width={10} />
+            {/* <p>{ethPrice && (<p>ETH Price: ${ethPrice}</p>)}</p> */}
+            {mintEstimation && !isSellActive && (
+              <div className={styles.calculationPreview}>
+                <p>
+                  You will receive: <strong>{mintEstimation.tokensToMint}</strong> tokens
+                </p>
+                <p>
+                  Total cost: <strong>{mintEstimation.totalCostETH.toFixed(6)}</strong> ETH
+                </p>
+                <p>
+                  Refund: <strong>{mintEstimation.refundETH.toFixed(6)}</strong> ETH
+                </p>
               </div>
             )}
-
-          </div>}
-
-        {coin && viewportWidth > 600 && (
-          <div className={styles.tradeHistoryContainer}>
-            <TradeHistoryBento coin={coin} />
+            {burnEstimation && isSellActive && (
+              <div className={styles.calculationPreview}>
+                {balance < burnAmount && (
+                  <p>Insufficient balance</p>
+                )}
+                <p>
+                  Your Balance: <strong>{balance} {coin?.symbol}</strong>
+                </p>
+                {balance >= burnAmount && (
+                  <>
+                    <p>
+                      You will receive: <strong>{burnEstimation.ethToReceive.toFixed(6)}</strong> ETH
+                    </p>
+                    <p>
+                      Tokens to burn: <strong>{burnEstimation.burnAmount}</strong>
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div >
+        </div>
+        <div className={styles.right}>
+          {trades.length > 0 &&
+            <div className={styles.stats}>
+              {!isLoading ? (
+                <>
+                  <p>Total Supply: {totalSupply?.toString() ?? '—'}</p>
+                  <p>Reserve: {reserve ? `${typeof (reserve) == 'bigint' ? formatEther(reserve) : reserve} ETH` : '—'}</p>
+                </>
+              ) : (
+                <div className={styles.fadeLoader}>
+                  <FadeLoader width={10} />
+                </div>
+              )}
+
+            </div>}
+        </div>
+      </div >
+      <TradeHistoryTable coin={coin} />
+    </>
   );
 };

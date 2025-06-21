@@ -91,10 +91,17 @@ export const useMintEstimation = (tokenId: bigint | string | undefined, ethInput
     });
 
     useEffect(() => {
-        if (!tokenId || !ethInput || parseFloat(ethInput) <= 0 || !tokenConfig || !totalSupply) {
+        if (
+            !tokenId ||
+            !ethInput ||
+            parseFloat(ethInput) <= 0 ||
+            !tokenConfig ||
+            typeof totalSupply === 'undefined'
+        ) {
             setEstimation(null);
             return;
         }
+
 
         try {
             const ethAmount = parseEther(ethInput); // Convert ETH input to wei

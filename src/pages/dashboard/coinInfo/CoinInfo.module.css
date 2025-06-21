@@ -245,6 +245,10 @@
     transform: translateY(-1px) scale(1.02);
 }
 
+.hidden {
+    display: none;
+}
+
 /* Loading State */
 .loadingContainer {
     display: flex;

@@ -10,13 +10,12 @@ import { WifiOffIcon } from 'lucide-react';
 import { useTokens } from '../../../hooks/useTokens';
 import Logo from '../../../components/logo/Logo';
 
-const ITEMS_PER_PAGE = 25;
+const ITEMS_PER_PAGE = 100;
 
 export const ExploreGrid: React.FC = () => {
     const isOnline = useOnline();
     const navigate = useNavigate();
     const { tokens } = useTokens();
-    const error = null;
     const { setCoin } = useCoinStore();
     const [page, setPage] = useState(0);
     const [visibleCoins, setVisibleCoins] = useState<any[]>([]);
@@ -123,7 +122,6 @@ export const ExploreGrid: React.FC = () => {
                 coin.name?.toLowerCase().includes(term) ||
                 coin.symbol?.toLowerCase().includes(term)
             );
-
             setFilteredCoins(results || []);
             setIsSearching(false);
         }, 300);
@@ -144,7 +142,7 @@ export const ExploreGrid: React.FC = () => {
 
     const coinsToDisplay = searchTerm ? filteredCoins : visibleCoins;
 
-    if (isOnline && error) return <div className={styles.error}>Error: {error}</div>;
+    if (!isOnline) return <div className={styles.error}>No Internet Connection</div>;
 
     return (
         <div className={styles.coinsContainer}>
@@ -225,22 +223,6 @@ export const ExploreGrid: React.FC = () => {
 
                                             {/* Image Container */}
                                             <div className={styles.imageContainer}>
-                                                {/* {coin.uri && (
-                                                    <img
-                                                        loading="lazy"
-                                                        src={coin.imageUrl}
-                                                        onLoad={() => handleLoad(index, true)}
-                                                        onError={() => handleLoad(index, false)}
-                                                        alt={`${coin.name || 'Coin'} icon`}
-                                                        className={styles.coinImage}
-                                                    />
-
-                                                )}
-                                                {!coin.imageUrl && loadStates[index] === false && (
-                                                    <div className={styles.imageFallback}>
-                                                        {coin.name}
-                                                    </div>
-                                                )} */}
                                                 {loadStates[index] === null && (
                                                     <div className={styles.imageLoadingFallback}>
                                                         <FadeLoader height={8} width={4} />
