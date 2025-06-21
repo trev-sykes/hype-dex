@@ -131,6 +131,17 @@ export const ExploreGrid: React.FC = () => {
         return () => clearTimeout(handler);
     }, [tokens, searchTerm]);
 
+    useEffect(() => {
+        tokens?.forEach((coin, index) => {
+            if (!coin.imageUrl) return;
+
+            const img = new Image();
+            img.src = coin.imageUrl;
+            img.onload = () => handleLoad(index, true);
+            img.onerror = () => handleLoad(index, false);
+        });
+    }, [tokens]);
+
     const coinsToDisplay = searchTerm ? filteredCoins : visibleCoins;
 
     if (isOnline && error) return <div className={styles.error}>Error: {error}</div>;
@@ -236,21 +247,24 @@ export const ExploreGrid: React.FC = () => {
                                                         <span className={styles.symbolOverlay}>{coin.symbol}</span>
                                                     </div>
                                                 )}
-                                                {(loadStates[index] === true || loadStates[index] === null) && coin.imageUrl && (
+
+                                                {loadStates[index] === true && coin.imageUrl && (
                                                     <img
                                                         loading="lazy"
                                                         src={coin.imageUrl}
                                                         onLoad={() => handleLoad(index, true)}
                                                         onError={() => handleLoad(index, false)}
                                                         alt={`${coin.name || 'Coin'}`}
-                                                        className={`${styles.coinImage} ${loadStates[index] === null ? styles.imageHidden : ''}`}
+                                                        className={styles.coinImage}
                                                     />
                                                 )}
+
                                                 {loadStates[index] === false && (
                                                     <div className={styles.imageFallback}>
                                                         {coin.symbol}
                                                     </div>
                                                 )}
+
                                             </div>
 
                                             {/* Price Section */}
