@@ -107,9 +107,12 @@ export const CoinInfo: React.FC = () => {
                     <div className={styles.historyToggle} onClick={() => setIsHistoryOpened(prev => !prev)}>
                         {isHistoryOpened ? "Close Trade History" : "View Trade History"}
                     </div>
-                    {isHistoryOpened &&
-                        <TradeHistoryTable coin={coin} />
-                    }
+                    {isHistoryOpened && (
+                        <div className={styles.historyWrapper}>
+                            <TradeHistoryTable coin={coin} />
+                        </div>
+                    )}
+
                 </>
             ) : (
                 <div className={styles.loadingContainer}>

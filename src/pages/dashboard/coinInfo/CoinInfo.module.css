@@ -273,6 +273,13 @@
     margin: 1rem;
 }
 
+.historyWrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding: 1rem 0;
+}
+
+
 @keyframes spin {
     0% {
         transform: rotate(0deg);
