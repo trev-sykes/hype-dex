@@ -89,6 +89,41 @@
     transform: scale(1.05) rotate(2deg);
 }
 
+.imageLoadingFallback {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 120px;
+    width: 120px;
+    background: linear-gradient(135deg, var(--color-neutral-200), var(--color-neutral-100));
+    border-radius: 6px;
+    position: relative;
+    animation: shimmer 1.5s infinite;
+    background-size: 200% 100%;
+}
+
+.imageLoadingFallback .symbolOverlay {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-neutral-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+
 /* Title and Symbol */
 .title {
     font-size: 2.5rem;

@@ -27,7 +27,6 @@ const CreateTokenForm = () => {
     const [isDragging, setIsDragging] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const [uploadError, setUploadError] = useState<string | null>(null);
-    const [tokenId, setTokenId] = useState(null);
     const { setAlert } = useAlertStore();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,17 +73,12 @@ const CreateTokenForm = () => {
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
-
         const files = e.dataTransfer.files;
-        console.log("Dropped files:", files, "Types:", e.dataTransfer.types);
         if (files?.length) {
             const file = files[0];
-            console.log("Selected file:", file.name, file.type, file.size); // Debug file details
             handleFile(file);
-
             const reader = new FileReader();
             reader.onload = (event) => {
-                console.log("File read:", event.target?.result); // Debug file content
                 setImageBuffer(event.target?.result as ArrayBuffer);
             };
             reader.onerror = (error) => {
@@ -93,11 +87,8 @@ const CreateTokenForm = () => {
             };
             reader.readAsArrayBuffer(file);
         } else if (e.dataTransfer.types.includes("text/uri-list")) {
-            const url = e.dataTransfer.getData("text/uri-list");
-            console.log("Dropped URL:", url);
             setUploadError("Please drag a local image file instead of a URL");
         } else {
-            console.log("No files or valid URL detected");
             setUploadError("Please drop a valid image file");
         }
     };
@@ -162,7 +153,7 @@ const CreateTokenForm = () => {
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (isSubmitting) return; // prevent double-click
+        if (isSubmitting || isTxLoading) return; // prevent double-click
         setUploadError(null);
         setIsSubmitting(true);
         if (!address || !imageBuffer) {
@@ -189,13 +180,12 @@ const CreateTokenForm = () => {
                     image: imageHash,
                 };
                 const tokenUriHash = await pinJsonToPinata(tokenUriJson);
-                const tokenId: any = writeContract({
+                writeContract({
                     address: ETHBackedTokenMinterAddress,
                     abi: ETHBackedTokenMinterABI,
                     functionName: "createToken",
                     args: [name, symbol, tokenUriHash, basePriceParsed, slopeParsed],
                 });
-                setTokenId(tokenId);
             } catch (error: any) {
                 const message = error instanceof Error ? error.message : 'Unknown error';
                 setUploadError(error.message || "Failed to upload token metadata");
@@ -322,7 +312,7 @@ const CreateTokenForm = () => {
                         <span>0.0001</span>
                     </label>
 
-                    <button type="submit" disabled={isSubmitting || isPending || !isOnline}>
+                    <button type="submit" disabled={isSubmitting || isPending || !isOnline || isTxLoading}>
                         {isSubmitting || isPending ? "Submitting..." : "Create Token"}
                     </button>
                     {uploadError}
@@ -333,11 +323,8 @@ const CreateTokenForm = () => {
                     <p className={styles.successMessage}>Your token has been minted and is live on the blockchain.</p>
 
                     <div className={styles.successActions}>
-                        <Link to={`/dashboard/explore/${tokenId}`} className={styles.linkButton}>
-                            View Token
-                        </Link>
                         <Link to={'/dashboard/explore'} className={styles.secondaryButton}>
-                            Explore All Coins
+                            Explore Tokens
                         </Link>
                     </div>
                 </div>

@@ -23,7 +23,10 @@ export function ConnectWallet({ handleIsHidden }: any) {
                 {connectors.map((connector) => (
                     <button
                         key={connector.id}
-                        onClick={() => connect({ connector })}
+                        onClick={() => {
+                            connect({ connector });
+                            handleIsHidden(false);
+                        }}
                         className={styles.walletButton}
                     >
                         {connector.name}

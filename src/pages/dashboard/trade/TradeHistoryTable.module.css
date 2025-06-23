@@ -36,3 +36,14 @@
 .tradeTable tr:nth-child(even) {
     background-color: #f5f5f5;
 }
+
+.mint {
+    font-weight: 800;
+    color: var(--color-mint);
+}
+
+.burn {
+    font-weight: 800;
+    letter-spacing: -.5px;
+    color: var(--color-burn);
+}

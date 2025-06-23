@@ -164,9 +164,10 @@ export const TradePage: React.FC = () => {
           <div className={styles.cContainer}>
             <ExploreButton />
             <div className={styles.header}>
-              <h2 className={styles.title}>Trade {coin?.name}<span><Link to={`/dashboard/explore/${coin?.tokenId}`}>
-                <Info />
-              </Link></span></h2>
+              <h2 className={styles.title}>Trade {coin?.name}</h2>
+              <Link to={`/dashboard/explore/${coin?.tokenId}`}>
+                <Info size={20} />
+              </Link>
             </div>
 
             <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />

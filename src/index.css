@@ -4,7 +4,8 @@
 
   --color-accent: #144c7e;
   --color-accent-light: #1c67a8;
-
+  --color-burn: #ef5350;
+  --color-mint: #26a69a;
   --color-neutral-100: #f5f5f5;
   --color-neutral-200: #e5e5e5;
   --color-neutral-300: #d4d4d4;
@@ -31,7 +32,18 @@
 
 /* Default state */
 html {
+  margin: 0;
+  padding: 0;
   transition: border 0.2s ease;
+  height: 100%;
+  background: var(--color-neutral-300);
+
+}
+
+input,
+textarea,
+select {
+  font-size: 16px;
 }
 
 
@@ -86,10 +98,18 @@ html {
   }
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
 
-input,
-textarea,
-select {
-  font-size: 16px;
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-accent-light);
+  border-radius: 0;
+  border: 2px solid var(--color-accent-light);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent);
 }

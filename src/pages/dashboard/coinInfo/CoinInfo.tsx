@@ -3,8 +3,8 @@ import { useCoinStore } from '../../../store/coinStore';
 import styles from './CoinInfo.module.css';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 import { useState } from 'react';
-import { FadeLoader } from 'react-spinners';
 import { TradeHistoryTable } from '../trade/TradeHistoryTable';
+import Logo from '../../../components/logo/Logo';
 
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 export const CoinInfo: React.FC = () => {
@@ -23,8 +23,7 @@ export const CoinInfo: React.FC = () => {
                         <div className={styles.imageContainer}>
                             {imageLoaded === null && (
                                 <div className={styles.imageLoadingFallback}>
-                                    <FadeLoader height={8} width={4} />
-                                    <span className={styles.symbolOverlay}>{coin.symbol}</span>
+                                    <Logo background={true} size={'3rem'} />
                                 </div>
                             )}
 

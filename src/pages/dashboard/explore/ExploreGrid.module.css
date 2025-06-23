@@ -1,16 +1,25 @@
 /* Main Container */
-.coinsContainer {
+.container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 1.5rem;
     font-family: var(--font-family-text);
 }
 
-.coinsHeader {
+.header {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/*   Styling */
+.title {
+    color: var(--color-neutral-900);
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 700;
 }
 
 /* Search Bar Styling */
@@ -31,6 +40,20 @@
     flex: 1;
 }
 
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-accent) !important;
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+
+.searchIcon:hover {
+    color: var(--color-accent-light) !important;
+}
 
 .searchInput {
     width: 100%;
@@ -44,6 +67,7 @@
     font-family: var(--font-family-text) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     box-sizing: border-box;
+    cursor: pointer;
 }
 
 .searchInput:focus {
@@ -52,25 +76,15 @@
     box-shadow: 0 0 0 3px #1a5c9639;
 }
 
-.searchIcon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--color-accent) !important;
-    width: 1.25rem;
-    height: 1.25rem;
-    pointer-events: none;
-}
 
 .searchClear {
     position: absolute;
-    left: 47%;
+    left: 90%;
     top: 50%;
     transform: translateY(-50%);
     background: none;
     border: none;
-    color: var(--color-neutral-600);
+    color: var(--color-accent);
     cursor: pointer;
     font-size: 1.25rem;
     display: flex;
@@ -83,20 +97,19 @@
 
 .searchClear:hover {
     background-color: var(--color-neutral-200);
-    color: var(--color-neutral-800);
+    color: var(--color-accent-light);
 }
 
 .logoContainer {
-    text-align: center;
+    text-align: right;
 }
 
-/* Title Styling */
-.title {
-    color: var(--color-neutral-900);
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    font-weight: 700;
+.loadingMore {
+    width: 100%;
+    height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Grid Layout - Responsive from the start */
@@ -107,40 +120,42 @@
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
 
-.loaderContainer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    grid-column: 1 / -1;
-    padding: 2rem;
-}
-
 /* Perfected Coin Card Styling */
 .coinCard {
     background: var(--color-neutral-100);
     color: var(--color-neutral-900);
-    border-radius: 16px;
+    border-radius: 0;
     padding: 1.25rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(76, 186, 255, 0.08);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--color-neutral-900);
+    border: 2px solid var(--color-neutral-400);
     cursor: pointer;
     text-decoration: none;
     position: relative;
     height: 100%;
+    animation: fadeInUp 0.6s ease forwards;
 }
 
 .coinCard:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-    border-color: var(--color-accent);
+    box-shadow: 0 12px 32px rgba(81, 163, 234, 0.15);
+    border-color: var(--color-neutral-500);
 }
 
 .coinCard:active {
     transform: translateY(-4px) scale(1.01);
+}
+
+.coinCard.loading {
+    background: linear-gradient(90deg,
+            var(--color-neutral-100) 25%,
+            var(--color-neutral-200) 50%,
+            var(--color-neutral-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
 }
 
 /* Token Details Section */
@@ -178,10 +193,10 @@
 
 /* Symbol styling - make it prominent */
 .symbolText {
-    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
-    color: var(--color-neutral-900);
+    background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent));
+    color: var(--color-neutral-100);
     padding: 0.25rem 0.75rem;
-    border-radius: 20px;
+    border-radius: 0px;
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -218,7 +233,6 @@
     background: linear-gradient(135deg, var(--color-neutral-300), var(--color-neutral-200));
     position: relative;
 }
-
 
 .coinImage {
     max-height: 100%;
@@ -271,17 +285,11 @@
     letter-spacing: 0.5px;
 }
 
-
-
-.coinCard:hover .coinImage {
-    transform: scale(1.05);
-}
-
 /* Price Section */
 .priceSection {
     background: linear-gradient(135deg, rgba(242, 169, 0, 0.1), rgba(242, 169, 0, 0.05));
     padding: 0.75rem;
-    border-radius: 12px;
+    border-radius: 0px;
     margin-top: auto;
     border: 1px solid rgba(242, 169, 0, 0.2);
 }
@@ -306,16 +314,6 @@
     font-size: 1rem;
 }
 
-.percentUp {
-    color: green;
-    font-weight: bold;
-}
-
-.percentDown {
-    color: red;
-    font-weight: bold;
-}
-
 /* Trade Button */
 .tradeContainer {
     margin-top: 0.75rem;
@@ -324,9 +322,9 @@
 
 .tradeContainer p {
     background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light)) !important;
-    color: white;
+    color: var(--color-neutral-100);
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: 6px;
     font-weight: 600;
     font-size: 0.85rem;
     margin: 0;
@@ -354,7 +352,7 @@
     background-color: #fecaca;
     color: #b91c1c;
     padding: 1rem;
-    border-radius: 12px;
+    border-radius: 6px;
     text-align: center;
     max-width: 600px;
     margin: 2rem auto;
@@ -368,14 +366,33 @@
     font-size: 1.1rem;
     grid-column: 1 / -1;
     background: var(--color-neutral-100);
-    border-radius: 12px;
+    border-radius: 6px;
     border: 2px dashed var(--color-neutral-300);
+}
+
+.loaderContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    grid-column: 1 / -1;
+    padding: 2rem;
 }
 
 /* Loading animation */
 .loading::after {
     content: '';
     animation: ellipsis 1.5s infinite;
+}
+
+.offlineContainer {
+    width: 100%;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--color-neutral-600);
 }
 
 @keyframes ellipsis {
@@ -392,16 +409,6 @@
     }
 }
 
-.offlineContainer {
-    width: 100%;
-    height: 400px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    color: var(--color-neutral-600);
-}
 
 /* Shimmer loading effect */
 @keyframes shimmer {
@@ -414,14 +421,7 @@
     }
 }
 
-.coinCard.loading {
-    background: linear-gradient(90deg,
-            var(--color-neutral-100) 25%,
-            var(--color-neutral-200) 50%,
-            var(--color-neutral-100) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-}
+
 
 /* Card entrance animation */
 @keyframes fadeInUp {
@@ -434,10 +434,6 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.coinCard {
-    animation: fadeInUp 0.6s ease forwards;
 }
 
 /* Staggered animation */
@@ -487,11 +483,14 @@
 }
 
 .scrollToTopButton:hover {
-    transform: translateY(-4px) scale(1.1);
+    transform: translateY(-2px) scale(1.1);
     box-shadow: 0 12px 32px #1c67a83b;
 }
 
-/* RESPONSIVE BREAKPOINTS */
+.scrollToTopButton:active {
+    transform: translateY(-1px) scale(1);
+    box-shadow: 0 12px 32px #1c67a83b;
+}
 
 /* Large tablets and small laptops (≤ 1024px) */
 @media (max-width: 1024px) {
@@ -507,7 +506,7 @@
 
 /* Standard tablets (≤ 768px) */
 @media (max-width: 768px) {
-    .coinsContainer {
+    .container {
         padding: 1rem;
     }
 
@@ -564,16 +563,21 @@
         padding: 0.625rem 2.5rem;
         font-size: 16px;
     }
+
+    .symbolText {
+        background: none;
+        color: var(--color-accent);
+    }
 }
 
 /* Mobile portrait (≤ 480px) */
 @media (max-width: 480px) {
-    .coinsContainer {
+    .container {
         padding: 0.75rem;
     }
 
     .searchClear {
-        left: 40%;
+        left: 80%;
     }
 
     .title {
@@ -588,7 +592,7 @@
     .coinCard {
         padding: 0.75rem;
         min-height: 200px;
-        border-radius: 12px;
+        border-radius: 6px;
     }
 
     .tokenDetails h4 {

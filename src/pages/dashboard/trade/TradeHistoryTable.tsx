@@ -1,4 +1,5 @@
 import { useTradeStore } from '../../../store/tradeStore';
+import { timeAgo } from '../../../utils/formatTimeAgo';
 import styles from './TradeHistoryTable.module.css';
 
 interface TradeHistoryTableProps {
@@ -29,17 +30,17 @@ export const TradeHistoryTable: React.FC<TradeHistoryTableProps> = ({ coin }) =>
                             <tbody>
                                 {sortedTrades.map((trade, i) => (
                                     <tr key={i}>
-                                        <td>{trade.type === 'mint' ? 'Mint' : 'Burn'}</td>
-                                        <td>{trade.amount?.toString?.() ?? '-'}</td>
+                                        <td className={`${trade.type === 'mint' ? styles.mint : styles.burn}`}>{trade.type === 'mint' ? 'BUY' : 'SELL'}</td>
+                                        <td className={`${trade.type === 'mint' ? styles.mint : styles.burn}`}>{trade.amount?.toString?.() ?? '-'}</td>
                                         <td>{formatEth(trade.cost)}</td>
-                                        <td>{Number(trade.price).toFixed(4)}</td>
-                                        <td>{new Date(trade.timestamp * 1000).toLocaleString()}</td>
+                                        <td className={`${trade.type === 'mint' ? styles.mint : styles.burn}`}>{Number(trade.price).toFixed(4)}</td>
+                                        <td>{timeAgo(trade.timestamp)}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div >
             )}
         </>
     );

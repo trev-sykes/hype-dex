@@ -9,6 +9,7 @@
 .form {
     width: 100%;
     max-width: 720px;
+    min-width: 320px;
     background-color: var(--color-neutral-100);
     padding: 1rem;
     border-radius: 1rem;
