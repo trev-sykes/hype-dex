@@ -16,6 +16,7 @@ import { ScrollToTop } from './hooks/useScrollToTop'
 
 function App() {
   const queryClient = new QueryClient()
+
   return (
     <WagmiProvider config={config} >
       <QueryClientProvider client={queryClient}>

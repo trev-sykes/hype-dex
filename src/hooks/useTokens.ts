@@ -23,7 +23,7 @@ const tokenCreatedQuery = gql`
 `;
 
 // Create a **single shared throttled function** for fetching token price
-const throttledFetchPrice = pThrottle({ limit: 20, interval: 1000 })(fetchTokenPrice);
+const throttledFetchPrice = pThrottle({ limit: 100, interval: 1000 })(fetchTokenPrice);
 
 export function useTokens(tokenId?: string) {
     const {
@@ -125,7 +125,7 @@ export function useTokens(tokenId?: string) {
             const metadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
 
             // Process tokens in batches to respect rate limits
-            const batchSize = 10;
+            const batchSize = 50;
             for (let i = 0; i < tokens.length; i += batchSize) {
                 const batch = tokens.slice(i, i + batchSize);
 

@@ -8,11 +8,13 @@ import { useAlertStore } from '../../store/alertStore';
 import { useAccount } from 'wagmi';
 import { ConnectWallet } from '../../wallet/ConnectWallet';
 import { useEnforceChain } from '../../hooks/useForceChainId';
+import { useTokens } from '../../hooks/useTokens';
 
 const DashboardLayout = () => {
     const [isConnectorOpen, setIsConnectorOpen] = useState(true);
     const isOnline = useOnline();
     const account = useAccount();
+    useTokens();
     useEnforceChain(11155111);
     useEffect(() => {
         const alertStore = useAlertStore.getState();
