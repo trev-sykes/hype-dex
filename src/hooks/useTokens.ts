@@ -21,6 +21,11 @@ const tokenCreatedQuery = gql`
     }
 }
 `;
+// Max 5 concurrent IPFS metadata fetches per second
+const throttledFetchIpfsMetadata = pThrottle({
+    limit: 5,       // max 5 calls
+    interval: 1000, // per 1000ms
+})(fetchIpfsMetadata);
 
 // Create a **single shared throttled function** for fetching token price
 const throttledFetchPrice = pThrottle({ limit: 100, interval: 1000 })(fetchTokenPrice);
@@ -82,7 +87,8 @@ export function useTokens(tokenId?: string) {
                 const match = rawMetadata.find((m: any) => m.tokenId.toString() === token.tokenId.toString());
                 if (!match) return existingToken || null;
 
-                const ipfsData = await fetchIpfsMetadata(match.uri);
+                const ipfsData = await throttledFetchIpfsMetadata(match.uri);
+
                 return {
                     tokenId: token.tokenId,
                     name: token.name,

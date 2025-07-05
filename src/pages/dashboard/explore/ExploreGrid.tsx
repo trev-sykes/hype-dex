@@ -234,7 +234,7 @@ export const ExploreGrid: React.FC = () => {
                                             <div className={styles.imageContainer}>
                                                 {loadStates[index] === null && (
                                                     <div className={styles.imageLoadingFallback}>
-                                                        <Logo background={true} size={'3rem'} />
+                                                        {/* <Logo background={true} size={'3rem'} /> */}
                                                     </div>
                                                 )}
 
