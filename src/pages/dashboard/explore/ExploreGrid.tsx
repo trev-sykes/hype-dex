@@ -131,6 +131,9 @@ export const ExploreGrid: React.FC = () => {
                         <Logo background={true} size={viewportWidth > 500 ? '8rem' : '6rem'} />
                     </div>
                 </div>
+                <>
+                    <div className={`${styles.symbolText} ${styles.tokenCount}`}>{coinsToDisplay.length} Tokens</div>
+                </>
                 {/* Grid of Coins */}
                 {isSearching ? (
                     <div className={styles.loadingMore}>

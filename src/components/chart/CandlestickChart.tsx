@@ -19,12 +19,13 @@ interface Trade {
 }
 
 interface Props {
+    isTradeMode: boolean;
     trades: Trade[];
     interval?: number; // in seconds (default 1 hour)
     tokenId?: any;
 }
 
-export default function CandlestickChart({ trades, interval = 3600 }: Props) {
+export default function CandlestickChart({ isTradeMode = true, trades, interval = 3600 }: Props) {
     const { coin } = useCoinStore();
     const { balance }: any = useUserTokenBalance();
     const viewportWidth = useWitdh();
@@ -347,79 +348,82 @@ export default function CandlestickChart({ trades, interval = 3600 }: Props) {
         <div className={styles.container}>
             {!isLoading && (
                 <>
-                    <div className={styles.controls}>
-                        <div className={styles.assetInfo}>
-                            <img src={coin?.imageUrl} alt={coin?.name} className={styles.image} />
-                            <span className={styles.symbol}>${coin?.symbol}</span>
-                        </div>
+                    {isTradeMode && (
+                        <div className={styles.controls}>
+                            <div className={styles.assetInfo}>
+                                <img src={coin?.imageUrl} alt={coin?.name} className={styles.image} />
+                                <span className={styles.symbol}>${coin?.symbol}</span>
+                            </div>
 
-                        <div className={styles.intervalControl}>
-                            {viewportWidth > 374 && (
-                                <label htmlFor="interval-select" className={styles.label}>Interval</label>
-                            )}
-                            <select
-                                id="interval-select"
-                                value={selectedInterval}
-                                onChange={(e) => setSelectedInterval(Number(e.target.value))}
-                                className={styles.select}
-                            >
-                                {intervalOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className={styles.seriesToggles}>
-                            <label className={styles.toggle}>
-                                <input
-                                    type="checkbox"
-                                    checked={showLine}
-                                    onChange={() => {
-                                        if (!showCandles) return; // Prevent both from being unchecked
-                                        setShowLine((prev) => !prev);
-                                    }}
-                                />
-                                <svg width="40" height="10">
-                                    <line x1="0" y1="5" x2="40" y2="5" stroke="#2196f3" strokeWidth="2" />
-                                </svg>
-                            </label>
-
-                            <label className={styles.toggle}>
-                                <input
-                                    type="checkbox"
-                                    checked={showCandles}
-                                    onChange={() => {
-                                        if (!showLine) return; // Prevent both from being unchecked
-                                        setShowCandles((prev) => !prev);
-                                    }}
-                                />
-                                <svg width="40" height="20">
-                                    <rect x="10" y="5" width="8" height="10" fill="#26a69a" stroke="#26a69a" />
-                                    <line x1="14" y1="0" x2="14" y2="20" stroke="#26a69a" strokeWidth="2" />
-                                </svg>
-                            </label>
-                            <div className={styles.priceContainer}>
-                                {!isLoading ? (
-                                    <>
-                                        <span className={styles.priceLabel}>Price:</span>
-                                        <span className={styles.priceValue}>
-                                            {price ? `${typeof (price) == 'bigint' ? formatEther(price) : price} ETH` : '—'}
-                                        </span>
-                                        <p className={styles.priceLabel}>
-                                            Your Balance: <span className={styles.priceValue}>{balance} {coin?.symbol}</span>
-                                        </p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <FadeLoader />
-                                    </>
+                            <div className={styles.intervalControl}>
+                                {viewportWidth > 374 && (
+                                    <label htmlFor="interval-select" className={styles.label}>Interval</label>
                                 )}
+                                <select
+                                    id="interval-select"
+                                    value={selectedInterval}
+                                    onChange={(e) => setSelectedInterval(Number(e.target.value))}
+                                    className={styles.select}
+                                >
+                                    {intervalOptions.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
+                            <div className={styles.seriesToggles}>
+                                <label className={styles.toggle}>
+                                    <input
+                                        type="checkbox"
+                                        checked={showLine}
+                                        onChange={() => {
+                                            if (!showCandles) return; // Prevent both from being unchecked
+                                            setShowLine((prev) => !prev);
+                                        }}
+                                    />
+                                    <svg width="40" height="10">
+                                        <line x1="0" y1="5" x2="40" y2="5" stroke="#2196f3" strokeWidth="2" />
+                                    </svg>
+                                </label>
+
+                                <label className={styles.toggle}>
+                                    <input
+                                        type="checkbox"
+                                        checked={showCandles}
+                                        onChange={() => {
+                                            if (!showLine) return; // Prevent both from being unchecked
+                                            setShowCandles((prev) => !prev);
+                                        }}
+                                    />
+                                    <svg width="40" height="20">
+                                        <rect x="10" y="5" width="8" height="10" fill="#26a69a" stroke="#26a69a" />
+                                        <line x1="14" y1="0" x2="14" y2="20" stroke="#26a69a" strokeWidth="2" />
+                                    </svg>
+                                </label>
+                                <div className={styles.priceContainer}>
+                                    {!isLoading ? (
+                                        <>
+                                            <span className={styles.priceLabel}>Price:</span>
+                                            <span className={styles.priceValue}>
+                                                {price ? `${typeof (price) == 'bigint' ? formatEther(price) : price} ETH` : '—'}
+                                            </span>
+                                            <p className={styles.priceLabel}>
+                                                Your Balance: <span className={styles.priceValue}>{balance} {coin?.symbol}</span>
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FadeLoader />
+                                        </>
+                                    )}
+
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )
+                    }
                     <div
                         ref={chartContainerRef}
                         className={styles.chartContainer}

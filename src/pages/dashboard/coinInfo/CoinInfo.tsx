@@ -3,14 +3,15 @@ import { useCoinStore } from '../../../store/coinStore';
 import styles from './CoinInfo.module.css';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 import { useState } from 'react';
-import { TradeHistoryTable } from '../trade/TradeHistoryTable';
+import TokenCandlestickChart from '../../../components/chart/CandlestickChart';
+import { useTokenActivity } from '../../../hooks/useTokenActivity';
 
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 export const CoinInfo: React.FC = () => {
     const { coin } = useCoinStore();
     const [imageLoaded, setImageLoaded] = useState<boolean | null>(null);
     const [isHistoryOpened, setIsHistoryOpened] = useState<boolean>(false);
-
+    const trades = useTokenActivity(coin?.tokenId?.toString());
     return (
         <div className={styles.container}>
             {coin ? (
@@ -46,7 +47,6 @@ export const CoinInfo: React.FC = () => {
                             <p className={styles.description}>{coin.description}</p>
                         )}
                     </div>
-
                     {/* Meta Information Grid */}
                     <div className={styles.meta}>
                         <div className={styles.metaCard}>
@@ -102,12 +102,12 @@ export const CoinInfo: React.FC = () => {
                         </Link>
                     </div>
                     <div className={styles.historyToggle} onClick={() => setIsHistoryOpened(prev => !prev)}>
-                        {isHistoryOpened ? "Close Trade History" : "View Trade History"}
+                        {isHistoryOpened ? "Close Chart" : "View Chart"}
                     </div>
                     {isHistoryOpened && (
-                        <div className={styles.historyWrapper}>
-                            <TradeHistoryTable coin={coin} />
-                        </div>
+                        <>
+                            <TokenCandlestickChart isTradeMode={false} trades={trades} interval={300} tokenId={coin.tokenId} />
+                        </>
                     )}
 
                 </>
