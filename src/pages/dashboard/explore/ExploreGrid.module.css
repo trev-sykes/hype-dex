@@ -79,7 +79,7 @@
 
 .searchClear {
     position: absolute;
-    left: 90%;
+    right: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -90,9 +90,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.25rem;
-    border-radius: 4px;
     transition: all 0.2s ease;
+    margin: 0;
+    padding: 0;
 }
 
 .searchClear:hover {

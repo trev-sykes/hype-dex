@@ -4,7 +4,6 @@ import styles from './CoinInfo.module.css';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 import { useState } from 'react';
 import { TradeHistoryTable } from '../trade/TradeHistoryTable';
-import Logo from '../../../components/logo/Logo';
 
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 export const CoinInfo: React.FC = () => {
@@ -23,7 +22,6 @@ export const CoinInfo: React.FC = () => {
                         <div className={styles.imageContainer}>
                             {imageLoaded === null && (
                                 <div className={styles.imageLoadingFallback}>
-                                    <Logo background={true} size={'3rem'} />
                                 </div>
                             )}
 
