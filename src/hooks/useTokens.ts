@@ -1,225 +1,222 @@
-
 import pThrottle from 'p-throttle';
 import { useEffect, useCallback, useState } from 'react';
 import { useTokenStore } from '../store/allTokensStore';
 import request, { gql } from 'graphql-request';
-import { useQuery } from 'wagmi/query';
+import { useInfiniteQuery } from 'wagmi/query';
 import { convertToIpfsUrl, fetchIpfsMetadata } from '../utils/ipfs';
 import { fetchAllTokenIds, fetchTokenMetadataRange, fetchTokenPrice } from './useContractRead';
 
 const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
-const tokenCreatedQuery = gql`
-{
-    tokenCreateds(first: 100) {
-        id
-        tokenId
-        name
-        symbol
-        blockTimestamp
-    }
-}
-`;
-// Max 5 concurrent IPFS metadata fetches per second
-const throttledFetchIpfsMetadata = pThrottle({
-    limit: 5,       // max 5 calls
-    interval: 1000, // per 1000ms
-})(fetchIpfsMetadata);
+interface TokenCreated {
+    id: string;
+    tokenId: string;
+    name: string;
+    symbol: string;
+    blockTimestamp: string;
 
-// Create a **single shared throttled function** for fetching token price
+}
+
+interface TokensQueryResult {
+    pages: any;
+    tokenCreateds: TokenCreated[];
+}
+
+const PAGE_SIZE = 20;
+
+const tokenCreatedQuery = gql`
+  query Tokens($first: Int!, $skip: Int!) {
+    tokenCreateds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      tokenId
+      name
+      symbol
+      blockTimestamp
+    }
+  }
+`;
+
+const throttledFetchIpfsMetadata = pThrottle({ limit: 5, interval: 1000 })(fetchIpfsMetadata);
 const throttledFetchPrice = pThrottle({ limit: 100, interval: 1000 })(fetchTokenPrice);
 
 export function useTokens(tokenId?: string) {
-    const {
-        tokens,
-        hydrated,
-        setTokens,
-        updateToken,
-        clearTokens
-    } = useTokenStore();
-
+    const { tokens, hydrated, setTokens, updateToken, clearTokens } = useTokenStore();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const [token, setToken] = useState<any>(null);
     const [pricesLoaded, setPricesLoaded] = useState(false);
 
-    // ✅ Fix: Allow GraphQL query to run even when tokens exist to fetch new ones
-    const { data, isSuccess, refetch: refetchGraphQL }: any = useQuery({
+    // Infinite Query for paginated tokens
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        refetch: refetchGraphQL,
+        isSuccess,
+    } = useInfiniteQuery<TokensQueryResult, Error, TokensQueryResult, string[]>({
         queryKey: ['tokens'],
-        queryFn: () => request(url, tokenCreatedQuery, {}, headers),
+        queryFn: async ({ pageParam = 0 }) => {
+            return request(url, tokenCreatedQuery, { first: PAGE_SIZE, skip: pageParam }, headers);
+        },
+        getNextPageParam: (lastPage, allPages) => {
+            // If last page returned fewer than PAGE_SIZE, no more pages
+            if (lastPage.tokenCreateds.length < PAGE_SIZE) return undefined;
+            return allPages.length * PAGE_SIZE;
+        },
+        initialPageParam: 0,
+        enabled: !tokenId,
         refetchInterval: 10000,
         refetchOnWindowFocus: false,
-        enabled: !tokenId, // Only disable when fetching a specific token
     });
+    // Flatten all tokens fetched across pages
+    const allFetchedTokens: any = data?.pages.flatMap((p: any) => p.tokenCreateds) || [];
 
-    // ✅ Fix: Compare GraphQL data with store to detect new tokens
+    // Enrich metadata for tokens coming from infinite query
     const fetchStaticMetadata = useCallback(async () => {
-        if (!isSuccess || !data?.tokenCreateds?.length) return;
+        if (!isSuccess || allFetchedTokens.length === 0) return;
 
-        // Check if we have new tokens from GraphQL that aren't in our store
-        const existingTokenIds = new Set(tokens.map(t => t.tokenId.toString()));
-        const newTokensFromGraphQL = data.tokenCreateds.filter(
-            (token: any) => !existingTokenIds.has(token.tokenId.toString())
-        );
+        const existingIds = new Set(tokens.map((t: any) => t.tokenId.toString()));
+        const newTokens = allFetchedTokens.filter((t: any) => !existingIds.has(t.tokenId.toString()));
 
-        // If no new tokens, return existing tokens
-        if (newTokensFromGraphQL.length === 0 && tokens.length > 0) {
-            console.log('No new tokens detected from GraphQL');
+        if (newTokens.length === 0 && tokens.length > 0) {
+            // No new tokens to fetch
             return tokens;
         }
-
-        console.log(`Found ${newTokensFromGraphQL.length} new tokens from GraphQL`);
 
         const tokenIds: any = await fetchAllTokenIds();
         const rawMetadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
 
-        // Process all tokens from GraphQL (both existing and new)
-        const staticTokens = await Promise.all(
-            data.tokenCreateds.map(async (token: any) => {
-                // Check if this token already exists in store with complete data
-                const existingToken = tokens.find(t => t.tokenId.toString() === token.tokenId.toString());
-                if (existingToken && existingToken.imageUrl !== null) {
-                    // Return existing token if it has complete metadata
-                    return existingToken;
-                }
+        const enriched: any = await Promise.all(
+            allFetchedTokens.map(async (gqlToken: { tokenId: { toString: () => string; }; name: any; symbol: any; blockTimestamp: any; }) => {
+                const existing = tokens.find(t => t.tokenId.toString() === gqlToken.tokenId.toString());
+                if (existing?.imageUrl) return existing;
 
-                const match = rawMetadata.find((m: any) => m.tokenId.toString() === token.tokenId.toString());
-                if (!match) return existingToken || null;
+                const match = rawMetadata.find((m: any) => m.tokenId.toString() === gqlToken.tokenId.toString());
+                if (!match) return existing || null;
 
                 const ipfsData = await throttledFetchIpfsMetadata(match.uri);
 
                 return {
-                    tokenId: token.tokenId,
-                    name: token.name,
-                    symbol: token.symbol,
-                    blockTimestamp: token.blockTimestamp,
+                    tokenId: gqlToken.tokenId,
+                    name: gqlToken.name,
+                    symbol: gqlToken.symbol,
+                    blockTimestamp: gqlToken.blockTimestamp,
                     uri: match.uri,
                     description: ipfsData?.description ?? null,
                     imageUrl: ipfsData?.image ? convertToIpfsUrl(ipfsData.image) : null,
-                    // Preserve existing price data if available
-                    basePrice: existingToken?.basePrice || null,
-                    slope: existingToken?.slope || null,
-                    reserve: existingToken?.reserve || null,
-                    totalSupply: existingToken?.totalSupply || null,
-                    price: existingToken?.price || null,
-                    percentChange: existingToken?.percentChange || null,
+                    basePrice: existing?.basePrice || null,
+                    slope: existing?.slope || null,
+                    reserve: existing?.reserve || null,
+                    totalSupply: existing?.totalSupply || null,
+                    price: existing?.price || null,
+                    percentChange: existing?.percentChange || null,
                 };
             })
         );
 
-        const filtered = staticTokens.filter(Boolean);
-
-        // Only update store if we have new data
-        if (filtered.length !== tokens.length || newTokensFromGraphQL.length > 0) {
-            console.log('Updating store with new/updated tokens');
+        const filtered = enriched.filter(Boolean);
+        if (filtered.length !== tokens.length || newTokens.length > 0) {
             setTokens(filtered as any);
         }
 
         return filtered;
-    }, [data, isSuccess, setTokens, tokens]);
+    }, [allFetchedTokens, isSuccess, tokens, setTokens]);
 
-    // Fetch all prices for tokens in bulk
-    const fetchAllPrices = useCallback(async (tokens?: any[]) => {
-        if (!tokens?.length) return;
+    const fetchAllPrices = useCallback(
+        async (tokensToFetch?: any[]) => {
+            if (!tokensToFetch?.length) return;
 
-        setLoading(true);
-        setPricesLoaded(false);
+            setLoading(true);
+            setPricesLoaded(false);
 
-        try {
-            const tokenIds: any = await fetchAllTokenIds();
-            const metadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
+            try {
+                const tokenIds: any = await fetchAllTokenIds();
+                const metadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
 
-            // Process tokens in batches to respect rate limits
-            const batchSize = 50;
-            for (let i = 0; i < tokens.length; i += batchSize) {
-                const batch = tokens.slice(i, i + batchSize);
+                const batchSize = 50;
+                for (let i = 0; i < tokensToFetch.length; i += batchSize) {
+                    const batch = tokensToFetch.slice(i, i + batchSize);
 
-                await Promise.all(
-                    batch.map(async (token: any) => {
-                        try {
-                            // Skip if this token already has price data
-                            if (token.price !== null && token.price !== undefined) {
-                                return;
+                    await Promise.all(
+                        batch.map(async token => {
+                            try {
+                                if (token.price != null) return;
+
+                                const meta = metadata.find((m: any) => m.tokenId.toString() === token.tokenId.toString());
+                                if (!meta) return;
+
+                                const price: any = await throttledFetchPrice(BigInt(token.tokenId));
+
+                                const base = parseFloat(meta.basePrice?.toString() || '0');
+                                const current = parseFloat(price?.toString() || '0');
+                                const percentChange = base > 0 ? ((current - base) / base) * 100 : null;
+
+                                updateToken(token.tokenId, {
+                                    basePrice: meta.basePrice?.toString(),
+                                    slope: meta.slope?.toString(),
+                                    reserve: meta.reserve?.toString(),
+                                    totalSupply: meta.totalSupply?.toString(),
+                                    price: price?.toString(),
+                                    percentChange,
+                                });
+                            } catch (err) {
+                                console.error('Failed price for token', token.tokenId, err);
+                                updateToken(token.tokenId, { price: null, percentChange: null });
                             }
+                        })
+                    );
 
-                            const meta = metadata.find((m: any) =>
-                                m.tokenId.toString() === token.tokenId.toString()
-                            );
-
-                            if (!meta) return;
-
-                            const price: any = await throttledFetchPrice(BigInt(token.tokenId));
-
-                            const base = parseFloat(meta?.basePrice?.toString() || '0');
-                            const current = parseFloat(price?.toString() || '0');
-                            const percentChange: any = base > 0 ? ((current - base) / base) * 100 : null;
-
-                            updateToken(token.tokenId, {
-                                basePrice: meta.basePrice?.toString(),
-                                slope: meta.slope?.toString(),
-                                reserve: meta.reserve?.toString(),
-                                totalSupply: meta.totalSupply?.toString(),
-                                price: price?.toString(),
-                                percentChange,
-                            });
-                        } catch (err) {
-                            console.error('Error fetching price for token', token.tokenId, err);
-                            // Update with null values to indicate price fetch failed
-                            updateToken(token.tokenId, {
-                                price: null,
-                                percentChange: null,
-                            });
-                        }
-                    })
-                );
-
-                // Add a small delay between batches
-                if (i + batchSize < tokens.length) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    if (i + batchSize < tokensToFetch.length) {
+                        await new Promise(res => setTimeout(res, 100));
+                    }
                 }
+            } catch (err) {
+                console.error('Error in fetchAllPrices:', err);
+            } finally {
+                setLoading(false);
+                setPricesLoaded(true);
             }
-        } catch (err) {
-            console.error('Error fetching all prices:', err);
-        } finally {
-            setLoading(false);
-            setPricesLoaded(true);
-        }
-    }, [updateToken]);
+        },
+        [updateToken]
+    );
 
-    // Enrich token data with on-chain metadata and price — uses shared throttled price fetch
-    const enrichToken = useCallback(async (tokenId: string, tokenIdsLength: any) => {
-        try {
-            const metadata: any = await fetchTokenMetadataRange(1, tokenIdsLength);
-            const meta: any = metadata[0];
-            const price: any = await throttledFetchPrice(BigInt(tokenId));
+    // Single token enrich logic (same as before)
+    const enrichToken = useCallback(
+        async (tokenId: string, totalTokens: number) => {
+            try {
+                const metadata: any = await fetchTokenMetadataRange(1, totalTokens);
+                const meta = metadata[0];
+                const price: any = await throttledFetchPrice(BigInt(tokenId));
 
-            const base = parseFloat(meta?.basePrice?.toString() || '0');
-            const current = parseFloat(price?.toString() || '0');
-            const percentChange: any = base > 0 ? ((current - base) / base) * 100 : null;
+                const base = parseFloat(meta?.basePrice?.toString() || '0');
+                const current = parseFloat(price?.toString() || '0');
+                const percentChange = base > 0 ? ((current - base) / base) * 100 : null;
 
-            updateToken(tokenId, {
-                basePrice: meta.basePrice?.toString(),
-                slope: meta.slope?.toString(),
-                reserve: meta.reserve?.toString(),
-                totalSupply: meta.totalSupply?.toString(),
-                price: price?.toString(),
-                percentChange,
-            });
+                updateToken(tokenId, {
+                    basePrice: meta.basePrice?.toString(),
+                    slope: meta.slope?.toString(),
+                    reserve: meta.reserve?.toString(),
+                    totalSupply: meta.totalSupply?.toString(),
+                    price: price?.toString(),
+                    percentChange,
+                });
+            } catch (err) {
+                console.error('Error enriching token', tokenId, err);
+            }
+        },
+        [updateToken]
+    );
 
-        } catch (err) {
-            console.error('Error enriching token', tokenId, err);
-        }
-    }, [updateToken]);
-
-    // Fetch a single token (for detail pages) — tries cache first, then fetches & enriches
+    // Fetch single token metadata & enrich
     const fetchSingle = useCallback(async () => {
         if (!tokenId) return;
         setLoading(true);
         setError(null);
 
         try {
-            const cached = tokens.find((t: any) => t.tokenId === tokenId);
+            const cached = tokens.find(t => t.tokenId === tokenId);
             if (cached) {
                 setToken(cached);
                 setLoading(false);
@@ -227,10 +224,9 @@ export function useTokens(tokenId?: string) {
             }
 
             await fetchStaticMetadata();
-
-            const newCached = useTokenStore.getState().tokens.find((t: any) => t.tokenId === tokenId);
-            if (newCached) {
-                setToken(newCached);
+            const refreshed = useTokenStore.getState().tokens.find(t => t.tokenId === tokenId);
+            if (refreshed) {
+                setToken(refreshed);
                 await enrichToken(tokenId, tokens.length);
             }
         } catch (err: any) {
@@ -240,63 +236,53 @@ export function useTokens(tokenId?: string) {
         }
     }, [tokenId, tokens, fetchStaticMetadata, enrichToken]);
 
-    // ✅ Fix: Handle both initial load and updates from GraphQL
+    // Load all tokens (no tokenId)
     useEffect(() => {
-        if (tokenId) return; // Skip if fetching specific token
+        if (tokenId) return;
+        if (!hydrated) return;
 
-        const loadTokens = async () => {
-            if (!hydrated) return; // Wait for hydration
-
+        const load = async () => {
             setLoading(true);
             try {
-                const updatedTokens = await fetchStaticMetadata();
+                await fetchStaticMetadata();
 
-                // Only fetch prices for new tokens or if no prices loaded yet
-                if (updatedTokens && (!pricesLoaded || updatedTokens.length > tokens.length)) {
-                    await fetchAllPrices(updatedTokens);
+                if (!pricesLoaded || tokens.length === 0) {
+                    await fetchAllPrices(tokens);
                 }
             } catch (err) {
-                console.error('Error loading metadata and prices', err);
+                console.error('loadTokens error', err);
             } finally {
                 setLoading(false);
             }
         };
 
-        loadTokens();
-    }, [hydrated, data, isSuccess, tokenId, fetchStaticMetadata, fetchAllPrices, pricesLoaded]);
+        load();
+    }, [hydrated, allFetchedTokens.length, fetchStaticMetadata, fetchAllPrices, pricesLoaded, tokenId, tokens]);
 
-    // Effect for single token loading (when tokenId is provided)
+    // Fetch single token if tokenId present
     useEffect(() => {
         if (!hydrated || !tokenId) return;
         fetchSingle();
     }, [hydrated, tokenId, fetchSingle]);
 
-    // ✅ Add effect to handle GraphQL data changes
+    // Force refetch if new tokens appear
     useEffect(() => {
-        if (!hydrated || tokenId || !data?.tokenCreateds) return;
-
-        // Check if GraphQL returned new tokens
-        // const graphQLTokenIds = new Set(data.tokenCreateds.map((t: any) => t.tokenId.toString()));
-        const storeTokenIds = new Set(tokens.map(t => t.tokenId.toString()));
-
-        const hasNewTokens = data.tokenCreateds.some((t: any) =>
-            !storeTokenIds.has(t.tokenId.toString())
-        );
-
-        if (hasNewTokens) {
-            console.log('New tokens detected from GraphQL, updating...');
+        if (!hydrated || tokenId || !allFetchedTokens.length) return;
+        const storeIds = new Set(tokens.map(t => t.tokenId.toString()));
+        const hasNew = allFetchedTokens.some((t: any) => !storeIds.has(t.tokenId.toString()));
+        if (hasNew) {
             fetchStaticMetadata();
         }
-    }, [data, hydrated, tokenId, tokens, fetchStaticMetadata]);
+    }, [allFetchedTokens, hydrated, tokenId, tokens, fetchStaticMetadata]);
 
+    // Fallback hydration slow check
     useEffect(() => {
         const timeout = setTimeout(() => {
             if (!hydrated && tokens.length === 0) {
-                console.warn('[Hydration] Zustand did not rehydrate in time, forcing fetch...');
+                console.warn('Zustand hydration slow, forcing metadata fetch...');
                 fetchStaticMetadata();
             }
-        }, 2000); // 2 seconds timeout
-
+        }, 2000);
         return () => clearTimeout(timeout);
     }, [hydrated, tokens.length, fetchStaticMetadata]);
 
@@ -310,11 +296,13 @@ export function useTokens(tokenId?: string) {
     return {
         tokens: tokenId ? [] : tokens,
         token: tokenId ? token : null,
-        loading,
+        loading: loading || isFetchingNextPage,
         error,
         refetch,
         clearTokens,
         enrichToken,
-        pricesLoaded, // New flag to indicate if prices have been loaded
+        fetchNextPage,
+        hasNextPage,
+        pricesLoaded,
     };
 }
