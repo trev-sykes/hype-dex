@@ -1,12 +1,12 @@
 import { Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import DashboardNav from '../../nav/DashboardNav';
+import DashboardNav from '../../components/nav/DashboardNav';
 import styles from './DashboardLayout.module.css';
 import Alert from '../../components/alert/Alert';
 import { useOnline } from '../../hooks/useOnline';
 import { useAlertStore } from '../../store/alertStore';
 import { useAccount } from 'wagmi';
-import { ConnectWallet } from '../../wallet/ConnectWallet';
+import { ConnectWallet } from '../../components/wallet/ConnectWallet';
 import { useEnforceChain } from '../../hooks/useForceChainId';
 import { useTokens } from '../../hooks/useTokens';
 

@@ -21,7 +21,7 @@ const LandingPage = () => {
                     </p>
                 </div>
                 <div className={styles.buttonContainer}>
-                    <Link to="/dashboard/home" className={styles.enterButtonLink}>
+                    <Link to="/dashboard/" className={styles.enterButtonLink}>
                         <button className={styles.enterButton}>
                             <span className={styles.buttonText}>Enter Dashboard</span>
                             <span className={styles.buttonArrow}>→</span>

@@ -165,7 +165,7 @@ export const ExploreGrid: React.FC = () => {
                                 className={styles.coinCard}
                                 onClick={() => {
                                     setCoin(coin);
-                                    navigate(`/dashboard/trade/${coin.name}`);
+                                    navigate(`/dashboard/explore/${coin.tokenId}/trade`);
                                 }}
                             >
                                 <div className={styles.tokenDetails}>
@@ -230,7 +230,7 @@ export const ExploreGrid: React.FC = () => {
                                         <p
                                             onClick={e => {
                                                 e.preventDefault();
-                                                navigate(`/dashboard/trade/${coin.tokenId}`);
+                                                navigate(`/dashboard/explore/${coin.tokenId}/trade`);
                                             }}
                                         >
                                             Trade Now

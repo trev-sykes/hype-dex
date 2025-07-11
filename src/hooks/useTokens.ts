@@ -1,44 +1,19 @@
 import pThrottle from 'p-throttle';
 import { useEffect, useCallback, useState } from 'react';
 import { useTokenStore } from '../store/allTokensStore';
-import request, { gql } from 'graphql-request';
+import request from 'graphql-request';
 import { useInfiniteQuery } from 'wagmi/query';
 import { convertToIpfsUrl, fetchIpfsMetadata } from '../utils/ipfs';
 import { fetchAllTokenIds, fetchTokenMetadataRange, fetchTokenPrice } from './useContractRead';
+import type { TokensQueryResult } from '../types/token';
+import { tokenCreatedQuery } from '../graphQl/tokenCreatedQuery';
 
 const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
-interface TokenCreated {
-    id: string;
-    tokenId: string;
-    name: string;
-    symbol: string;
-    blockTimestamp: string;
-
-}
-
-interface TokensQueryResult {
-    pages: any;
-    tokenCreateds: TokenCreated[];
-}
-
-const PAGE_SIZE = 20;
-
-const tokenCreatedQuery = gql`
-  query Tokens($first: Int!, $skip: Int!) {
-    tokenCreateds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc) {
-      id
-      tokenId
-      name
-      symbol
-      blockTimestamp
-    }
-  }
-`;
-
-const throttledFetchIpfsMetadata = pThrottle({ limit: 5, interval: 1000 })(fetchIpfsMetadata);
-const throttledFetchPrice = pThrottle({ limit: 100, interval: 1000 })(fetchTokenPrice);
+const PAGE_SIZE = 10;
+const throttledFetchIpfsMetadata = pThrottle({ limit: 5, interval: 10000 })(fetchIpfsMetadata);
+const throttledFetchPrice = pThrottle({ limit: 10, interval: 10000 })(fetchTokenPrice);
 
 export function useTokens(tokenId?: string) {
     const { tokens, hydrated, setTokens, updateToken, clearTokens } = useTokenStore();
@@ -67,7 +42,7 @@ export function useTokens(tokenId?: string) {
         },
         initialPageParam: 0,
         enabled: !tokenId,
-        refetchInterval: 10000,
+        refetchInterval: 60000,
         refetchOnWindowFocus: false,
     });
     // Flatten all tokens fetched across pages
@@ -135,7 +110,7 @@ export function useTokens(tokenId?: string) {
                 const tokenIds: any = await fetchAllTokenIds();
                 const metadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
 
-                const batchSize = 50;
+                const batchSize = 10;
                 for (let i = 0; i < tokensToFetch.length; i += batchSize) {
                     const batch = tokensToFetch.slice(i, i + batchSize);
 

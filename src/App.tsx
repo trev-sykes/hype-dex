@@ -25,11 +25,11 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route path='/dashboard/home' element={<DashboardHome />} />
+              <Route path='/dashboard/' element={<DashboardHome />} />
               <Route path="/dashboard/explore" element={<ExploreGrid />} />
               <Route path="/dashboard/create" element={<CreateTokenForm />} />
               <Route path="/dashboard/explore/:tokenId" element={<CoinInfo />} />
-              <Route path="/dashboard/trade/:tokenName" element={<TradePage />} />
+              <Route path="/dashboard/explore/:tokenId/trade" element={<TradePage />} />
 
             </Route>
           </Routes>

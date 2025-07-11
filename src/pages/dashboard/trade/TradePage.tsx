@@ -170,7 +170,7 @@ export const TradePage: React.FC = () => {
               </Link>
             </div>
 
-            <TokenCandlestickChart isTradeMode={true} trades={trades} interval={300} tokenId={tokenId} />
+            <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
             <div className={styles.tradeCompact}>
               <div className={styles.tradeHeader}>
                 <div className={styles.tradeModeIndicator}>

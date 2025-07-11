@@ -7,8 +7,7 @@ export const ExploreButton: React.FC = () => {
     return (
         <div className={styles.exploreButtonContainer}>
             <Link className={styles.exploreButton} to={"/dashboard/explore"}>
-                <MoveLeftIcon />
-                <span>Back to Explore</span>
+                <MoveLeftIcon /><span>Explore</span>
             </Link>
         </div>
     )

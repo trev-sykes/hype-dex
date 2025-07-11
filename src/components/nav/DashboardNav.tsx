@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import styles from './DashboardNav.module.css';
 import { Profile } from '../profile/Profile';
-import Logo from '../components/logo/Logo';
+import Logo from '../logo/Logo';
 
 const DashboardNav: React.FC = () => {
     const [isCollapsed, setIsCollapsed] = useState(true);
@@ -28,7 +28,7 @@ const DashboardNav: React.FC = () => {
             <div className={`${styles.navContent} ${isCollapsed ? styles.hidden : ''}`}>
                 <Logo background={true} size={'4rem'} />
                 <div className={styles.navLinks}>
-                    <NavLink to="/dashboard/home" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>Home</NavLink>
+                    <NavLink to="/dashboard/" end className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>Home</NavLink>
                     <NavLink to="/dashboard/explore" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>Explore</NavLink>
                     <NavLink to="/dashboard/create" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>Create</NavLink>
                 </div>
