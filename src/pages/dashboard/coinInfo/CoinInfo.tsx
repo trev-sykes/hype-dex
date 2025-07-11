@@ -7,7 +7,7 @@ import { ExploreButton } from '../../../components/button/backToExplore/ExploreB
 import { useUserTokenBalance } from '../../../hooks/useUserBalance';
 import styles from './CoinInfo.module.css';
 import { Minus, Plus } from 'lucide-react';
-import { BuySell } from './buySell';
+import { BuySell } from './BuySell';
 
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 
