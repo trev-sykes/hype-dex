@@ -12,8 +12,8 @@ const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
 const PAGE_SIZE = 50;
-const throttledFetchIpfsMetadata = pThrottle({ limit: 5, interval: 10000 })(fetchIpfsMetadata);
-const throttledFetchPrice = pThrottle({ limit: 10, interval: 10000 })(fetchTokenPrice);
+const throttledFetchIpfsMetadata = pThrottle({ limit: 50, interval: 10000 })(fetchIpfsMetadata);
+const throttledFetchPrice = pThrottle({ limit: 50, interval: 10000 })(fetchTokenPrice);
 
 export function useTokens(tokenId?: string) {
     const { tokens, hydrated, setTokens, updateToken, clearTokens } = useTokenStore();
@@ -110,7 +110,7 @@ export function useTokens(tokenId?: string) {
                 const tokenIds: any = await fetchAllTokenIds();
                 const metadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
 
-                const batchSize = 10;
+                const batchSize = 50;
                 for (let i = 0; i < tokensToFetch.length; i += batchSize) {
                     const batch = tokensToFetch.slice(i, i + batchSize);
 
