@@ -1,4 +1,6 @@
 .container {
+    min-height: 100vh;
+    /* Add this */
     width: 100%;
     margin: 0 auto;
     padding: 2rem 1rem;
@@ -8,14 +10,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
+    /* Center content vertically */
 }
 
 .left {
-    flex: 0 0 auto;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-
+    flex-direction: column;
+    /* Helps on mobile */
 }
 
 .cContainer {
@@ -205,6 +210,12 @@
 }
 
 @media (max-width: 500px) {
+    .container {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
     .tradeCompact {
         padding: 1rem;
         width: 99.7%;

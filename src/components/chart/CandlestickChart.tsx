@@ -8,6 +8,7 @@ import { formatEther } from 'ethers';
 import { useUserTokenBalance } from '../../hooks/useUserBalance';
 import { useTradeStore } from '../../store/tradeStore';
 import { useTokenPriceData } from '../../hooks/useTokenPriceData';
+import { Link } from 'react-router-dom';
 
 interface Trade {
     tokenId: bigint;
@@ -348,10 +349,10 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
             {!isLoading && (
                 <>
                     <div className={styles.controls}>
-                        <div className={styles.assetInfo}>
+                        <Link to={`/dashboard/explore/${coin?.tokenId}`} className={styles.assetInfo}>
                             <img src={coin?.imageUrl} alt={coin?.name} className={styles.image} />
-                            <span className={styles.symbol}>${coin?.symbol}</span>
-                        </div>
+                            <span className={styles.symbol}>{coin?.symbol}</span>
+                        </Link>
 
                         <div className={styles.intervalControl}>
                             {viewportWidth > 374 && (

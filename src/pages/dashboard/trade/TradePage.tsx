@@ -5,8 +5,7 @@ import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import styles from './TradePage.module.css';
 import { useCoinStore } from '../../../store/coinStore';
-import { Info, RotateCwIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { RotateCwIcon } from 'lucide-react';
 import TokenCandlestickChart from '../../../components/chart/CandlestickChart';
 import { useTokenActivity } from '../../../hooks/useTokenActivity';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
@@ -163,13 +162,6 @@ export const TradePage: React.FC = () => {
         <div className={styles.left}>
           <div className={styles.cContainer}>
             <ExploreButton />
-            <div className={styles.header}>
-              <h2 className={styles.title}>Trade {coin?.name}</h2>
-              <Link to={`/dashboard/explore/${coin?.tokenId}`}>
-                <Info size={20} />
-              </Link>
-            </div>
-
             <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
             <div className={styles.tradeCompact}>
               <div className={styles.tradeHeader}>
