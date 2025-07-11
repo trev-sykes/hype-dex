@@ -11,7 +11,7 @@ import { tokenCreatedQuery } from '../graphQl/tokenCreatedQuery';
 const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 50;
 const throttledFetchIpfsMetadata = pThrottle({ limit: 5, interval: 10000 })(fetchIpfsMetadata);
 const throttledFetchPrice = pThrottle({ limit: 10, interval: 10000 })(fetchTokenPrice);
 
