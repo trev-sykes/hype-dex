@@ -6,7 +6,7 @@ import { FadeLoader } from 'react-spinners';
 import { formatEther } from 'ethers';
 import { useTradeStore } from '../../store/tradeStore';
 import { useTokenPriceData } from '../../hooks/useTokenPriceData';
-import { useWitdh } from '../../hooks/useWidth';
+// import { useWitdh } from '../../hooks/useWidth';
 
 interface Trade {
     tokenId: bigint;
@@ -25,7 +25,7 @@ interface Props {
 
 export default function TransparentLineChart({ trades, interval = 3600 }: Props) {
     const { coin } = useCoinStore();
-    const viewportWidth = useWitdh();
+    // const viewportWidth = useWitdh();
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const lineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
