@@ -143,6 +143,7 @@ export const CoinInfo: React.FC = () => {
                             <div className={styles.tokenIdentity}>
                                 About {coin.name}
                             </div>
+                            <div className={styles.tokenTitle}>Description</div>
                             {coin.description && (
                                 <p className={styles.description}>{coin.description}</p>
                             )}

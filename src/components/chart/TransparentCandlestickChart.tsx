@@ -6,7 +6,6 @@ import { FadeLoader } from 'react-spinners';
 import { formatEther } from 'ethers';
 import { useTradeStore } from '../../store/tradeStore';
 import { useTokenPriceData } from '../../hooks/useTokenPriceData';
-// import { useWitdh } from '../../hooks/useWidth';
 
 interface Trade {
     tokenId: bigint;
@@ -25,7 +24,6 @@ interface Props {
 
 export default function TransparentLineChart({ trades, interval = 3600 }: Props) {
     const { coin } = useCoinStore();
-    // const viewportWidth = useWitdh();
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const lineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
@@ -60,6 +58,22 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
         return buckets;
     };
 
+    // Helper function to ensure unique timestamps and proper sorting
+    const processDataForChart = (data: { time: number; value: number }[]) => {
+        // Remove duplicates and sort by time
+        const uniqueData = new Map<number, number>();
+
+        data.forEach(item => {
+            // For duplicate timestamps, keep the last value (most recent)
+            uniqueData.set(item.time, item.value);
+        });
+
+        // Convert back to array and sort by time
+        return Array.from(uniqueData.entries())
+            .map(([time, value]) => ({ time, value }))
+            .sort((a, b) => a.time - b.time);
+    };
+
     const updateChartData = useCallback(
         (trades: Trade[], interval: number) => {
             setIsLoading(true);
@@ -74,23 +88,111 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                     const now: any = Math.floor(Date.now() / 1000);
                     const bucket: any = interval === -1 ? now : Math.floor(now / interval) * interval;
                     const currentPrice: any = typeof price === 'bigint' ? Number(formatEther(price)) : price;
-                    lineSeriesRef.current.setData([{ time: bucket, value: currentPrice }]);
+                    const data: any = [{ time: bucket, value: currentPrice }];
+
+                    // Process data to ensure uniqueness
+                    const processedData: any = processDataForChart(data);
+                    lineSeriesRef.current.setData(processedData);
+
+                    // Add marker for current price
+                    lineSeriesRef.current.setMarkers([
+                        {
+                            time: bucket,
+                            position: 'aboveBar',
+                            color: '#2196f3',
+                            shape: 'circle',
+                            text: `${currentPrice.toFixed(6)}`,
+                            size: 0,
+                        },
+                    ]);
+
+                    chartRef.current?.timeScale().fitContent();
+                    setIsLoading(false);
+                    return;
                 } else {
                     lineSeriesRef.current.setData([]);
+                    lineSeriesRef.current.setMarkers([]);
+                    setIsLoading(false);
+                    return;
                 }
-                setIsLoading(false);
-                return;
             }
 
             if (interval === -1) {
-                // Show all trades as points on the line chart
                 setShowSparseDataWarning(false);
-                const allTimeData: any = trades
+                const allTimeData = trades
                     .filter((trade) => isFinite(trade.price))
-                    .map((trade) => ({ time: trade.timestamp, value: trade.price }))
-                    .sort((a, b) => a.time - b.time);
+                    .map((trade) => ({ time: trade.timestamp, value: trade.price }));
 
-                lineSeriesRef.current.setData(allTimeData);
+                // Process data to remove duplicates and ensure proper sorting
+                const processedData: any = processDataForChart(allTimeData);
+
+                if (processedData.length === 0) {
+                    lineSeriesRef.current.setData([]);
+                    lineSeriesRef.current.setMarkers([]);
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Find high and low
+                const high = Math.max(...processedData.map((d: any) => d.value));
+                const low = Math.min(...processedData.map((d: any) => d.value));
+                const currentPrice = price
+                    ? typeof price === 'bigint'
+                        ? Number(formatEther(price))
+                        : price
+                    : processedData[processedData.length - 1].value;
+
+                // Find timestamps for high and low
+                const highPoint = processedData.find((d: any) => d.value === high);
+                const lowPoint = processedData.find((d: any) => d.value === low);
+                const currentPoint = processedData[processedData.length - 1];
+
+                // Set data
+                lineSeriesRef.current.setData(processedData);
+
+                // Set markers for high, low, and current price
+                const markers: any[] = [];
+
+                if (highPoint && high !== currentPrice) {
+                    markers.push({
+                        time: highPoint.time,
+                        position: 'aboveBar',
+                        color: '#4caf50',
+                        shape: 'none',
+                        text: `${high.toFixed(6)}`,
+                        size: 0,
+                    });
+                }
+
+                if (lowPoint && low !== currentPrice) {
+                    markers.push({
+                        time: lowPoint.time,
+                        position: 'belowBar',
+                        color: '#f44336',
+                        shape: 'none',
+                        text: `${low.toFixed(6)}`,
+                        size: 0,
+                    });
+                }
+
+                const isCurrentMarkerDuplicate =
+                    (high === currentPrice && highPoint?.time === currentPoint?.time) ||
+                    (low === currentPrice && lowPoint?.time === currentPoint?.time);
+
+                if (currentPoint && price && !isCurrentMarkerDuplicate) {
+                    markers.push({
+                        time: currentPoint.time,
+                        position: 'aboveBar',
+                        color: '#404040',
+                        shape: 'none',
+                        text: `${currentPrice.toFixed(6)}`,
+                        size: 0,
+                    });
+                }
+
+                // Sort markers by time
+                markers.sort((a, b) => a.time - b.time);
+                lineSeriesRef.current.setMarkers(markers);
                 chartRef.current?.timeScale().fitContent();
                 setIsLoading(false);
                 return;
@@ -98,7 +200,6 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
 
             const buckets = aggregateBuckets(trades, interval);
 
-            // If too sparse (less than 2 buckets), fallback to all time view
             if (Object.keys(buckets).length < 2) {
                 setShowSparseDataWarning(true);
                 updateChartData(trades, -1);
@@ -107,28 +208,82 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 setShowSparseDataWarning(false);
             }
 
-            const data: any = Object.entries(buckets)
+            const data = Object.entries(buckets)
                 .map(([timeStr, bucketData]) => ({
                     time: Number(timeStr),
                     value: bucketData.total / bucketData.count,
-                }))
-                .sort((a, b) => a.time - b.time);
+                }));
 
-            // Optionally add current price as last point if relevant
+            // Add current price as last point if relevant
             if (price && data.length > 0) {
-                const now: any = Math.floor(Date.now() / 1000);
-                const currentBucket: any = Math.floor(now / interval) * interval;
+                const now = Math.floor(Date.now() / 1000);
+                const currentBucket = Math.floor(now / interval) * interval;
                 const currentPrice: any = typeof price === 'bigint' ? Number(formatEther(price)) : price;
 
-                const lastPoint = data[data.length - 1];
-                if (lastPoint.time === currentBucket) {
-                    data[data.length - 1] = { time: currentBucket, value: currentPrice };
-                } else {
-                    data.push({ time: currentBucket, value: currentPrice });
-                }
+                // Add or update current price point
+                data.push({ time: currentBucket, value: currentPrice });
             }
 
-            lineSeriesRef.current.setData(data);
+            // Process data to ensure uniqueness and proper sorting
+            const processedData: any = processDataForChart(data);
+
+            if (processedData.length === 0) {
+                lineSeriesRef.current.setData([]);
+                lineSeriesRef.current.setMarkers([]);
+                setIsLoading(false);
+                return;
+            }
+
+            // Find high and low
+            const high = Math.max(...processedData.map((d: any) => d.value));
+            const low = Math.min(...processedData.map((d: any) => d.value));
+            const highPoint = processedData.find((d: any) => d.value === high);
+            const lowPoint = processedData.find((d: any) => d.value === low);
+            const currentPoint = processedData[processedData.length - 1];
+
+            // Set data
+            lineSeriesRef.current.setData(processedData);
+
+            // Set markers for high, low, and current price
+            const markers: any[] = [];
+            const currentPrice: any = price ? (typeof price === 'bigint' ? Number(formatEther(price)) : price) : null;
+
+            if (highPoint && currentPrice !== high) {
+                markers.push({
+                    time: highPoint.time,
+                    position: 'aboveBar',
+                    color: '#404040',
+                    shape: 'none',
+                    text: `${high.toFixed(4)}`,
+                    size: 0,
+                });
+            }
+
+            if (lowPoint && currentPrice !== low) {
+                markers.push({
+                    time: lowPoint.time,
+                    position: 'belowBar',
+                    color: '#404040',
+                    shape: 'none',
+                    text: `${low.toFixed(4)}`,
+                    size: 0,
+                });
+            }
+
+            if (currentPoint && currentPrice) {
+                markers.push({
+                    time: currentPoint.time,
+                    position: 'aboveBar',
+                    color: '#404040',
+                    shape: 'none',
+                    text: `${currentPrice.toFixed(4)}`,
+                    size: 0,
+                });
+            }
+
+            // Sort markers by time
+            markers.sort((a, b) => a.time - b.time);
+            lineSeriesRef.current.setMarkers(markers);
             chartRef.current?.timeScale().fitContent();
             setIsLoading(false);
         },

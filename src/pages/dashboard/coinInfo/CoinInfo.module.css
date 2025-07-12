@@ -591,6 +591,12 @@
     margin-bottom: 1rem;
 }
 
+.tokenTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1rem 1.5rem;
+}
+
 .balanceInfo {
     display: flex;
     flex-direction: column;
