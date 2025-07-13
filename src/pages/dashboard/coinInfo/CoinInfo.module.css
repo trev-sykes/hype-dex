@@ -6,7 +6,7 @@
     margin: 0 auto;
     font-family: var(--font-family-text);
     color: var(--color-neutral-900);
-    background: linear-gradient(135deg, white, var(--color-neutral-100));
+    background: none;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -434,7 +434,8 @@
 /* Mobile (≤ 480px) */
 @media (max-width: 480px) {
     .container {
-        padding: 1.5rem 1rem;
+        padding: 0;
+        background: none;
     }
 
     .headerSection {
@@ -505,7 +506,7 @@
 /* Extra small screens (≤ 360px) */
 @media (max-width: 360px) {
     .container {
-        padding: 1rem 0.75rem;
+        padding: 0;
     }
 
     .headerSection {
@@ -710,7 +711,6 @@
     box-shadow: 0 6px 20px rgba(28, 103, 168, 0.2);
 }
 
-/* Modal Backdrop */
 .modalBackdrop {
     position: fixed;
     top: 0;
@@ -720,18 +720,24 @@
     background: rgba(0, 0, 0, 0.4);
     z-index: 50;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    /* CENTER vertically */
     justify-content: center;
+    /* CENTER horizontally */
+    padding: 16px;
+    /* Inset spacing for smaller screens */
 }
 
-/* Bottom Sheet */
+/* Centered Modal */
 .modalSheet {
     background: var(--color-neutral-100);
-    border-radius: 16px 16px 0 0;
+    /* Optional: apply background here */
+    border-radius: 16px;
+    max-width: 420px;
     width: 100%;
     padding: 24px;
-    animation: slideUp 0.3s ease-out forwards;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+    animation: fadeInScale 0.25s ease-out forwards;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes slideUp {

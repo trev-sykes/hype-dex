@@ -21,18 +21,18 @@ export const useUserTokenBalance = () => {
         args: address && coin?.tokenId ? [address, coin.tokenId] : undefined,
     });
 
-    const balance = data as bigint | undefined;
-    const balanceEth = balance ? Number(formatUnits(balance, decimals)) : 0;
+    const tokenBalance = data as bigint | undefined;
+    const balanceEth = tokenBalance ? Number(formatUnits(tokenBalance, decimals)) : 0;
     const coinPriceEth = coin?.price ? Number(formatUnits(coin.price, 18)) : undefined; // price in ETH wei format
 
     const totalValueEth =
-        balance && coin?.price
+        tokenBalance && coin?.price
             ? balanceEth * coinPriceEth!
             : undefined;
 
 
     return {
-        balance,
+        tokenBalance,
         balanceEth,
         totalValueEth,
         isLoading,

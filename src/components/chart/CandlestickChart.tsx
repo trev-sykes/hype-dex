@@ -3,9 +3,7 @@ import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import styles from './CandlestickChart.module.css';
 import { useCoinStore } from '../../store/coinStore';
 import { useWitdh } from '../../hooks/useWidth';
-import { FadeLoader } from 'react-spinners';
 import { formatEther } from 'ethers';
-import { useUserTokenBalance } from '../../hooks/useUserBalance';
 import { useTradeStore } from '../../store/tradeStore';
 import { useTokenPriceData } from '../../hooks/useTokenPriceData';
 import { Link } from 'react-router-dom';
@@ -27,7 +25,6 @@ interface Props {
 
 export default function CandlestickChartWithTradeView({ trades, interval = 3600 }: Props) {
     const { coin } = useCoinStore();
-    const { balance }: any = useUserTokenBalance();
     const viewportWidth = useWitdh();
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -57,9 +54,6 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
             timeout = setTimeout(func, wait);
         };
     };
-    // Replace the current updateChartData function with this improved version
-    // Replace the current updateChartData function with this improved version
-
     const updateChartData = useCallback(
         (trades: Trade[], interval: number) => {
             setIsLoading(true);
@@ -402,22 +396,6 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
                                 </svg>
                             </label>
                             <div className={styles.priceContainer}>
-                                {!isLoading ? (
-                                    <>
-                                        <span className={styles.priceLabel}>Price:</span>
-                                        <span className={styles.priceValue}>
-                                            {price ? `${typeof (price) == 'bigint' ? formatEther(price) : price} ETH` : '—'}
-                                        </span>
-                                        <p className={styles.priceLabel}>
-                                            Your Balance: <span className={styles.priceValue}>{balance} {coin?.symbol}</span>
-                                        </p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <FadeLoader />
-                                    </>
-                                )}
-
                             </div>
                         </div>
                     </div>

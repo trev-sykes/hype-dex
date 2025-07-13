@@ -3,7 +3,7 @@ import { useCoinStore } from "../../../store/coinStore";
 import styles from "./BuySell.module.css";
 import { Plus, Minus } from "lucide-react";
 import { useEffect, useRef, useState } from 'react';
-import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
@@ -24,8 +24,9 @@ export const BuySell: React.FC<BuySellProps> = ({ tradeStep, onCancel }) => {
     const { address } = useAccount();
     const { refetch } = useTokens();
     const { setAlert } = useAlertStore();
-    const { refetchBalance }: any = useUserTokenBalance();
+    const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
     const { refetchAll } = useTokenPriceData();
+    const ethBalance = useBalance({ address });
 
     const isBuy = tradeStep === "buy";
 
@@ -182,6 +183,7 @@ export const BuySell: React.FC<BuySellProps> = ({ tradeStep, onCancel }) => {
             />
 
             <div className={styles.actions}>
+                {/* Buttons */}
                 <button
                     className={styles.confirmButton}
                     disabled={Number(amount) <= 0 || amount.trim() === ""}
@@ -198,7 +200,38 @@ export const BuySell: React.FC<BuySellProps> = ({ tradeStep, onCancel }) => {
                 >
                     Cancel
                 </button>
+
+                {/* Estimations & Errors */}
+                <div className={styles.calculationPreview}>
+                    {isBuy ? (
+                        <>
+                            <p>Your ETH Balance: <strong>{Number(ethBalance.data?.formatted || 0).toFixed(4)} ETH</strong></p>
+                            {amount !== "" && parseEther(amount) > (ethBalance.data?.value ?? 0n) ? (
+                                <p className={styles.errorText}>Insufficient ETH for this purchase</p>
+                            ) : mintEstimation ? (
+                                <>
+                                    <p>You will receive: <strong>{mintEstimation.tokensToMint}</strong> tokens</p>
+                                    <p>Total cost: <strong>{mintEstimation.totalCostETH.toFixed(6)}</strong> ETH</p>
+                                    <p>Refund: <strong>{mintEstimation.refundETH.toFixed(6)}</strong> ETH</p>
+                                </>
+                            ) : null}
+                        </>
+                    ) : (
+                        <>
+                            <p>Your Token Balance: <strong>{tokenBalance} {coin?.symbol}</strong></p>
+                            {amount !== "" && Number(amount) > tokenBalance ? (
+                                <p className={styles.errorText}>Insufficient balance to sell that many tokens</p>
+                            ) : burnEstimation ? (
+                                <>
+                                    <p>You will receive: <strong>{burnEstimation.ethToReceive.toFixed(6)}</strong> ETH</p>
+                                    <p>Tokens to burn: <strong>{burnEstimation.burnAmount}</strong></p>
+                                </>
+                            ) : null}
+                        </>
+                    )}
+                </div>
             </div>
+
         </div>
     );
 };

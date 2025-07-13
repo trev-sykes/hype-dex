@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { parseEther, formatEther } from 'viem';
-import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import styles from './TradePage.module.css';
@@ -11,7 +11,6 @@ import { useTokenActivity } from '../../../hooks/useTokenActivity';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
 import { useUserTokenBalance } from '../../../hooks/useUserBalance';
-import { FadeLoader } from 'react-spinners';
 import { useTokens } from '../../../hooks/useTokens';
 import { useTokenPriceData } from '../../../hooks/useTokenPriceData';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
@@ -21,8 +20,9 @@ export const TradePage: React.FC = () => {
   const { coin } = useCoinStore();
   const { refetch } = useTokens();
   const { setAlert } = useAlertStore();
-  const { refetchBalance, balance, isLoading }: any = useUserTokenBalance();
-  const { refetchAll, reserve, totalSupply } = useTokenPriceData();
+  const balance = useBalance({ address });
+  const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
+  const { refetchAll } = useTokenPriceData();
   const [ethInput, setEthInput] = useState('');
   const [burnAmount, setBurnAmount] = useState('');
   const [isSellActive, setIsSellActive] = useState<boolean>(false);
@@ -37,6 +37,9 @@ export const TradePage: React.FC = () => {
 
   const mintEstimation = useMintEstimation(tokenId, ethInput);
   const burnEstimation = useBurnEstimation(tokenId, burnAmount)
+  console.log("Balance data", balance.data);
+  console.log("Balance value (bigint)", balance.data?.value);
+  console.log("Balance formatted", balance.data?.formatted);
 
 
   const { data: isOperator } = useReadContract({
@@ -179,50 +182,68 @@ export const TradePage: React.FC = () => {
                   </div>
                 </div>
               </div>
+              <p className={styles.balanceText}>
+                {isSellActive
+                  ? `${tokenBalance} ${coin?.symbol}`
+                  : `${balance.data ? Number(formatEther(balance.data.value)).toFixed(4) : '0'} ETH`}
+              </p>
               <div className={styles.tradeBox}>
                 <input
                   type="number"
                   placeholder={isSellActive ? 'Enter token amount' : 'Enter ETH amount'}
                   className={styles.inputCompact}
                   value={isSellActive ? burnAmount : ethInput}
-                  onChange={(e) => (isSellActive ? setBurnAmount(e.target.value) : setEthInput(e.target.value))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    if (isSellActive) {
+                      // Allow only whole numbers or empty string
+                      if (/^\d*$/.test(value)) {
+                        setBurnAmount(value);
+                      }
+                    } else {
+                      // Allow decimals when buying
+                      setEthInput(value);
+                    }
+                  }}
+                  step={isSellActive ? "1" : "any"}
+                  min="0"
                 />
+
                 <button
                   className={`${styles.buttonCompact} ${isSellActive ? styles.sell : ''}`}
                   onClick={isSellActive ? handleBurn : handleMint}
-                  disabled={isPending}
+                  disabled={
+                    isPending ||
+                    !balance.data?.value ||
+                    (ethInput !== '' && balance.data.value < parseEther(ethInput)) ||
+                    (burnAmount !== '' && tokenBalance < Number(burnAmount))
+                  }
                 >
-                  {isPending
-                    ? '...'
-                    : isSellActive
-                      ? 'Sell'
-                      : 'Buy'}
+                  {isPending ? '...' : isSellActive ? 'Sell' : 'Buy'}
                 </button>
               </div>
+
             </div>
-            {/* <p>{ethPrice && (<p>ETH Price: ${ethPrice}</p>)}</p> */}
             {mintEstimation && !isSellActive && (
               <div className={styles.calculationPreview}>
-                <p>
-                  You will receive: <strong>{mintEstimation.tokensToMint}</strong> tokens
-                </p>
-                <p>
-                  Total cost: <strong>{mintEstimation.totalCostETH.toFixed(6)}</strong> ETH
-                </p>
-                <p>
-                  Refund: <strong>{mintEstimation.refundETH.toFixed(6)}</strong> ETH
-                </p>
+                {ethInput !== '' && parseEther(ethInput) > (balance.data?.value ?? 0n) ? (
+                  <p className={styles.errorText}>Insufficient ETH for this purchase</p>
+                ) : (
+                  <>
+                    <p>You will receive: <strong>{mintEstimation.tokensToMint}</strong> tokens</p>
+                    <p>Total cost: <strong>{mintEstimation.totalCostETH.toFixed(6)}</strong> ETH</p>
+                    <p>Refund: <strong>{mintEstimation.refundETH.toFixed(6)}</strong> ETH</p>
+                  </>
+                )}
               </div>
             )}
-            {burnEstimation && isSellActive && (
+
+            {isSellActive && (
               <div className={styles.calculationPreview}>
-                {balance < burnAmount && (
-                  <p>Insufficient balance</p>
-                )}
-                <p>
-                  Your Balance: <strong>{balance} {coin?.symbol}</strong>
-                </p>
-                {balance >= burnAmount && (
+                {burnAmount !== '' && Number(burnAmount) > tokenBalance ? (
+                  <p className={styles.errorText}>Insufficient balance to sell that many tokens</p>
+                ) : burnEstimation ? (
                   <>
                     <p>
                       You will receive: <strong>{burnEstimation.ethToReceive.toFixed(6)}</strong> ETH
@@ -231,26 +252,16 @@ export const TradePage: React.FC = () => {
                       Tokens to burn: <strong>{burnEstimation.burnAmount}</strong>
                     </p>
                   </>
-                )}
+                ) : burnAmount !== '' ? (
+                  <p className={styles.errorText}>Invalid or uncalculable burn estimation</p>
+                ) : null}
               </div>
             )}
+
+
           </div>
         </div>
       </div >
-      {trades.length > 0 &&
-        <div className={styles.stats}>
-          {!isLoading ? (
-            <>
-              <p>Total Supply: {totalSupply?.toString() ?? '—'}</p>
-              <p>Reserve: {reserve ? `${typeof (reserve) == 'bigint' ? formatEther(reserve) : reserve} ETH` : '—'}</p>
-            </>
-          ) : (
-            <div className={styles.fadeLoader}>
-              <FadeLoader width={10} />
-            </div>
-          )}
-
-        </div>}
       <TradeHistoryTable coin={coin} />
     </>
   );

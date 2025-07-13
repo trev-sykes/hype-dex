@@ -27,6 +27,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const lineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+    const areaSeriesRef = useRef<ISeriesApi<'Area'> | null>(null);
     const [selectedInterval, setSelectedInterval] = useState(interval);
     const [isChartInitialized, setIsChartInitialized] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -93,6 +94,8 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                     // Process data to ensure uniqueness
                     const processedData: any = processDataForChart(data);
                     lineSeriesRef.current.setData(processedData);
+                    areaSeriesRef.current?.setData(processedData);
+
 
                     // Add marker for current price
                     lineSeriesRef.current.setMarkers([
@@ -119,12 +122,40 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
 
             if (interval === -1) {
                 setShowSparseDataWarning(false);
+
+                // Filter trades and map to {time, value}
                 const allTimeData = trades
                     .filter((trade) => isFinite(trade.price))
                     .map((trade) => ({ time: trade.timestamp, value: trade.price }));
 
-                // Process data to remove duplicates and ensure proper sorting
-                const processedData: any = processDataForChart(allTimeData);
+                // Process data: unique timestamps and sorted
+                let processedData: any = processDataForChart(allTimeData);
+
+                const currentPrice: any = price
+                    ? (typeof price === 'bigint' ? Number(formatEther(price)) : price)
+                    : null;
+
+                if (currentPrice !== null) {
+                    // Check if current price is newer than last point or higher than max price
+                    const maxPrice = processedData.length > 0 ? Math.max(...processedData.map((d: any) => d.value)) : -Infinity;
+
+                    // If current price is more recent or higher than any historical data, add/update it
+                    if (processedData.length === 0 || currentPrice > maxPrice || currentPrice >= processedData[processedData.length - 1].value) {
+                        if (processedData.length > 0 && processedData[processedData.length - 1].time === Math.floor(Date.now() / 1000)) {
+                            // Replace last point if same timestamp (to avoid duplicates)
+                            processedData[processedData.length - 1] = {
+                                time: Math.floor(Date.now() / 1000),
+                                value: currentPrice,
+                            };
+                        } else {
+                            // Otherwise, append current price as new point with current time
+                            processedData.push({
+                                time: Math.floor(Date.now() / 1000),
+                                value: currentPrice,
+                            });
+                        }
+                    }
+                }
 
                 if (processedData.length === 0) {
                     lineSeriesRef.current.setData([]);
@@ -136,62 +167,58 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 // Find high and low
                 const high = Math.max(...processedData.map((d: any) => d.value));
                 const low = Math.min(...processedData.map((d: any) => d.value));
-                const currentPrice = price
-                    ? typeof price === 'bigint'
-                        ? Number(formatEther(price))
-                        : price
-                    : processedData[processedData.length - 1].value;
 
-                // Find timestamps for high and low
-                const highPoint = processedData.find((d: any) => d.value === high);
-                const lowPoint = processedData.find((d: any) => d.value === low);
+                // Find high and low points
+                const highPoints = processedData.filter((d: any) => d.value === high);
+                const lowPoints = processedData.filter((d: any) => d.value === low);
+                // Take latest high and low points for marker placement
+                const highPoint = highPoints[highPoints.length - 1];
+                const lowPoint = lowPoints[lowPoints.length - 1];
                 const currentPoint = processedData[processedData.length - 1];
 
-                // Set data
+                // Set chart data
                 lineSeriesRef.current.setData(processedData);
+                areaSeriesRef.current?.setData(processedData);
 
-                // Set markers for high, low, and current price
+                // Setup markers
                 const markers: any[] = [];
 
-                if (highPoint && high !== currentPrice) {
+                if (highPoint && currentPrice !== null && highPoint !== currentPrice) {
                     markers.push({
                         time: highPoint.time,
                         position: 'aboveBar',
-                        color: '#4caf50',
-                        shape: 'none',
-                        text: `${high.toFixed(6)}`,
-                        size: 0,
+                        color: '#26a69a',
+                        shape: 'arrowUp',
+                        text: `${high.toFixed(4)}`,
+                        size: 0, // visible size
                     });
                 }
 
-                if (lowPoint && low !== currentPrice) {
+                if (lowPoint && currentPrice !== null) {
                     markers.push({
                         time: lowPoint.time,
                         position: 'belowBar',
-                        color: '#f44336',
-                        shape: 'none',
-                        text: `${low.toFixed(6)}`,
+                        color: '#ef5350',
+                        shape: 'arrowDown',
+                        text: `${low.toFixed(4)}`,
                         size: 0,
                     });
                 }
 
-                const isCurrentMarkerDuplicate =
-                    (high === currentPrice && highPoint?.time === currentPoint?.time) ||
-                    (low === currentPrice && lowPoint?.time === currentPoint?.time);
-
-                if (currentPoint && price && !isCurrentMarkerDuplicate) {
+                if (currentPoint && currentPrice !== null) {
                     markers.push({
                         time: currentPoint.time,
                         position: 'aboveBar',
-                        color: '#404040',
-                        shape: 'none',
-                        text: `${currentPrice.toFixed(6)}`,
+                        color: '#2196f3',
+                        shape: 'circle',
+                        text: `${currentPrice.toFixed(4)}`,
                         size: 0,
                     });
                 }
 
-                // Sort markers by time
+                // Sort markers by time ascending
                 markers.sort((a, b) => a.time - b.time);
+
                 lineSeriesRef.current.setMarkers(markers);
                 chartRef.current?.timeScale().fitContent();
                 setIsLoading(false);
@@ -243,6 +270,8 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
 
             // Set data
             lineSeriesRef.current.setData(processedData);
+            areaSeriesRef.current?.setData(processedData);
+
 
             // Set markers for high, low, and current price
             const markers: any[] = [];
@@ -252,7 +281,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 markers.push({
                     time: highPoint.time,
                     position: 'aboveBar',
-                    color: '#404040',
+                    color: '#26a69a',
                     shape: 'none',
                     text: `${high.toFixed(4)}`,
                     size: 0,
@@ -263,7 +292,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 markers.push({
                     time: lowPoint.time,
                     position: 'belowBar',
-                    color: '#404040',
+                    color: '#ef5350',
                     shape: 'none',
                     text: `${low.toFixed(4)}`,
                     size: 0,
@@ -274,7 +303,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 markers.push({
                     time: currentPoint.time,
                     position: 'aboveBar',
-                    color: '#404040',
+                    color: '#2196f3',
                     shape: 'none',
                     text: `${currentPrice.toFixed(4)}`,
                     size: 0,
@@ -298,7 +327,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 const container = chartContainerRef.current!;
                 const chart = createChart(container, {
                     width: container.clientWidth,
-                    height: 500,
+                    height: 400,
                     layout: {
                         background: { color: 'transparent' },
                         textColor: '#171717',
@@ -311,11 +340,11 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                         timeVisible: false,
                         secondsVisible: true,
                         borderColor: '#1c67a8',
-                        barSpacing: 10,
+                        barSpacing: 1,
                         fixLeftEdge: true,
-                        fixRightEdge: true,
+                        fixRightEdge: false,
                         minBarSpacing: 1,
-                        rightOffset: 0,
+                        rightOffset: 2,
                         lockVisibleTimeRangeOnResize: true,
                     },
                     rightPriceScale: {
@@ -335,8 +364,21 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                         minMove: 0.000001,
                     },
                 });
-
+                // 1. Add the filled Area Series (gradient fill)
+                const areaSeries = chart.addAreaSeries({
+                    topColor: 'rgba(33, 150, 243, 0.4)',     // near the line
+                    bottomColor: 'rgba(33, 150, 243, 0.0)',  // fades out
+                    lineColor: '#2196f3',
+                    lineWidth: 2,
+                    priceLineVisible: false,
+                    priceFormat: {
+                        type: 'price',
+                        precision: 6,
+                        minMove: 0.000001,
+                    },
+                });
                 chartRef.current = chart;
+                areaSeriesRef.current = areaSeries;
                 lineSeriesRef.current = lineSeries;
 
                 const debouncedResize = debounce(() => {

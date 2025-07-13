@@ -130,7 +130,7 @@ export const CoinInfo: React.FC = () => {
                             />
                             <div className={styles.balanceInfo}>
                                 <p className={styles.balanceAmount}>{balanceEth} {coin.symbol}</p>
-                                <p className={styles.ethValue}>≈ {totalValueEth} ETH</p>
+                                <p className={styles.ethValue}>≈ {totalValueEth?.toFixed(4)} ETH</p>
                             </div>
                         </div>
                     </div>
