@@ -186,11 +186,17 @@ export const BuySell: React.FC<BuySellProps> = ({ tradeStep, onCancel }) => {
                 {/* Buttons */}
                 <button
                     className={styles.confirmButton}
-                    disabled={Number(amount) <= 0 || amount.trim() === ""}
+                    disabled={
+                        Number(amount) <= 0 ||
+                        amount.trim() === "" ||
+                        (isBuy && amount !== "" && parseEther(amount) > (ethBalance.data?.value ?? 0n)) ||
+                        (!isBuy && amount !== "" && Number(amount) > tokenBalance)
+                    }
                     onClick={handleConfirm}
                 >
                     Confirm {isBuy ? "Buy" : "Sell"}
                 </button>
+
                 <button
                     className={styles.cancelButton}
                     onClick={() => {
