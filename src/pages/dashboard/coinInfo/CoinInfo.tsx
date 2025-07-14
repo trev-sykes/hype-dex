@@ -250,7 +250,7 @@ export const CoinInfo: React.FC = () => {
             <ExploreButton />
 
             <div className={styles.chartWrapper}>
-                <TransparentCandlestickChart trades={trades} interval={300} tokenId={coin.tokenId} />
+                <TransparentCandlestickChart coin={coin} trades={trades} interval={300} tokenId={coin.tokenId} />
             </div>
 
             <div className={styles.tabBar}>

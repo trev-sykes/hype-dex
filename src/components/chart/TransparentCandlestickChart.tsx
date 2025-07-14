@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import styles from './TransparentCandlestickChart.module.css';
-import { useCoinStore } from '../../store/coinStore';
 import { FadeLoader } from 'react-spinners';
 import { formatEther } from 'ethers';
 import { useTradeStore } from '../../store/tradeStore';
@@ -17,13 +16,15 @@ interface Trade {
 }
 
 interface Props {
+    coin?: any;
     trades: Trade[];
     interval?: number;
     tokenId?: any;
+    width?: any;
+    height?: any;
 }
 
-export default function TransparentLineChart({ trades, interval = 3600 }: Props) {
-    const { coin } = useCoinStore();
+export default function TransparentLineChart({ coin, trades, interval = 3600, width, height }: Props) {
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const lineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
@@ -98,16 +99,18 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
 
 
                     // Add marker for current price
-                    lineSeriesRef.current.setMarkers([
-                        {
-                            time: bucket,
-                            position: 'aboveBar',
-                            color: '#2196f3',
-                            shape: 'circle',
-                            text: `${currentPrice.toFixed(6)}`,
-                            size: 0,
-                        },
-                    ]);
+                    if (!width && !height) {
+                        lineSeriesRef.current.setMarkers([
+                            {
+                                time: bucket,
+                                position: 'aboveBar',
+                                color: '#2196f3',
+                                shape: 'circle',
+                                text: `${currentPrice.toFixed(6)}`,
+                                size: 0,
+                            },
+                        ]);
+                    }
 
                     chartRef.current?.timeScale().fitContent();
                     setIsLoading(false);
@@ -183,7 +186,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 // Setup markers
                 const markers: any[] = [];
 
-                if (highPoint && currentPrice !== null && highPoint !== currentPrice) {
+                if (!width && !height && highPoint && currentPrice !== null && highPoint !== currentPrice) {
                     markers.push({
                         time: highPoint.time,
                         position: 'aboveBar',
@@ -194,7 +197,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                     });
                 }
 
-                if (lowPoint && currentPrice !== null) {
+                if (!width && !height && lowPoint && currentPrice !== null) {
                     markers.push({
                         time: lowPoint.time,
                         position: 'belowBar',
@@ -205,7 +208,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                     });
                 }
 
-                if (currentPoint && currentPrice !== null) {
+                if (!width && !height && currentPoint && currentPrice !== null) {
                     markers.push({
                         time: currentPoint.time,
                         position: 'aboveBar',
@@ -277,7 +280,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
             const markers: any[] = [];
             const currentPrice: any = price ? (typeof price === 'bigint' ? Number(formatEther(price)) : price) : null;
 
-            if (highPoint && currentPrice !== high) {
+            if (!width && !height && highPoint && currentPrice !== high) {
                 markers.push({
                     time: highPoint.time,
                     position: 'aboveBar',
@@ -288,7 +291,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 });
             }
 
-            if (lowPoint && currentPrice !== low) {
+            if (!width && !height && lowPoint && currentPrice !== low) {
                 markers.push({
                     time: lowPoint.time,
                     position: 'belowBar',
@@ -299,7 +302,7 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                 });
             }
 
-            if (currentPoint && currentPrice) {
+            if (!width && !height && currentPoint && currentPrice) {
                 markers.push({
                     time: currentPoint.time,
                     position: 'aboveBar',
@@ -324,90 +327,169 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
 
         import('lightweight-charts')
             .then(({ createChart }) => {
-                const container = chartContainerRef.current!;
-                const chart = createChart(container, {
-                    width: container.clientWidth,
-                    height: 400,
-                    layout: {
-                        background: { color: 'transparent' },
-                        textColor: '#171717',
-                    },
-                    grid: {
-                        vertLines: { visible: false },
-                        horzLines: { visible: false },
-                    },
-                    timeScale: {
-                        timeVisible: false,
-                        secondsVisible: true,
-                        borderColor: '#1c67a8',
-                        barSpacing: 1,
-                        fixLeftEdge: true,
-                        fixRightEdge: false,
-                        minBarSpacing: 1,
-                        rightOffset: 2,
-                        lockVisibleTimeRangeOnResize: true,
-                    },
-                    rightPriceScale: {
-                        visible: false,
-                    },
-                    handleScroll: false,
-                    handleScale: false,
-                });
+                if (!width && !height) {
+                    const container = chartContainerRef.current!;
+                    const chart = createChart(container, {
+                        width: container.clientWidth,
+                        height: 400,
+                        layout: {
+                            background: { color: 'transparent' },
+                            textColor: '#171717',
+                        },
+                        grid: {
+                            vertLines: { visible: false },
+                            horzLines: { visible: false },
+                        },
+                        timeScale: {
+                            timeVisible: false,
+                            secondsVisible: true,
+                            borderColor: '#1c67a8',
+                            barSpacing: 1,
+                            fixLeftEdge: true,
+                            fixRightEdge: false,
+                            minBarSpacing: 1,
+                            rightOffset: 2,
+                            lockVisibleTimeRangeOnResize: true,
+                        },
+                        rightPriceScale: {
+                            visible: false,
+                        },
+                        handleScroll: false,
+                        handleScale: false,
+                    });
 
-                const lineSeries = chart.addLineSeries({
-                    color: '#2196f3',
-                    lineWidth: 1,
-                    priceLineVisible: true,
-                    priceFormat: {
-                        type: 'price',
-                        precision: 6,
-                        minMove: 0.000001,
-                    },
-                });
-                // 1. Add the filled Area Series (gradient fill)
-                const areaSeries = chart.addAreaSeries({
-                    topColor: 'rgba(33, 150, 243, 0.4)',     // near the line
-                    bottomColor: 'rgba(33, 150, 243, 0.0)',  // fades out
-                    lineColor: '#2196f3',
-                    lineWidth: 2,
-                    priceLineVisible: false,
-                    priceFormat: {
-                        type: 'price',
-                        precision: 6,
-                        minMove: 0.000001,
-                    },
-                });
-                chartRef.current = chart;
-                areaSeriesRef.current = areaSeries;
-                lineSeriesRef.current = lineSeries;
+                    const lineSeries = chart.addLineSeries({
+                        color: '#2196f3',
+                        lineWidth: 1,
+                        priceLineVisible: true,
+                        priceFormat: {
+                            type: 'price',
+                            precision: 6,
+                            minMove: 0.000001,
+                        },
+                    });
+                    // 1. Add the filled Area Series (gradient fill)
+                    const areaSeries = chart.addAreaSeries({
+                        topColor: 'rgba(33, 150, 243, 0.4)',     // near the line
+                        bottomColor: 'rgba(33, 150, 243, 0.0)',  // fades out
+                        lineColor: '#2196f3',
+                        lineWidth: 2,
+                        priceLineVisible: false,
+                        priceFormat: {
+                            type: 'price',
+                            precision: 6,
+                            minMove: 0.000001,
+                        },
+                    });
+                    chartRef.current = chart;
+                    areaSeriesRef.current = areaSeries;
+                    lineSeriesRef.current = lineSeries;
 
-                const debouncedResize = debounce(() => {
-                    if (chartContainerRef.current) {
-                        chart.applyOptions({
-                            width: chartContainerRef.current.clientWidth,
-                            height: chartContainerRef.current.clientHeight,
-                        });
+                    const debouncedResize = debounce(() => {
+                        if (chartContainerRef.current) {
+                            chart.applyOptions({
+                                width: chartContainerRef.current.clientWidth,
+                                height: chartContainerRef.current.clientHeight,
+                            });
+                        }
+                    }, 200);
+
+                    const resizeObserver = new ResizeObserver(debouncedResize);
+                    resizeObserver.observe(container);
+
+                    chart.timeScale().fitContent();
+                    setIsChartInitialized(true);
+                    updateChartData(trades, selectedInterval);
+
+                    if (coin?.tokenId) {
+                        setTrades(coin.tokenId.toString(), [...trades]);
                     }
-                }, 200);
 
-                const resizeObserver = new ResizeObserver(debouncedResize);
-                resizeObserver.observe(container);
+                    return () => {
+                        resizeObserver.disconnect();
+                        chart.remove();
+                        chartRef.current = null;
+                        lineSeriesRef.current = null;
+                        setIsChartInitialized(false);
+                    };
+                } else {
+                    const container = chartContainerRef.current!;
+                    const chart = createChart(container, {
+                        width: container.clientWidth,
+                        height: 400,
+                        layout: {
+                            background: { color: 'transparent' },
+                            textColor: '#171717',
+                        },
+                        grid: {
+                            vertLines: { visible: false },
+                            horzLines: { visible: false },
+                        },
+                        timeScale: {
+                            visible: false,
+                        },
+                        rightPriceScale: {
+                            visible: false,
+                        },
+                        handleScroll: false,
+                        handleScale: false,
+                    });
 
-                chart.timeScale().fitContent();
-                setIsChartInitialized(true);
-                updateChartData(trades, selectedInterval);
+                    const lineSeries = chart.addLineSeries({
+                        color: '#2196f3',
+                        lineWidth: 1,
+                        priceLineVisible: !width && !height ? true : false,
+                        priceFormat: {
+                            type: 'price',
+                            precision: 6,
+                            minMove: 0.000001,
+                        },
+                    });
+                    // 1. Add the filled Area Series (gradient fill)
+                    const areaSeries = chart.addAreaSeries({
+                        topColor: 'rgba(33, 150, 243, 0.4)',     // near the line
+                        bottomColor: 'rgba(33, 150, 243, 0.0)',  // fades out
+                        lineColor: '#2196f3',
+                        lineWidth: 2,
+                        priceLineVisible: false,
+                        priceFormat: {
+                            type: 'price',
+                            precision: 6,
+                            minMove: 0.000001,
+                        },
+                    });
+                    chartRef.current = chart;
+                    areaSeriesRef.current = areaSeries;
+                    lineSeriesRef.current = lineSeries;
 
-                if (coin?.tokenId) {
-                    setTrades(coin.tokenId.toString(), [...trades]);
+                    const debouncedResize = debounce(() => {
+                        if (chartContainerRef.current) {
+                            chart.applyOptions({
+                                width: chartContainerRef.current.clientWidth,
+                                height: chartContainerRef.current.clientHeight,
+                            });
+                        }
+                    }, 200);
+
+                    const resizeObserver = new ResizeObserver(debouncedResize);
+                    resizeObserver.observe(container);
+
+                    chart.timeScale().fitContent();
+                    setIsChartInitialized(true);
+                    updateChartData(trades, selectedInterval);
+
+                    if (coin?.tokenId) {
+                        setTrades(coin.tokenId.toString(), [...trades]);
+                    }
+
+                    return () => {
+                        resizeObserver.disconnect();
+                        chart.remove();
+                        chartRef.current = null;
+                        lineSeriesRef.current = null;
+                        setIsChartInitialized(false);
+                    };
                 }
-
-                return () => {
-                    resizeObserver.disconnect();
-                    chart.remove();
-                    chartRef.current = null;
-                    lineSeriesRef.current = null;
-                    setIsChartInitialized(false);
-                };
             })
             .catch((err) => console.error('Failed to load lightweight-charts:', err));
     }, []);
@@ -467,23 +549,29 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
             {!isLoading && (
                 <>
                     <div className={styles.controls}>
-                        <div className={styles.assetInfo}>
-                            {!isLoading ? (
-                                <>
-                                    <p className={styles.symbol}>{coin?.symbol}</p>
-                                    <p className={styles.price}>{price ? `${typeof price === 'bigint' ? formatEther(price) : price} ETH` : '—'}</p>
-                                </>
-                            ) : (
-                                <>
-                                    <FadeLoader />
-                                </>
-                            )}
-                        </div>
+                        {!width && !height && (
+                            <div className={styles.assetInfo}>
+                                {!isLoading ? (
+                                    <>
+                                        <p className={styles.symbol}>{coin?.symbol}</p>
+                                        <p className={styles.price}>{price ? `${typeof price === 'bigint' ? formatEther(price) : price} ETH` : '—'}</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <FadeLoader />
+                                    </>
+                                )}
+                            </div>
+                        )}
                     </div>
+                    {width && height ? (
+                        <div ref={chartContainerRef} className={styles.chartContainerNS} style={{ width: width, height: height }} />
+                    ) :
+                        (
+                            <div ref={chartContainerRef} className={styles.chartContainer} />
+                        )}
 
-                    <div ref={chartContainerRef} className={styles.chartContainer} />
-
-                    <div className={styles.intervalButtonGroup}>
+                    {!width && !height && <div className={styles.intervalButtonGroup}>
                         {intervalOptions.map((option) => (
                             <button
                                 key={option.value}
@@ -493,15 +581,15 @@ export default function TransparentLineChart({ trades, interval = 3600 }: Props)
                                 {option.label}
                             </button>
                         ))}
-                    </div>
+                    </div>}
 
-                    {showSparseDataWarning && (
+                    {!width && !height && showSparseDataWarning && (
                         <div className={styles.sparseDataWarning}>
                             <p>Data too sparse for selected interval. Showing all trades.</p>
                         </div>
                     )}
 
-                    {!isLoading && trades.length === 0 && (
+                    {!width && !height && !isLoading && trades.length === 0 && (
                         <div className={styles.noDataOverlay}>
                             <p>No trades available for this token.</p>
                         </div>

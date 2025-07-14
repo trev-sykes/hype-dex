@@ -1,25 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { BarLoader, FadeLoader } from 'react-spinners';
-import { formatUnits } from 'ethers';
-import { useCoinStore } from '../../../store/coinStore';
 import styles from './ExploreGrid.module.css';
 import Logo from '../../../components/logo/Logo';
 import { useOnline } from '../../../hooks/useOnline';
 import { useTokens } from '../../../hooks/useTokens';
 import { useWitdh } from '../../../hooks/useWidth';
 import { scrollToTop } from '../../../utils/scroll';
+import { TokenCard } from '../../../components/tokenCard/TokenCard';
 
 export const ExploreGrid: React.FC = () => {
     const isOnline = useOnline();
-    const navigate = useNavigate();
     const { tokens, fetchNextPage, hasNextPage, loading } = useTokens();
-    const { setCoin } = useCoinStore();
     const viewportWidth = useWitdh();
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
-    const [width, setWidth] = useState(window.innerWidth);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [loadStates, setLoadStates] = useState<boolean[]>([]);
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -32,20 +27,13 @@ export const ExploreGrid: React.FC = () => {
             return copy;
         });
     }, []);
-
+    console.log("Load states", loadStates);
     // Reset load states when tokens change
     useEffect(() => {
         if (tokens && tokens.length) {
             setLoadStates(Array(tokens.length).fill(null)); // null = not loaded yet
         }
     }, [tokens]);
-
-    // Resize handler
-    useEffect(() => {
-        const handleResize = () => setWidth(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     // Scroll handler to show/hide scroll-to-top button & infinite load
     useEffect(() => {
@@ -159,87 +147,15 @@ export const ExploreGrid: React.FC = () => {
                 <>
                     <div className={styles.gridContainer}>
                         {coinsToDisplay.map((coin, index) => (
-                            <Link
-                                to={`/dashboard/explore/${coin.tokenId}`}
+                            <TokenCard
                                 key={coin.tokenId.toString()}
-                                className={styles.coinCard}
-                                onClick={() => {
-                                    setCoin(coin);
-                                    navigate(`/dashboard/explore/${coin.tokenId}/trade`);
-                                }}
-                            >
-                                <div className={styles.tokenDetails}>
-                                    {/* Name */}
-                                    {width > 640 && <h4>{coin.name}</h4>}
-
-                                    {/* Symbol Badge */}
-                                    <div className={styles.symbolText}>
-                                        {coin.symbol.length < 8 ? coin.symbol : coin.symbol.slice(0, 8)}
-                                    </div>
-
-                                    {/* Description */}
-                                    {width > 640 && (
-                                        <p className={styles.descriptionText}>
-                                            {coin.description?.slice(0, 80) || 'No description available'}
-                                        </p>
-                                    )}
-
-                                    {/* Image Container */}
-                                    <div className={styles.imageContainer}>
-                                        {loadStates[index] === null && (
-                                            <div className={styles.imageLoadingFallback} />
-                                        )}
-
-                                        {loadStates[index] === true && coin.imageUrl && (
-                                            <img
-                                                loading="lazy"
-                                                src={coin.imageUrl}
-                                                onLoad={() => handleLoad(index, true)}
-                                                onError={() => handleLoad(index, false)}
-                                                alt={`${coin.name || 'Coin'}`}
-                                                className={styles.coinImage}
-                                            />
-                                        )}
-
-                                        {loadStates[index] === false && (
-                                            <div className={styles.imageFallback}>
-                                                {coin.symbol}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Price Section */}
-                                    <div className={styles.priceSection}>
-                                        <p>
-                                            <strong>Price</strong>
-                                            <span className={styles.priceValue}>
-                                                {coin.price != null ? formatUnits(coin.price) : 'N/A'}
-                                            </span>
-                                        </p>
-                                        {/* Uncomment if you want to show percent change */}
-                                        {/* {coin.percentChange != null && (
-                      <p className={coin.percentChange >= 0 ? styles.percentUp : styles.percentDown}>
-                        {coin.percentChange >= 0 ? '+' : ''}
-                        {coin.percentChange.toFixed(2)}%
-                      </p>
-                    )} */}
-                                    </div>
-
-                                    {/* Trade Button */}
-                                    <div className={styles.tradeContainer}>
-                                        <p
-                                            onClick={e => {
-                                                e.preventDefault();
-                                                navigate(`/dashboard/explore/${coin.tokenId}/trade`);
-                                            }}
-                                        >
-                                            Trade Now
-                                        </p>
-                                    </div>
-                                </div>
-                            </Link>
+                                coin={coin}
+                                number={index}
+                                onLoad={handleLoad}
+                            />
                         ))}
                     </div>
+
 
                     {/* Load more button if hasNextPage */}
                     {hasNextPage && !loading && (

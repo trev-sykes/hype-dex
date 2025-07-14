@@ -87,6 +87,16 @@
     position: relative;
 }
 
+.chartContainerNS {
+    width: 100%;
+    height: 400px;
+    background: transparent;
+    border-radius: 0 0 16px 16px;
+    box-shadow: none;
+    position: relative;
+}
+
+
 .intervalButtonGroup {
     display: flex;
     justify-content: space-between;

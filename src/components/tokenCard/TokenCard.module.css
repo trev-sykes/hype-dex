@@ -1,0 +1,167 @@
+.coinCard {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(76, 186, 255, 0.12);
+    border: 2px solid var(--color-neutral-300);
+    cursor: pointer;
+    text-decoration: none;
+    width: 100%;
+    max-width: 900px;
+    /* Optional max width for readability */
+    margin: 0 auto;
+    /* center card in container */
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Remove margin from image container, fix size */
+.imageContainer {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    margin: 0;
+    display: flex;
+    /* center image inside */
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, var(--color-neutral-300), var(--color-neutral-200));
+    border-radius: 50%;
+    overflow: hidden;
+    /* crop overflow if any */
+}
+
+.coinImage {
+    width: 100%;
+    /* fill container width */
+    height: 100%;
+    /* fill container height */
+    object-fit: contain;
+    /* maintain aspect ratio without cropping */
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+/* Token details stacked vertically, narrow width */
+.tokenDetails {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.25rem;
+    width: 50px;
+    /* fixed width for text block */
+    flex-shrink: 0;
+}
+
+.tokenDetails h4 {
+    font-size: 1rem;
+    margin: 0;
+    color: var(--color-neutral-900);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.symbolText {
+    /* background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent)); */
+    color: var(--color-accent-light);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+    margin: 0;
+    /* remove margin bottom */
+}
+
+.chartContainer {
+    flex-grow: 1;
+    flex-shrink: 1;
+    /* default, can omit */
+    flex-basis: 0;
+    /* this is important */
+    min-width: 0;
+    /* prevents overflow issues */
+}
+
+/* Price section fixed width */
+.priceSection {
+    width: 80px;
+    padding: 0.75rem;
+    border-radius: 0px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.priceSection p {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-neutral-800);
+}
+
+.priceValue {
+    display: block;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-accent-light);
+}
+
+/* Remove trade button styles since button removed */
+.tradeContainer {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .coinCard {
+        flex-direction: row;
+        /* keep it horizontal */
+        align-items: center;
+        padding: 1rem;
+        max-width: 100%;
+        gap: 0.75rem;
+        /* smaller gap */
+    }
+
+    .imageContainer {
+        width: 40px;
+        height: 40px;
+    }
+
+    .tokenDetails {
+        width: 50px;
+        /* narrower text block */
+        flex-shrink: 0;
+    }
+
+    .tokenDetails h4 {
+        display: none;
+        /* hide coin name to save space */
+    }
+
+    .chartContainer {
+        flex-grow: 1;
+        flex-shrink: 1;
+        /* default, can omit */
+        flex-basis: 0;
+        /* this is important */
+        min-width: 0;
+        /* prevents overflow issues */
+    }
+
+
+    .priceSection {
+        width: 60px;
+        /* slightly narrower price block */
+        padding: 0.5rem 0;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .priceValue {
+        font-size: 0.9rem;
+    }
+}
