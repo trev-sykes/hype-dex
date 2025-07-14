@@ -25,8 +25,8 @@ export const useAlertStore = create<AlertStore>((set, get) => ({
 
         // Automatically set shorter timeout for network alerts
         const defaultTimeout =
-            type === 'network' ? 4000 :
-                type === 'persist' ? 0 :
+            type === 'network' ? 3000 :
+                type === 'persist' ? 3000 :
                     20000;
 
         const newAlert: Alert = {

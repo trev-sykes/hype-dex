@@ -813,3 +813,133 @@
         padding: 12px 14px;
     }
 }
+
+.modalContainer {
+    background-color: var(--color-neutral-100);
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 420px;
+    width: 100%;
+    margin: 0 auto;
+    font-family: var(--font-family-text);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.modalHeader {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-neutral-900);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.modalInput {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 1rem;
+    font-family: var(--font-family-number);
+    border-radius: 14px;
+    border: 1px solid var(--color-neutral-400);
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+    margin-bottom: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modalInput:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+.modalActions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modalConfirmButton {
+    flex: 1;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--font-family-text);
+    color: var(--color-neutral-100);
+    background-color: var(--color-accent);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.modalConfirmButton:hover:not(:disabled) {
+    background-color: var(--color-accent-light);
+    transform: translateY(-1px);
+}
+
+.modalConfirmButton:disabled {
+    background-color: var(--color-neutral-300);
+    cursor: not-allowed;
+}
+
+.modalCancelButton {
+    flex: 1;
+    padding: 12px;
+    font-size: 1rem;
+    font-family: var(--font-family-text);
+    background-color: transparent;
+    color: var(--color-neutral-700);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.modalCancelButton:hover {
+    background-color: var(--color-neutral-200);
+    border-color: var(--color-neutral-400);
+}
+
+.modalCalculationPreview {
+    background-color: var(--color-neutral-50);
+    padding: 16px;
+    margin-top: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--color-neutral-200);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--color-neutral-800);
+}
+
+.modalCalculationPreview strong {
+    font-weight: 600;
+    color: var(--color-neutral-900);
+}
+
+.modalErrorText {
+    color: var(--color-error);
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 480px) {
+    .modalHeader {
+        font-size: 1.125rem;
+    }
+
+    .modalInput {
+        font-size: 0.95rem;
+    }
+
+    .modalConfirmButton,
+    .modalCancelButton {
+        font-size: 0.95rem;
+        padding: 10px;
+    }
+
+    .modalCalculationPreview {
+        font-size: 0.9rem;
+    }
+}

@@ -6,42 +6,59 @@ function toggleEffectClass(className: any) {
     root.classList.add(className);
     setTimeout(() => root.classList.remove(className), 450);
 }
-
 export function createConfetti() {
     const base = {
-        spread: 100,
-        startVelocity: 30,
-        ticks: 150,
-        gravity: 0.3,
-        scalar: 1.0,
+        spread: 60,
+        startVelocity: 25,
+        ticks: 400,
+        gravity: 0.9,
         zIndex: 999,
-        colors: ['#4ade80', '#60a5fa', '#facc15', '#fff8dc'], // Unified, vibrant palette
+        colors: ['#26a69a', '#60a5fa', '#facc15', '#ef5350', '#1c67a8', '#fff8dc'],
     };
 
-    // Central burst
-    confetti({
-        ...base,
-        particleCount: 80,
-        angle: 90,
-        origin: { x: 0.5, y: 0.8 },
-        shapes: ['circle', 'square'],
-        scalar: 1.2,
-    });
+    const totalBursts = 6;
+    const intervalTime = 350;
+    const sources = 10; // Number of emitters across the width
 
-    // Subtle side sparkles
     setTimeout(() => {
-        ['left', 'right'].forEach((side) => {
-            confetti({
-                ...base,
-                particleCount: 30,
-                angle: side === 'left' ? 60 : 120,
-                origin: { x: side === 'left' ? 0.1 : 0.9, y: 0.7 },
-                scalar: 0.8,
-                shapes: ['circle'],
-            });
-        });
-    }, 300);
+        let count = 0;
+
+        const interval = setInterval(() => {
+            const intensity = (count + 1) / totalBursts;
+
+            for (let i = 0; i < sources; i++) {
+                confetti({
+                    ...base,
+                    origin: { x: i / (sources - 1), y: 0 },
+                    particleCount: Math.floor(5 + 10 * intensity),
+                    spread: 40 + 20 * intensity,
+                    scalar: 0.9 + 0.2 * intensity,
+                    startVelocity: 20 + 15 * intensity,
+                });
+            }
+
+            count++;
+            if (count >= totalBursts) {
+                clearInterval(interval);
+
+                setTimeout(() => {
+                    for (let i = 0; i < sources; i++) {
+                        confetti({
+                            ...base,
+                            origin: { x: i / (sources - 1), y: 0 },
+                            particleCount: 1,
+                            spread: 80,
+                            scalar: 1.2,
+                            startVelocity: 95,
+                        });
+                    }
+                }, 800);
+            }
+        }, intervalTime);
+    }, 400);
 }
+
+
 export function mintConfetti() {
     toggleEffectClass('mint-effect');
 }
