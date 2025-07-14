@@ -36,6 +36,8 @@ export const CoinInfo: React.FC = () => {
     const ethBalance = useBalance({ address });
 
     const [amount, setAmount] = useState<string>("");
+    const [debouncedAmount, setDebouncedAmount] = useState(amount);
+
 
     const txTypeRef = useRef<ActionType | null>(null);
     const amountRef = useRef<any>(null);
@@ -43,8 +45,8 @@ export const CoinInfo: React.FC = () => {
 
     const tokenId = coin?.tokenId ? BigInt(coin.tokenId) : undefined;
 
-    const mintEstimation = useMintEstimation(tokenId, amount);
-    const burnEstimation = useBurnEstimation(tokenId, amount);
+    const mintEstimation = useMintEstimation(tokenId, debouncedAmount);
+    const burnEstimation = useBurnEstimation(tokenId, debouncedAmount);
 
     const { data: isOperator } = useReadContract({
         address: ERC6909Address,
@@ -226,6 +228,17 @@ export const CoinInfo: React.FC = () => {
             </div>
         );
     }
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedAmount(amount);
+        }, 600); // debounce delay in ms
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [amount]);
+
     const totalSupply = Number(coin.totalSupply);
     const currentPriceEth = Number(formatEther(coin.price));  // converts from wei to ETH
 
@@ -403,7 +416,11 @@ export const CoinInfo: React.FC = () => {
                                     {action == 'buy' ? (
                                         <>
                                             <p>Your ETH Balance: <strong>{Number(ethBalance.data?.formatted || 0).toFixed(4)} ETH</strong></p>
-                                            {amount !== "" && parseEther(amount) > (ethBalance.data?.value ?? 0n) ? (
+                                            {debouncedAmount !== "" && parseEther(debouncedAmount) < coin.price && (
+                                                <p className={styles.modalErrorText}>Entered amount is too low.</p>
+                                            )}
+
+                                            {debouncedAmount !== "" && parseEther(debouncedAmount) > (ethBalance.data?.value ?? 0n) ? (
                                                 <p className={styles.modalErrorText}>Insufficient ETH for this purchase</p>
                                             ) : mintEstimation ? (
                                                 <>
@@ -416,7 +433,7 @@ export const CoinInfo: React.FC = () => {
                                     ) : (
                                         <>
                                             <p>Your Token Balance: <strong>{tokenBalance} {coin?.symbol}</strong></p>
-                                            {amount !== "" && Number(amount) > tokenBalance ? (
+                                            {debouncedAmount !== "" && Number(debouncedAmount) > tokenBalance ? (
                                                 <p className={styles.modalErrorText}>Insufficient balance to sell that many tokens</p>
                                             ) : burnEstimation ? (
                                                 <>
