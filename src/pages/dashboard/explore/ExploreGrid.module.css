@@ -279,58 +279,27 @@
     box-shadow: 0 12px 32px #1c67a83b;
 }
 
-/* Large tablets and small laptops (≤ 1024px) */
-@media (max-width: 1024px) {
-    .gridContainer {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1.25rem;
-    }
 
-}
-
-/* Standard tablets (≤ 768px) */
-@media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-    }
-
-    .title {
-        font-size: 1.75rem;
-        margin-bottom: 1rem;
-    }
-
-    .gridContainer {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 1rem;
-    }
-
-    .scrollToTopButton {
-        width: 48px;
-        height: 48px;
-        bottom: 1.5rem;
-        right: 1.5rem;
-    }
-}
 
 /* Mobile landscape and small tablets (≤ 640px) */
-@media (max-width: 640px) {
-    /* Mobile: single column */
-    @media (max-width: 640px) {
-        .gridContainer {
-            grid-template-columns: 1fr;
-            /* one column */
-            gap: 2rem;
-            /* slightly bigger gap for vertical spacing */
-            width: 100%;
-        }
+/* Mobile: single column */
+@media (max-width: 1399px) {
+    .gridContainer {
+        grid-template-columns: 1fr;
+        /* one column */
+        gap: 2rem;
+        /* slightly bigger gap for vertical spacing */
+        width: 100%;
     }
 
     .searchInput {
         padding: 0.625rem 2.5rem;
         font-size: 16px;
     }
-
 }
+
+
+
 
 /* Mobile portrait (≤ 480px) */
 @media (max-width: 480px) {
