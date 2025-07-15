@@ -90,12 +90,17 @@ export function useTokens(tokenId?: string) {
                 };
             })
         );
-
+        const updated = [...tokens];
         const filtered = enriched.filter(Boolean);
-        if (filtered.length !== tokens.length || newTokens.length > 0) {
-            setTokens(filtered as any);
-        }
-
+        filtered.forEach((f: any) => {
+            const index = updated.findIndex(t => t.tokenId.toString() === f.tokenId.toString());
+            if (index !== -1) {
+                updated[index] = f; // Replace existing
+            } else {
+                updated.push(f); // Add new
+            }
+        });
+        setTokens(updated);
         return filtered;
     }, [allFetchedTokens, isSuccess, tokens, setTokens]);
 
