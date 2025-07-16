@@ -72,42 +72,6 @@
     gap: 0.5rem;
 }
 
-.seriesToggles {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-}
-
-.toggle input {
-    accent-color: #2196f3;
-    cursor: pointer;
-}
-
-.priceContainer {
-    width: 100%;
-    text-align: center;
-    font-weight: 500;
-    font-size: 1rem;
-    color: var(--color-neutral-100);
-}
-
-.priceLabel {
-    margin-right: 0.25rem;
-    color: var(--color-neutral-400);
-}
-
-.priceValue {
-    color: var(--color-neutral-300);
-    font-weight: 600;
-}
-
 .noDataOverlay {
     position: absolute;
     top: 59%;
@@ -152,10 +116,6 @@
         justify-content: flex-start;
     }
 
-    .seriesToggles {
-        justify-content: flex-start;
-        width: 100%;
-    }
 }
 
 @media (max-width: 420px) {

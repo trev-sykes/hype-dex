@@ -7,6 +7,8 @@ import { convertToIpfsUrl, fetchIpfsMetadata } from '../utils/ipfs';
 import { fetchAllTokenIds, fetchTokenMetadataRange, fetchTokenPrice } from './useContractRead';
 import type { TokensQueryResult } from '../types/token';
 import { tokenCreatedQuery } from '../graphQl/tokenCreatedQuery';
+import { getDominantColor } from '../utils/colorTheif';
+
 
 const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
@@ -72,6 +74,36 @@ export function useTokens(tokenId?: string) {
                 if (!match) return existing || null;
 
                 const ipfsData = await throttledFetchIpfsMetadata(match.uri);
+                let color = null;
+                if (ipfsData?.image) {
+                    try {
+                        const imageUrl = convertToIpfsUrl(ipfsData.image);
+                        console.log(`Loading image for token ${gqlToken.tokenId}:`, imageUrl);
+                        const img: any = new Image();
+                        img.crossOrigin = 'Anonymous'; // Important for CORS!
+                        img.src = imageUrl;
+
+                        color = await new Promise<string | null>((resolve) => {
+                            img.onload = async () => {
+                                try {
+                                    const c = await getDominantColor(img);
+                                    console.log(`Color for ${gqlToken.tokenId}: ${c}`);
+                                    resolve(c);
+                                } catch (err) {
+                                    console.warn('Failed to get color:', err);
+                                    resolve(null);
+                                }
+                            };
+                            img.onerror = () => {
+                                console.warn(`Image failed to load for token ${gqlToken.tokenId}`);
+                                resolve(null);
+                            };
+                        });
+                    } catch (e) {
+                        console.warn('getDominantColor failed:', e);
+                    }
+                }
+
 
                 return {
                     tokenId: gqlToken.tokenId,
@@ -81,6 +113,7 @@ export function useTokens(tokenId?: string) {
                     uri: match.uri,
                     description: ipfsData?.description ?? null,
                     imageUrl: ipfsData?.image ? convertToIpfsUrl(ipfsData.image) : null,
+                    color, // ← ADD THIS LINE
                     basePrice: existing?.basePrice || null,
                     slope: existing?.slope || null,
                     reserve: existing?.reserve || null,
@@ -282,6 +315,7 @@ export function useTokens(tokenId?: string) {
         clearTokens,
         enrichToken,
         fetchNextPage,
+        fetchStaticMetadata,
         hasNextPage,
         pricesLoaded,
     };

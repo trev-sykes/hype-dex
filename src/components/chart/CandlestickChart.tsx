@@ -29,23 +29,11 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-    const lineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
     const [selectedInterval, setSelectedInterval] = useState(interval);
     const [isChartInitialized, setIsChartInitialized] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [showLine, setShowLine] = useState(true);
-    const [showCandles, setShowCandles] = useState(true);
     const { setTrades } = useTradeStore();
     const { price } = useTokenPriceData();
-
-    useEffect(() => {
-        if (candleSeriesRef.current) {
-            candleSeriesRef.current.applyOptions({ visible: showCandles });
-        }
-        if (lineSeriesRef.current) {
-            lineSeriesRef.current.applyOptions({ visible: showLine });
-        }
-    }, [showCandles, showLine]);
 
     const debounce = (func: () => void, wait: number) => {
         let timeout: NodeJS.Timeout;
@@ -59,7 +47,7 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
             setIsLoading(true);
             console.log(`[updateChartData] Processing ${trades.length} trades for interval: ${interval}s`);
 
-            if (!candleSeriesRef.current || !lineSeriesRef.current) {
+            if (!candleSeriesRef.current) {
                 setIsLoading(false);
                 return;
             }
@@ -79,10 +67,8 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
                         close: currentPrice
                     }];
                     candleSeriesRef.current.setData(currentCandle);
-                    lineSeriesRef.current.setData([{ time: bucket, value: currentPrice }]);
                 } else {
                     candleSeriesRef.current.setData([]);
-                    lineSeriesRef.current.setData([]);
                 }
                 setIsLoading(false);
                 return;
@@ -178,7 +164,6 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
             console.log(`[updateChartData] Final candles:`, candles.length);
 
             candleSeriesRef.current.setData(candles);
-            lineSeriesRef.current.setData(candles.map((c: any) => ({ time: c.time, value: c.close })));
             chartRef.current?.timeScale().fitContent();
             setIsLoading(false);
         },
@@ -236,20 +221,9 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
                     },
                 });
 
-                const lineSeries = chart.addLineSeries({
-                    color: '#2196f3',
-                    lineWidth: 2,
-                    priceLineVisible: false,
-                    priceFormat: {
-                        type: 'price',
-                        precision: 6,
-                        minMove: 0.000001,
-                    },
-                });
 
                 chartRef.current = chart;
                 candleSeriesRef.current = candleSeries;
-                lineSeriesRef.current = lineSeries;
 
                 console.log('[useEffect] Chart initialized');
 
@@ -315,7 +289,6 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
                 chartRef.current.remove();
                 chartRef.current = null;
                 candleSeriesRef.current = null;
-                lineSeriesRef.current = null;
             }
             setIsChartInitialized(false);
         };
@@ -364,39 +337,6 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
                                     </option>
                                 ))}
                             </select>
-                        </div>
-
-                        <div className={styles.seriesToggles}>
-                            <label className={styles.toggle}>
-                                <input
-                                    type="checkbox"
-                                    checked={showLine}
-                                    onChange={() => {
-                                        if (!showCandles) return; // Prevent both from being unchecked
-                                        setShowLine((prev) => !prev);
-                                    }}
-                                />
-                                <svg width="40" height="10">
-                                    <line x1="0" y1="5" x2="40" y2="5" stroke="#2196f3" strokeWidth="2" />
-                                </svg>
-                            </label>
-
-                            <label className={styles.toggle}>
-                                <input
-                                    type="checkbox"
-                                    checked={showCandles}
-                                    onChange={() => {
-                                        if (!showLine) return; // Prevent both from being unchecked
-                                        setShowCandles((prev) => !prev);
-                                    }}
-                                />
-                                <svg width="40" height="20">
-                                    <rect x="10" y="5" width="8" height="10" fill="#26a69a" stroke="#26a69a" />
-                                    <line x1="14" y1="0" x2="14" y2="20" stroke="#26a69a" strokeWidth="2" />
-                                </svg>
-                            </label>
-                            <div className={styles.priceContainer}>
-                            </div>
                         </div>
                     </div>
                     <div
