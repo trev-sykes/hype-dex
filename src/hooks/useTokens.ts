@@ -13,7 +13,7 @@ import { getDominantColor } from '../utils/colorTheif';
 const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 10;
 const throttledFetchIpfsMetadata = pThrottle({ limit: 50, interval: 10000 })(fetchIpfsMetadata);
 const throttledFetchPrice = pThrottle({ limit: 50, interval: 10000 })(fetchTokenPrice);
 
@@ -148,7 +148,7 @@ export function useTokens(tokenId?: string) {
                 const tokenIds: any = await fetchAllTokenIds();
                 const metadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
 
-                const batchSize = 50;
+                const batchSize = 10;
                 for (let i = 0; i < tokensToFetch.length; i += batchSize) {
                     const batch = tokensToFetch.slice(i, i + batchSize);
 
@@ -252,7 +252,7 @@ export function useTokens(tokenId?: string) {
     // Load all tokens (no tokenId)
     useEffect(() => {
         if (tokenId) return;
-        if (!hydrated) return;
+        if (hydrated) return;
 
         const load = async () => {
             setLoading(true);
@@ -274,13 +274,13 @@ export function useTokens(tokenId?: string) {
 
     // Fetch single token if tokenId present
     useEffect(() => {
-        if (!hydrated || !tokenId) return;
+        if (hydrated || !tokenId) return;
         fetchSingle();
     }, [hydrated, tokenId, fetchSingle]);
 
     // Force refetch if new tokens appear
     useEffect(() => {
-        if (!hydrated || tokenId || !allFetchedTokens.length) return;
+        if (hydrated || tokenId || !allFetchedTokens.length) return;
         const storeIds = new Set(tokens.map(t => t.tokenId.toString()));
         const hasNew = allFetchedTokens.some((t: any) => !storeIds.has(t.tokenId.toString()));
         if (hasNew) {
@@ -291,7 +291,7 @@ export function useTokens(tokenId?: string) {
     // Fallback hydration slow check
     useEffect(() => {
         const timeout = setTimeout(() => {
-            if (!hydrated && tokens.length === 0) {
+            if (hydrated && tokens.length === 0) {
                 console.warn('Zustand hydration slow, forcing metadata fetch...');
                 fetchStaticMetadata();
             }
@@ -300,7 +300,7 @@ export function useTokens(tokenId?: string) {
     }, [hydrated, tokens.length, fetchStaticMetadata]);
 
     const refetch = useCallback(() => {
-        if (!hydrated) return;
+        if (hydrated) return;
         setPricesLoaded(false);
         refetchGraphQL();
         fetchStaticMetadata().then(fetchAllPrices);

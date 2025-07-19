@@ -1,30 +1,112 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { formatUnits } from "ethers";
-import styles from "./TokenCard.module.css";
-import { useCoinStore } from "../../store/coinStore";
-import { useWitdh } from "../../hooks/useWidth";
-import { useTokenActivity } from "../../hooks/useTokenActivity";
-import PlotlyLineChart from "../chart/PlotlyLineChart";
-import { getDominantColor } from "../../utils/colorTheif";
-// import TransparentLineChart from "../chart/TransparentCandlestickChart";
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { formatUnits } from 'ethers';
+import styles from './TokenCard.module.css';
+import { useCoinStore } from '../../store/coinStore';
+import { useWitdh } from '../../hooks/useWidth';
+import { getDominantColor } from '../../utils/colorTheif';
+import { useTokenActivity } from '../../hooks/useTokenActivity';
+import TransparentCandlestickChart from '../chart/TransparentCandlestickChart';
+
 
 interface TokenCardProps {
     coin: any;
-    number: number;
-    onLoad: (index: number, success: boolean) => void;
+    loadState?: boolean | null; // true = loaded, false = error, null = loading
 }
 
-export const TokenCard: React.FC<TokenCardProps> = ({ coin, number, onLoad }) => {
+export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     const navigate = useNavigate();
     const { setCoin } = useCoinStore();
     const width = useWitdh();
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageError, setImageError] = useState(false);
+    const trades = useTokenActivity(coin.tokenId.toString());
+
     const [tokenColor, setTokenColor] = useState('#1c67a8');
 
-    const trades = useTokenActivity(coin?.tokenId?.toString());
-    // Preload image
+    // Handle image loading locally if no loadState is provided
     useEffect(() => {
-        if (!coin.imageUrl) return;
+        if (loadState !== undefined) {
+            // Use the external load state
+            setImageLoaded(loadState === true);
+            setImageError(loadState === false);
+        } else if (coin.imageUrl && coin.imageUrl !== '') {
+            // Handle loading internally
+            setImageLoaded(false);
+            setImageError(false);
+
+            const img = new Image();
+            img.src = coin.imageUrl;
+
+            img.onload = () => {
+                setImageLoaded(true);
+                setImageError(false);
+            };
+
+            img.onerror = () => {
+                setImageLoaded(false);
+                setImageError(true);
+            };
+        }
+    }, [coin.imageUrl, loadState]);
+
+    // Determine what to render based on load state
+    const renderImageContent = () => {
+        // No image URL provided
+        if (!coin.imageUrl || coin.imageUrl === '') {
+            return <div className={styles.imageFallback}>{coin.symbol}</div>;
+        }
+
+        // Using external load state
+        if (loadState !== undefined) {
+            if (loadState === null) {
+                // Still loading
+                return (
+                    <div className={styles.imageLoading}>
+                        <div className={styles.loadingSpinner}></div>
+                    </div>
+                );
+            } else if (loadState === false) {
+                // Error loading
+                return <div className={styles.imageFallback}>{coin.symbol}</div>;
+            } else {
+                // Successfully loaded
+                return (
+                    <img
+                        loading="lazy"
+                        src={coin.imageUrl}
+                        alt={coin.name || 'Coin'}
+                        className={styles.coinImage}
+                    />
+                );
+            }
+        }
+
+        // Using internal load state
+        if (imageError) {
+            return <div className={styles.imageFallback}>{coin.symbol}</div>;
+        }
+
+        if (!imageLoaded) {
+            return (
+                <div className={styles.imageLoading}>
+                    <div className={styles.loadingSpinner}></div>
+                </div>
+            );
+        }
+
+        return (
+            <img
+                loading="lazy"
+                src={coin.imageUrl}
+                alt={coin.name || 'Coin'}
+                className={styles.coinImage}
+            />
+        );
+    };
+
+    useEffect(() => {
+        if (!coin.imageUrl || (!imageLoaded && loadState !== true)) return;
 
         const img = new Image();
         img.src = coin.imageUrl;
@@ -32,21 +114,13 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, number, onLoad }) =>
         img.onload = async () => {
             try {
                 const color = await getDominantColor(img.src);
-                console.log("COLOR:::", color);
                 setTokenColor(color);
-                onLoad(number, true);
             } catch (error) {
-                console.error("Error getting dominant color:", error);
-                onLoad(number, false);
+                console.error('Error getting dominant color:', error);
             }
         };
+    }, [coin.imageUrl, imageLoaded, loadState]);
 
-        img.onerror = () => onLoad(number, false);
-    }, [coin.imageUrl, number, onLoad]);
-
-    useEffect(() => {
-        console.log("Token color:", tokenColor); // Add this
-    }, [tokenColor]);
     return (
         <Link
             to={`/dashboard/explore/${coin.tokenId}`}
@@ -56,43 +130,38 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, number, onLoad }) =>
                 navigate(`/dashboard/explore/${coin.tokenId}/trade`);
             }}
         >
-            {/* Image */}
             <div className={styles.imageContainer}>
-                {coin.imageUrl ? (
-                    <img
-                        loading="lazy"
-                        src={coin.imageUrl}
-                        alt={coin.name || "Coin"}
-                        className={styles.coinImage}
-                    />
-                ) : (
-                    <div className={styles.imageFallback}>{coin.symbol}</div>
-                )}
+                {renderImageContent()}
             </div>
 
-            {/* Name and Symbol stacked */}
             <div className={styles.tokenDetails}>
-                {width > 640 && <h4>{coin.name.length > 7 ? `${coin.name.slice(0, 7)}..` : coin.name}</h4>}
+                {width > 640 && (
+                    <h4>{coin.name.length > 7 ? `${coin.name.slice(0, 7)}..` : coin.name}</h4>
+                )}
                 <div className={styles.symbolText}>
                     {coin.symbol.length < 8 ? coin.symbol : coin.symbol.slice(0, 8)}
                 </div>
             </div>
 
-            {/* Chart */}
             <div className={styles.chartContainer}>
-                {/* <TransparentLineChart coin={coin} trades={trades} height={50} width={"100%"} /> */}
-                <PlotlyLineChart coin={coin} trades={trades} height={150} width={'100%'} lineColor={tokenColor} />
+                <div className={`${styles.fadeInUp} ${imageLoaded ? styles.show : ''}`}>
+                    <TransparentCandlestickChart
+                        coin={coin}
+                        trades={trades}
+                        height={50}
+                        width={'100%'}
+                        lineColor={tokenColor}
+                    />
+                </div>
             </div>
 
-            {/* Price */}
             <div className={styles.priceSection}>
                 <p>
                     <span className={styles.priceValue}>
-                        {coin.price != null ? formatUnits(coin.price) : "N/A"}
+                        {coin.price != null ? formatUnits(coin.price) : 'N/A'}
                     </span>
                 </p>
             </div>
         </Link>
-
     );
 };

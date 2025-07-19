@@ -15,32 +15,26 @@ interface Trade {
 const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
-function buildQuery(tokenIdFilter?: string) {
-    const whereClause = tokenIdFilter
-        ? `, where: { tokenId: "${tokenIdFilter}" }`
-        : '';
-
-    return gql`
-    {
-      burneds(first: 100${whereClause}) {
-        id
-        seller
-        tokenId
-        amount
-        refund
-        blockTimestamp
-      }
-      minteds(first: 100${whereClause}) {
-        id
-        buyer
-        tokenId
-        amount
-        cost
-        blockTimestamp
-      }
-    }
-  `;
+const ALL_TRADES_QUERY = gql`
+{
+  burneds(first: 5000) {
+    id
+    seller
+    tokenId
+    amount
+    refund
+    blockTimestamp
+  }
+  minteds(first: 5000) {
+    id
+    buyer
+    tokenId
+    amount
+    cost
+    blockTimestamp
+  }
 }
+`;
 
 function parseTrades(data: any): Trade[] {
     const WEI_IN_ETH = 1e18;
@@ -74,19 +68,22 @@ function parseTrades(data: any): Trade[] {
     return [...mints, ...burns].sort((a, b) => a.timestamp - b.timestamp);
 }
 
-export function useTokenActivity(tokenIdFilter?: string) {
-    const key = tokenIdFilter ?? 'all';
-    const trades = useTradeStore((state) => state.trades[key]);
+function useAllTrades() {
     const setTrades = useTradeStore((state) => state.setTrades);
+    const trades: any[] = useTradeStore((state) => state.trades['all'] ?? []);
+    const shouldFetch = trades.length === 0;
 
     const { data, isSuccess, error } = useQuery({
-        queryKey: ['trades', tokenIdFilter],
+        queryKey: ['all-trades'],
         queryFn: async () => {
-            const q = buildQuery(tokenIdFilter);
-            return await request(url, q, {}, headers);
+            console.log('[GraphQL] Fetching all trades...');
+            const result = await request(url, ALL_TRADES_QUERY, {}, headers);
+            console.log('[GraphQL] Received all trades:', result);
+            return result;
         },
-        refetchInterval: 10_000, // ✅ Auto-refresh every 10 seconds
-        refetchOnWindowFocus: true, // Optional: refetch when user focuses the tab
+        enabled: shouldFetch, // 👈 prevents query if trades already exist
+        refetchInterval: 60_0000, // refresh every 1 minute
+        refetchOnWindowFocus: false, // disable on tab switch
     });
 
     const parsedTrades: any = useMemo(() => {
@@ -95,14 +92,25 @@ export function useTokenActivity(tokenIdFilter?: string) {
     }, [data, isSuccess]);
 
     useEffect(() => {
-        if (parsedTrades.length > 0) {
-            setTrades(key, parsedTrades);
+        if (parsedTrades.length === 0) return;
+
+        // Optional: compare by length to reduce re-setting
+        if (trades.length !== parsedTrades.length) {
+            setTrades('all', parsedTrades);
         }
-    }, [parsedTrades, key, setTrades]);
+    }, [parsedTrades, setTrades, trades.length]);
+
 
     if (error) {
-        console.error('[useTrades] GraphQL error:', error);
+        console.error('[useAllTrades] Error fetching all trades:', error);
     }
 
-    return trades ?? [];
+    return trades;
+}
+export function useTokenActivity(tokenId: any) {
+    const allTrades = useAllTrades();
+
+    return useMemo(() => {
+        return allTrades.filter(trade => trade.tokenId === tokenId);
+    }, [allTrades, tokenId]);
 }

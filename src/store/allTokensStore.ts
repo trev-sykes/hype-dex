@@ -18,7 +18,7 @@ export const useTokenStore = create<TokenStore>()(
             hydrated: false,
 
             setTokens: (tokens: any) => {
-                console.log('Setting tokens:', tokens);
+                console.log('[Token Store] Setting tokens:', tokens);
                 set({ tokens })
             },
             addToken: (token: any) =>
@@ -30,7 +30,7 @@ export const useTokenStore = create<TokenStore>()(
                     const updatedTokens = state.tokens.map((t: any) =>
                         t.tokenId.toString() === tokenId.toString() ? { ...t, ...newData } : t
                     );
-                    console.log('Updated tokens:', updatedTokens);
+                    console.log('[Token Store] Updated tokens:', updatedTokens);
                     return { tokens: updatedTokens };
                 });
             },
@@ -40,8 +40,8 @@ export const useTokenStore = create<TokenStore>()(
         {
             name: 'token-storage',
             onRehydrateStorage: () => (state: any) => {
-                console.log('[Store] Rehydrated state:', state);
-                // ✅ Explicitly mark the store as hydrated
+                console.log('[Token Store] Rehydrated state:', state);
+                // ✅ Explicitly mark the store as hydrated , calling set runs into problems so direct mutation is needed
                 state.hydrated = true;
             },
 

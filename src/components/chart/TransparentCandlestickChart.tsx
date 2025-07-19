@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import styles from './TransparentCandlestickChart.module.css';
 import { FadeLoader } from 'react-spinners';
@@ -22,9 +22,64 @@ interface Props {
     tokenId?: any;
     width?: any;
     height?: any;
+    lineColor?: any;
 }
 
-export default function TransparentLineChart({ coin, trades, interval = 3600, width, height }: Props) {
+
+function rgbToHex(rgb: string): string | null {
+    // Make sure input is like "rgb(156, 108, 84)"
+    const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (!result) return null;
+    const r = parseInt(result[1], 10);
+    const g = parseInt(result[2], 10);
+    const b = parseInt(result[3], 10);
+
+    return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+// Add this helper function inside your component or import it
+const hexToRgba = (hex: any, alpha = 1) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+// New helper function to validate color based on luminance
+function getValidColor(color: string, defaultColor: string = '#1c67a8'): string {
+    // Convert RGB to hex if necessary
+    const hexColor = color.startsWith('rgb') ? rgbToHex(color) : color;
+    if (!hexColor || !/^#[0-9A-Fa-f]{6}$/.test(hexColor)) {
+        return defaultColor;
+    }
+
+    // Extract RGB values from hex
+    const r = parseInt(hexColor.slice(1, 3), 16) / 255;
+    const g = parseInt(hexColor.slice(3, 5), 16) / 255;
+    const b = parseInt(hexColor.slice(5, 7), 16) / 255;
+
+    // Linearize RGB values (sRGB gamma correction)
+    const linearize = (value: number) => value; // Simplified for sRGB, no need for full gamma correction here
+
+    const R = linearize(r);
+    const G = linearize(g);
+    const B = linearize(b);
+
+    // Calculate relative luminance (W3C formula)
+    const luminance = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+
+    // Define thresholds: too dark (< 0.2) or too light (> 0.8)
+    const minLuminance = 0.25;
+    const maxLuminance = 0.75;
+
+    if (luminance < minLuminance || luminance > maxLuminance) {
+        return defaultColor;
+    }
+
+    return hexColor;
+}
+
+
+
+export default function TransparentLineChart({ coin, trades, interval = 3600, width, height, lineColor = '#1c67a8' }: Props) {
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const lineSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
@@ -35,6 +90,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
     const { setTrades } = useTradeStore();
     const { price } = useTokenPriceData();
     const [showSparseDataWarning, setShowSparseDataWarning] = useState(false);
+    const hexColor = useMemo(() => getValidColor(lineColor), [lineColor]);
 
     // Simple debounce helper
     const debounce = (func: () => void, wait: number) => {
@@ -323,7 +379,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
     );
 
     useEffect(() => {
-        if (typeof window === 'undefined' || !chartContainerRef.current) return;
+        if (typeof window === 'undefined' || !chartContainerRef.current || !hexColor) return;
 
         import('lightweight-charts')
             .then(({ createChart }) => {
@@ -359,7 +415,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     });
 
                     const lineSeries = chart.addLineSeries({
-                        color: '#2196f3',
+                        color: hexColor,
                         lineWidth: 1,
                         priceLineVisible: true,
                         priceFormat: {
@@ -370,9 +426,9 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     });
                     // 1. Add the filled Area Series (gradient fill)
                     const areaSeries = chart.addAreaSeries({
-                        topColor: 'rgba(33, 150, 243, 0.4)',     // near the line
-                        bottomColor: 'rgba(33, 150, 243, 0.0)',  // fades out
-                        lineColor: '#2196f3',
+                        topColor: hexToRgba(hexColor || '#1c67a8', 0.4),     // Use dynamic color
+                        bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),  // Use dynamic color
+                        lineColor: hexColor,
                         lineWidth: 2,
                         priceLineVisible: false,
                         priceFormat: {
@@ -436,7 +492,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     });
 
                     const lineSeries = chart.addLineSeries({
-                        color: '#2196f3',
+                        color: hexColor,
                         lineWidth: 1,
                         priceLineVisible: !width && !height ? true : false,
                         priceFormat: {
@@ -447,9 +503,9 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     });
                     // 1. Add the filled Area Series (gradient fill)
                     const areaSeries = chart.addAreaSeries({
-                        topColor: 'rgba(33, 150, 243, 0.4)',     // near the line
-                        bottomColor: 'rgba(33, 150, 243, 0.0)',  // fades out
-                        lineColor: '#2196f3',
+                        topColor: hexToRgba(hexColor || '#1c67a8', 0.4),     // Use dynamic color
+                        bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),  // Use dynamic color
+                        lineColor: hexColor,
                         lineWidth: 2,
                         priceLineVisible: false,
                         priceFormat: {
@@ -492,7 +548,20 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                 }
             })
             .catch((err) => console.error('Failed to load lightweight-charts:', err));
-    }, []);
+    }, [hexColor]);
+    // Update series colors when hexColor changes
+    useEffect(() => {
+        if (lineSeriesRef.current && areaSeriesRef.current) {
+            lineSeriesRef.current.applyOptions({
+                color: hexColor,
+            });
+            areaSeriesRef.current.applyOptions({
+                topColor: hexToRgba(hexColor, 0.4),
+                bottomColor: hexToRgba(hexColor, 0.0),
+                lineColor: hexColor,
+            });
+        }
+    }, [hexColor]);
 
     // Return filtered intervals based on time span and bucket counts
     const getAvailableIntervals = useCallback(() => {

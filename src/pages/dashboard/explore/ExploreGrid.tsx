@@ -16,24 +16,36 @@ export const ExploreGrid: React.FC = () => {
     const [isSearching, setIsSearching] = useState(false);
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
     const [showScrollButton, setShowScrollButton] = useState(false);
-    const [loadStates, setLoadStates] = useState<boolean[]>([]);
+    const [loadStates, setLoadStates] = useState<Map<string, boolean | null>>(new Map());
     const inputRef = useRef<HTMLInputElement | null>(null);
 
     // Handle image load states
-    const handleLoad = useCallback((index: number, status: boolean) => {
+    const handleLoad = useCallback((tokenId: string, status: boolean) => {
         setLoadStates(prev => {
-            const copy = [...prev];
-            copy[index] = status;
-            return copy;
+            const newMap = new Map(prev);
+            newMap.set(tokenId, status);
+            return newMap;
         });
     }, []);
-    console.log("Load states", loadStates);
-    // Reset load states when tokens change
+
+    // Preload images for tokens
     useEffect(() => {
         if (tokens && tokens.length) {
-            setLoadStates(Array(tokens.length).fill(null)); // null = not loaded yet
+            const initialMap = new Map<string, boolean | null>();
+            tokens.forEach((coin) => {
+                initialMap.set(coin.tokenId.toString(), null);
+            });
+            setLoadStates(initialMap);
+
+            tokens.forEach((coin) => {
+                if (!coin.imageUrl) return;
+                const img = new Image();
+                img.src = coin.imageUrl;
+                img.onload = () => handleLoad(coin.tokenId.toString(), true);
+                img.onerror = () => handleLoad(coin.tokenId.toString(), false);
+            });
         }
-    }, [tokens]);
+    }, [tokens, handleLoad]);
 
     // Scroll handler to show/hide scroll-to-top button & infinite load
     useEffect(() => {
@@ -42,17 +54,16 @@ export const ExploreGrid: React.FC = () => {
 
             // Infinite scroll: load next page if near bottom (300px)
             if (
-                window.innerHeight + window.scrollY >=
-                document.body.offsetHeight - 300
+                window.innerHeight + window.scrollY >= document.body.offsetHeight - 300
             ) {
-                if (hasNextPage && !loading) {
-                    fetchNextPage();
-                }
+                // if (hasNextPage && !loading) {
+                //     fetchNextPage();
+                // }
             }
         };
         window.addEventListener('scroll', onScroll);
         return () => window.removeEventListener('scroll', onScroll);
-    }, [fetchNextPage, hasNextPage, loading]);
+    }, []);
 
     // Search filtering with debounce
     useEffect(() => {
@@ -75,18 +86,8 @@ export const ExploreGrid: React.FC = () => {
         }, 300);
 
         return () => clearTimeout(handler);
-    }, [tokens, searchTerm]);
+    }, []);
 
-    // Preload images for tokens
-    useEffect(() => {
-        tokens.forEach((coin, index) => {
-            if (!coin.imageUrl) return;
-            const img = new Image();
-            img.src = coin.imageUrl;
-            img.onload = () => handleLoad(index, true);
-            img.onerror = () => handleLoad(index, false);
-        });
-    }, [tokens, handleLoad]);
 
     const coinsToDisplay = searchTerm ? filteredCoins : tokens;
 
@@ -109,15 +110,20 @@ export const ExploreGrid: React.FC = () => {
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                     >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
                     </svg>
                     <input
                         ref={inputRef}
                         type="text"
                         className={styles.searchInput}
-                        placeholder={viewportWidth > 500 ? "Search by name or symbol..." : "Search"}
+                        placeholder={viewportWidth > 500 ? 'Search by name or symbol...' : 'Search'}
                         value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     {searchTerm && (
                         <button
@@ -146,16 +152,17 @@ export const ExploreGrid: React.FC = () => {
             ) : coinsToDisplay.length > 0 ? (
                 <>
                     <div className={styles.gridContainer}>
-                        {coinsToDisplay.map((coin, index) => (
+                        {coinsToDisplay.map((coin) => (
                             <TokenCard
                                 key={coin.tokenId.toString()}
                                 coin={coin}
-                                number={index}
-                                onLoad={handleLoad}
+                                loadState={loadStates.get(coin.tokenId.toString()) ?? null} // ✅ safe fallback
+                            // trades={trades.filter(
+                            //     (trade) => trade.tokenId.toString() === coin.tokenId.toString()
+                            // )} // Pass filtered trades
                             />
                         ))}
                     </div>
-
 
                     {/* Load more button if hasNextPage */}
                     {hasNextPage && !loading && (

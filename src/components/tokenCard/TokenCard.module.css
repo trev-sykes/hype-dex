@@ -83,8 +83,6 @@
     flex-basis: 0;
     /* this is important */
     min-width: 0;
-    height: 50px;
-    transform: translateY(-50px);
     /* prevents overflow issues */
 }
 
@@ -168,4 +166,99 @@
     .priceValue {
         font-size: 0.9rem;
     }
+}
+
+/* Add these styles to your TokenCard.module.css file */
+
+.imageLoading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
+    min-height: 80px;
+    /* Adjust based on your image container size */
+}
+
+.loadingSpinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e3e3e3;
+    border-top: 2px solid #144c7e;
+    /* Match your theme color */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.imageFallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
+    min-height: 80px;
+    /* Adjust based on your image container size */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.coinImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: opacity 0.3s ease;
+}
+
+/* Optional: Add a subtle loading animation to the image container */
+.imageContainer {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+/* Optional: Skeleton loading effect */
+.imageLoading.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* In TokenCard.module.css */
+
+.fadeInUp {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.fadeInUp.show {
+    opacity: 1;
+    transform: translateY(0);
 }

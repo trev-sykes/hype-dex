@@ -12,9 +12,11 @@ import { ExploreGrid } from './pages/dashboard/explore/ExploreGrid'
 import { TradePage } from './pages/dashboard/trade/TradePage'
 import { CoinInfo } from './pages/dashboard/coinInfo/CoinInfo'
 import { ScrollToTop } from './hooks/useScrollToTop'
+import { useTradeUpdater } from './hooks/useTradeUpdater'
 
 
 function App() {
+  useTradeUpdater();
   const queryClient = new QueryClient()
 
   return (
