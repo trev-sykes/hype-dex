@@ -433,7 +433,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     const areaSeries = chart.addAreaSeries({
                         topColor: hexToRgba(hexColor || '#1c67a8', 0.4),     // Use dynamic color
                         bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),  // Use dynamic color
-                        lineColor: hexColor,
+                        lineColor: hexColor ? hexColor : '#1c67a8',
                         lineWidth: 2,
                         priceLineVisible: false,
                         priceFormat: {
@@ -510,7 +510,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     const areaSeries = chart.addAreaSeries({
                         topColor: hexToRgba(hexColor || '#1c67a8', 0.4),     // Use dynamic color
                         bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),  // Use dynamic color
-                        lineColor: hexColor,
+                        lineColor: hexColor ? hexColor : '#1c67a8',
                         lineWidth: 2,
                         priceLineVisible: false,
                         priceFormat: {
@@ -561,9 +561,9 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                 color: hexColor,
             });
             areaSeriesRef.current.applyOptions({
-                topColor: hexToRgba(hexColor, 0.4),
-                bottomColor: hexToRgba(hexColor, 0.0),
-                lineColor: hexColor,
+                topColor: hexToRgba(hexColor || '#1c67a8', 0.4),
+                bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),
+                lineColor: hexColor ? hexColor : '#1c67a8',
             });
         }
     }, [hexColor]);
