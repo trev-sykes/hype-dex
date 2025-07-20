@@ -379,10 +379,18 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
     );
 
     useLayoutEffect(() => {
-        if (typeof window === 'undefined' || !chartContainerRef.current || !hexColor) return;
-
+        if (typeof window === 'undefined' || !chartContainerRef.current || !hexColor) {
+            console.warn('useLayoutEffect early return: window or ref missing');
+            return;
+        }
+        let isMounted = true;
         import('lightweight-charts')
             .then(({ createChart }) => {
+                // Ensure ref is still valid and component is mounted
+                if (!isMounted || !chartContainerRef.current) {
+                    console.warn('Chart initialization skipped: component unmounted or ref is null');
+                    return;
+                }
                 if (!width && !height) {
                     const container = chartContainerRef.current!;
                     const chart = createChart(container, {
