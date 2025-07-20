@@ -89,9 +89,12 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
     const [isLoading, setIsLoading] = useState(false);
     const { setTrades } = useTradeStore();
     const { price } = useTokenPriceData();
+    const [hexColor, setHexColor] = useState('');
     const [showSparseDataWarning, setShowSparseDataWarning] = useState(false);
-    const hexColor = useMemo(() => getValidColor(lineColor), [lineColor]);
-
+    useEffect(() => {
+        const c = getValidColor(lineColor)
+        setHexColor(c);
+    }, []);
     // Simple debounce helper
     const debounce = (func: () => void, wait: number) => {
         let timeout: NodeJS.Timeout;
