@@ -595,11 +595,11 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
 
         return filteredByBuckets.length > 0 ? filteredByBuckets : [{ label: 'All', value: -1 }];
     }, [trades]);
+    const availableIntervals = useMemo(() => getAvailableIntervals(), [trades]);
 
     useEffect(() => {
         if (!isChartInitialized) return;
 
-        const availableIntervals = getAvailableIntervals();
         const isSelectedAvailable = availableIntervals.some((i) => i.value === selectedInterval);
 
         if (!isSelectedAvailable) {
@@ -609,7 +609,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
         }
 
         updateChartData(trades, selectedInterval);
-    }, [trades, selectedInterval, updateChartData, isChartInitialized, getAvailableIntervals]);
+    }, [trades, selectedInterval, updateChartData, isChartInitialized, availableIntervals]);
 
     const intervalOptions = getAvailableIntervals();
 
