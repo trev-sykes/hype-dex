@@ -7,6 +7,7 @@ import { useWitdh } from '../../hooks/useWidth';
 import { getDominantColor } from '../../utils/colorTheif';
 import { useTokenActivity } from '../../hooks/useTokenActivity';
 import TransparentCandlestickChart from '../chart/TransparentCandlestickChart';
+// import PlotlyLineChart from '../chart/PlotlyLineChart';
 
 
 interface TokenCardProps {
@@ -144,15 +145,20 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
             </div>
 
             <div className={styles.chartContainer}>
-                <div className={`${styles.fadeInUp} ${imageLoaded ? styles.show : ''}`}>
-                    <TransparentCandlestickChart
+                <TransparentCandlestickChart
+                    coin={coin}
+                    trades={trades}
+                    height={50}
+                    width={'100%'}
+                    lineColor={tokenColor}
+                />
+                {/* <PlotlyLineChart
                         coin={coin}
                         trades={trades}
-                        height={50}
+                        height={150}
                         width={'100%'}
                         lineColor={tokenColor}
-                    />
-                </div>
+                    /> */}
             </div>
 
             <div className={styles.priceSection}>

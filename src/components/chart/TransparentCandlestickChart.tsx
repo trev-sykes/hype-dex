@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo, useLayoutEffect } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import styles from './TransparentCandlestickChart.module.css';
 import { FadeLoader } from 'react-spinners';
@@ -378,19 +378,11 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
         [price]
     );
 
-    useLayoutEffect(() => {
-        if (typeof window === 'undefined' || !chartContainerRef.current || !hexColor) {
-            console.warn('useLayoutEffect early return: window or ref missing');
-            return;
-        }
-        let isMounted = true;
+    useEffect(() => {
+        if (typeof window === 'undefined' || !chartContainerRef.current || !hexColor) return;
+
         import('lightweight-charts')
             .then(({ createChart }) => {
-                // Ensure ref is still valid and component is mounted
-                if (!isMounted || !chartContainerRef.current) {
-                    console.warn('Chart initialization skipped: component unmounted or ref is null');
-                    return;
-                }
                 if (!width && !height) {
                     const container = chartContainerRef.current!;
                     const chart = createChart(container, {

@@ -358,7 +358,7 @@ export default function PlotlyLineChart({ coin, trades, interval = 3600, width, 
             displaylogo: false,
             staticPlot: true
         };
-
+        console.log("Rendering chart with data:", data);
         Plotly.newPlot(chartContainerRef.current, traces, layout, config);
     };
 
