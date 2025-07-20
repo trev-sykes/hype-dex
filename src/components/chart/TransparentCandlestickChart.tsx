@@ -383,6 +383,8 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
 
     useEffect(() => {
         if (typeof window === 'undefined' || !chartContainerRef.current || !hexColor) return;
+        const container = chartContainerRef.current;
+        if (!container) return; // Extra safeguard
 
         import('lightweight-charts')
             .then(({ createChart }) => {
