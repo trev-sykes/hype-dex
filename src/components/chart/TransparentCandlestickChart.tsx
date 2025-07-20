@@ -268,8 +268,7 @@ export default function TransparentLineChart({
             }
 
             const buckets = aggregateBuckets(trades, interval);
-
-            if (Object.keys(buckets).length < 2) {
+            if (Object.keys(buckets).length < 2 && interval !== -1) {
                 setShowSparseDataWarning(true);
                 updateChartData(trades, -1);
                 return;
