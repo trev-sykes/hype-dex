@@ -441,17 +441,17 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     areaSeriesRef.current = areaSeries;
                     lineSeriesRef.current = lineSeries;
 
-                    const debouncedResize = debounce(() => {
-                        if (chartContainerRef.current) {
-                            chart.applyOptions({
-                                width: chartContainerRef.current.clientWidth,
-                                height: chartContainerRef.current.clientHeight,
-                            });
-                        }
-                    }, 200);
+                    // const debouncedResize = debounce(() => {
+                    //     if (chartContainerRef.current) {
+                    //         chart.applyOptions({
+                    //             width: chartContainerRef.current.clientWidth,
+                    //             height: chartContainerRef.current.clientHeight,
+                    //         });
+                    //     }
+                    // }, 200);
 
-                    const resizeObserver = new ResizeObserver(debouncedResize);
-                    resizeObserver.observe(container);
+                    // const resizeObserver = new ResizeObserver(debouncedResize);
+                    // resizeObserver.observe(container);
 
                     chart.timeScale().fitContent();
                     setIsChartInitialized(true);
@@ -462,7 +462,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     }
 
                     return () => {
-                        resizeObserver.disconnect();
+                        // resizeObserver.disconnect();
                         chart.remove();
                         chartRef.current = null;
                         lineSeriesRef.current = null;
