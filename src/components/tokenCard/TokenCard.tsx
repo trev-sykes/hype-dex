@@ -5,8 +5,8 @@ import styles from './TokenCard.module.css';
 import { useCoinStore } from '../../store/coinStore';
 import { useWitdh } from '../../hooks/useWidth';
 import { getDominantColor } from '../../utils/colorTheif';
-// import { useTokenActivity } from '../../hooks/useTokenActivity';
-// import TransparentCandlestickChart from '../chart/TransparentCandlestickChart';
+import { useTokenActivity } from '../../hooks/useTokenActivity';
+import TransparentCandlestickChart from '../chart/TransparentCandlestickChart';
 // import PlotlyLineChart from '../chart/PlotlyLineChart';
 
 
@@ -21,14 +21,12 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     const width = useWitdh();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
-    // const trades = useTokenActivity(coin.tokenId.toString());
+    const trades = useTokenActivity(coin.tokenId.toString());
 
     const [tokenColor, setTokenColor] = useState('#1c67a8');
 
-
     // Handle image loading locally if no loadState is provided
     useEffect(() => {
-        console.log(tokenColor);
         if (loadState !== undefined) {
             // Use the external load state
             setImageLoaded(loadState === true);
@@ -147,13 +145,13 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
             </div>
 
             <div className={styles.chartContainer}>
-                {/* <TransparentCandlestickChart
+                <TransparentCandlestickChart
                     coin={coin}
                     trades={trades}
                     height={50}
                     width={'100%'}
                     lineColor={tokenColor}
-                /> */}
+                />
                 {/* <PlotlyLineChart
                         coin={coin}
                         trades={trades}
