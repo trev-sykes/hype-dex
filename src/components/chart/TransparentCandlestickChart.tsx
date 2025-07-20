@@ -391,7 +391,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                 if (!width && !height) {
                     const container = chartContainerRef.current!;
                     const chart = createChart(container, {
-                        width: container.clientWidth,
+                        width: 50,
                         height: 400,
                         layout: {
                             background: { color: 'transparent' },
@@ -476,7 +476,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                 } else {
                     const container = chartContainerRef.current!;
                     const chart = createChart(container, {
-                        width: container.clientWidth,
+                        width: 50,
                         height: 400,
                         layout: {
                             background: { color: 'transparent' },
@@ -526,7 +526,7 @@ export default function TransparentLineChart({ coin, trades, interval = 3600, wi
                     const debouncedResize = debounce(() => {
                         if (chartContainerRef.current) {
                             chart.applyOptions({
-                                width: chartContainerRef.current.clientWidth,
+                                width: 50,
                                 height: chartContainerRef.current.clientHeight,
                             });
                         }
