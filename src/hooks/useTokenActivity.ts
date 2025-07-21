@@ -3,6 +3,7 @@ import { useTradeStore } from '../store/tradeStore';
 import request, { gql } from 'graphql-request';
 import { useQuery } from 'wagmi/query';
 import { deepEqual } from 'wagmi';
+import React from 'react';
 
 interface Trade {
     tokenId: string;
@@ -130,10 +131,11 @@ function parseTrades(data: any): Trade[] {
     return [...mints, ...burns].sort((a, b) => a.timestamp - b.timestamp);
 }
 
-function useAllTrades() {
+export function useAllTrades() {
     const setTrades = useTradeStore((state) => state.setTrades);
     const trades: any[] = useTradeStore((state) => state.trades['all'] ?? []);
-    const shouldFetch = trades.length === 0;
+    const hydrated = useTradeStore(state => state.hydrated);
+    const shouldFetch = hydrated && trades.length === 0;
 
     const { data, isSuccess, error } = useQuery({
         queryKey: ['all-trades'],
@@ -152,13 +154,15 @@ function useAllTrades() {
         if (!data || !isSuccess) return [];
         return parseTrades(data);
     }, [data, isSuccess]);
-
     useEffect(() => {
         if (!parsedTrades.length) return;
-        if (!trades || !deepEqual(trades, parsedTrades)) {
+
+        if (!deepEqual(trades, parsedTrades)) {
             setTrades('all', parsedTrades);
         }
-    }, [parsedTrades, trades, setTrades]);
+
+    }, [parsedTrades, trades]);
+
 
 
     if (error) {
@@ -167,12 +171,11 @@ function useAllTrades() {
 
     return trades;
 }
-export function useTokenActivity(tokenId: any) {
-    const tradesByToken = useTradesForTokens([tokenId]);
-    return tradesByToken[tokenId] ?? [];
-    const allTrades = useAllTrades();
-
-    return useMemo(() => {
-        return allTrades.filter(trade => trade.tokenId === tokenId);
+export function useTokenActivity(tokenId: string) {
+    const allTrades: any = useTradeStore(state => state.trades['all'] || []);
+    // memoize filtering by tokenId only if allTrades or tokenId changes
+    return React.useMemo(() => {
+        return allTrades.filter((trade: any) => trade.tokenId === tokenId);
     }, [allTrades, tokenId]);
 }
+

@@ -6,7 +6,9 @@ import type { Trade } from '../types/trade';
 type TradeMap = Record<string, Trade[]>;
 
 interface TradeStore {
+    hydrated: any;
     trades: TradeMap;
+    clearTrades: () => void;
     setTrades: (key: string, trades: Trade[]) => void;
     appendTrade: (key: string, trade: Trade) => void;
     getLatestTimestamp: (key: string) => number;
@@ -18,7 +20,9 @@ let tradeListeners: ((trade: Trade) => void)[] = [];
 export const useTradeStore = create<TradeStore>()(
     persist(
         (set, get) => ({
+            hydrated: false,
             trades: {},
+            clearTrades: () => set({ trades: {} }),
             setTrades: (key: string, trades: Trade[]) => {
                 set((state: any) => {
                     if (deepEqual(state.trades[key], trades)) {

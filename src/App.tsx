@@ -17,6 +17,8 @@ import { useTokenCreationUpdater } from './hooks/useNewTokenCreationUpdater'
 import { useTokens } from './hooks/useTokens'
 import { useUserTokenBalance } from './hooks/useUserBalance'
 import { useTokenPriceData } from './hooks/useTokenPriceData'
+import { useAllTrades } from './hooks/useTokenActivity'
+import { useTradeStore } from './store/tradeStore'
 
 
 
@@ -36,11 +38,13 @@ export default function App() {
 
 function InnerApp() {
   const { tokens, fetchNextPage, hasNextPage, refetch, loading } = useTokens();
+  const trades = useAllTrades();
+  const { setTrades } = useTradeStore();
   const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
   const { refetchAll } = useTokenPriceData();
   const { address } = useAccount();
   const balance = useBalance({ address });
-
+  setTrades('all', trades);
   return (
     <BrowserRouter>
       <ScrollToTop />
