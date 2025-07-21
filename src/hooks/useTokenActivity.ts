@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useTradeStore } from '../store/tradeStore';
 import request, { gql } from 'graphql-request';
 import { useQuery } from 'wagmi/query';
+import { deepEqual } from 'wagmi';
 
 interface Trade {
     tokenId: string;
@@ -92,12 +93,13 @@ function useAllTrades() {
     }, [data, isSuccess]);
 
     useEffect(() => {
-        if (parsedTrades.length === 0) return;
+        useEffect(() => {
+            if (parsedTrades.length === 0) return;
 
-        // Optional: compare by length to reduce re-setting
-        if (trades.length !== parsedTrades.length) {
-            setTrades('all', parsedTrades);
-        }
+            if (!deepEqual(trades, parsedTrades)) {
+                setTrades('all', parsedTrades);
+            }
+        }, [parsedTrades, setTrades, trades]);
     }, [parsedTrades, setTrades, trades.length]);
 
 
