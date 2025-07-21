@@ -16,7 +16,6 @@ export const useTradeStore = create<TradeStore>()(
         (set, get) => ({
             trades: {},
             setTrades: (key: number, trades: Trade[]) => {
-                console.log(`[Trade Store] Setting trades for key "${key}", count: ${trades.length}`);
                 set((state: any) => ({
                     trades: { ...state.trades, [key]: trades },
                 }));

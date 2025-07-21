@@ -27,7 +27,6 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
 
     // Handle image loading locally if no loadState is provided
     useEffect(() => {
-        console.log(tokenColor);
         if (loadState !== undefined) {
             // Use the external load state
             setImageLoaded(loadState === true);

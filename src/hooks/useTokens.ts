@@ -49,38 +49,63 @@ export function useTokens(tokenId?: string) {
     });
     // Flatten all tokens fetched across pages
     const allFetchedTokens: any = data?.pages.flatMap((p: any) => p.tokenCreateds) || [];
-
-    // Enrich metadata for tokens coming from infinite query
     const fetchStaticMetadata = useCallback(async () => {
-        if (!isSuccess || allFetchedTokens.length === 0) return;
+        if (!isSuccess) {
+            console.log('[fetchStaticMetadata] Skipping: query not successful');
+            return
+        };
 
-        // Get fresh tokens from store instead of using stale closure
         const currentTokens = useTokenStore.getState().tokens;
+
+        // 1. Build sets for logic
         const existingIds = new Set(currentTokens.map((t: any) => t.tokenId.toString()));
         const newTokens = allFetchedTokens.filter((t: any) => !existingIds.has(t.tokenId.toString()));
-
-        if (newTokens.length === 0 && tokens.length > 0) {
-            // No new tokens to fetch
-            return tokens;
+        const incompleteTokens = currentTokens.filter((t: any) => !t.imageUrl || !t.description);
+        // 🔍 Log incomplete tokens found in store
+        if (incompleteTokens.length > 0) {
+            console.log(`[fetchStaticMetadata] Found ${incompleteTokens.length} incomplete tokens in store:`, incompleteTokens.map(t => t.tokenId.toString()));
         }
+
+        // 2. Merge new tokens and incomplete ones (avoiding duplicates)
+        const tokensToEnrichMap = new Map<string, any>();
+
+        newTokens.forEach((t: any) => tokensToEnrichMap.set(t.tokenId.toString(), t));
+        incompleteTokens.forEach(t => {
+            if (!tokensToEnrichMap.has(t.tokenId.toString())) {
+                tokensToEnrichMap.set(t.tokenId.toString(), t);
+            }
+        });
+
+        const tokensToEnrich = Array.from(tokensToEnrichMap.values());
+        // 🧠 Log which tokens we will enrich
+        if (tokensToEnrich.length > 0) {
+            console.log(`[fetchStaticMetadata] Enriching ${tokensToEnrich.length} tokens:`, tokensToEnrich.map(t => t.tokenId.toString()));
+        } else {
+            console.log('[fetchStaticMetadata] No tokens to enrich.');
+            return currentTokens;
+        }
+
+        if (tokensToEnrich.length === 0) return currentTokens;
 
         const tokenIds: any = await fetchAllTokenIds();
         const rawMetadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
 
-        const enriched: any = await Promise.all(
-            allFetchedTokens.map(async (gqlToken: { tokenId: { toString: () => string; }; name: any; symbol: any; blockTimestamp: any; }) => {
-                const existing = tokens.find(t => t.tokenId.toString() === gqlToken.tokenId.toString());
-                if (existing?.imageUrl) return existing;
+        const enriched = await Promise.all(
+            tokensToEnrich.map(async (token: any) => {
+                const tokenIdStr = token.tokenId.toString();
+                const gqlToken = allFetchedTokens.find((t: any) => t.tokenId.toString() === tokenIdStr) || token;
+                const existing = currentTokens.find(t => t.tokenId.toString() === tokenIdStr);
 
-                const match = rawMetadata.find((m: any) => m.tokenId.toString() === gqlToken.tokenId.toString());
+                const match = rawMetadata.find((m: any) => m.tokenId.toString() === tokenIdStr);
                 if (!match) return existing || null;
 
                 const ipfsData = await throttledFetchIpfsMetadata(match.uri);
+
                 let color = null;
                 if (ipfsData?.image) {
                     try {
                         const imageUrl = convertToIpfsUrl(ipfsData.image);
-                        console.log(`Loading image for token ${gqlToken.tokenId}:`, imageUrl);
+                        console.log(`Loading image for token ${tokenIdStr}:`, imageUrl);
                         const img: any = new Image();
                         img.crossOrigin = 'Anonymous';
                         img.src = imageUrl;
@@ -89,7 +114,7 @@ export function useTokens(tokenId?: string) {
                             img.onload = async () => {
                                 try {
                                     const c = await getDominantColor(img);
-                                    console.log(`Color for ${gqlToken.tokenId}: ${c}`);
+                                    console.log(`Color for ${tokenIdStr}: ${c}`);
                                     resolve(c);
                                 } catch (err) {
                                     console.warn('Failed to get color:', err);
@@ -97,7 +122,7 @@ export function useTokens(tokenId?: string) {
                                 }
                             };
                             img.onerror = () => {
-                                console.warn(`Image failed to load for token ${gqlToken.tokenId}`);
+                                console.warn(`Image failed to load for token ${tokenIdStr}`);
                                 resolve(null);
                             };
                         });
@@ -105,8 +130,7 @@ export function useTokens(tokenId?: string) {
                         console.warn('getDominantColor failed:', e);
                     }
                 }
-
-
+                console.log(`✅ [Enrich Complete] Token ${tokenIdStr} enriched`);
                 return {
                     tokenId: gqlToken.tokenId,
                     name: gqlToken.name,
@@ -115,7 +139,7 @@ export function useTokens(tokenId?: string) {
                     uri: match.uri,
                     description: ipfsData?.description ?? null,
                     imageUrl: ipfsData?.image ? convertToIpfsUrl(ipfsData.image) : null,
-                    color, // ← ADD THIS LINE
+                    color,
                     basePrice: existing?.basePrice || null,
                     slope: existing?.slope || null,
                     reserve: existing?.reserve || null,
@@ -125,16 +149,18 @@ export function useTokens(tokenId?: string) {
                 };
             })
         );
-        const updated = [...tokens];
+
+        const updated = [...currentTokens];
         const filtered = enriched.filter(Boolean);
         filtered.forEach((f: any) => {
             const index = updated.findIndex(t => t.tokenId.toString() === f.tokenId.toString());
             if (index !== -1) {
-                updated[index] = f; // Replace existing
+                updated[index] = f;
             } else {
-                updated.push(f); // Add new
+                updated.push(f);
             }
         });
+        console.log(`[fetchStaticMetadata] Finished updating tokens. Total enriched: ${filtered.length}`);
         setTokens(updated);
         return filtered;
     }, [allFetchedTokens, isSuccess, setTokens]);
@@ -260,7 +286,7 @@ export function useTokens(tokenId?: string) {
                 const enrichedTokens = await fetchStaticMetadata();
 
                 // Use the returned tokens instead of stale closure
-                if (!pricesLoaded && enrichedTokens?.length > 0) {
+                if (!pricesLoaded && enrichedTokens && enrichedTokens.length > 0) {
                     await fetchAllPrices(enrichedTokens);
                 }
             } catch (err) {
@@ -307,7 +333,7 @@ export function useTokens(tokenId?: string) {
     }, [hydrated, fetchStaticMetadata, fetchAllPrices, refetchGraphQL]);
     useEffect(() => {
         // Find tokens missing imageUrl or color
-        const incompleteTokens = tokens.filter(t => !t.imageUrl);
+        const incompleteTokens = tokens.filter(t => !t.imageUrl || !t.description);
         if (incompleteTokens.length) {
             fetchStaticMetadata();
         }
