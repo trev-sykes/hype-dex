@@ -69,7 +69,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    // Search filtering with debounce
+
     useEffect(() => {
         if (!searchTerm.trim()) {
             setFilteredCoins([]);
@@ -90,7 +90,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
         }, 300);
 
         return () => clearTimeout(handler);
-    }, []);
+    }, [searchTerm, tokens]);
 
 
     const coinsToDisplay = searchTerm ? filteredCoins : tokens;

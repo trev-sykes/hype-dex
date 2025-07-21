@@ -98,7 +98,7 @@ function useAllTrades() {
         if (!deepEqual(trades, parsedTrades)) {
             setTrades('all', parsedTrades);
         }
-    }, [parsedTrades, setTrades, trades.length]);
+    }, [parsedTrades, setTrades, trades]);
 
 
     if (error) {
