@@ -8,6 +8,7 @@ import { scrollToTop } from '../../../utils/scroll';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
 import type { Token } from '../../../types/token';
 import { useTokenStore } from '../../../store/allTokensStore';
+import { useTradesForTokens } from '../../../hooks/useTokenActivity';
 interface ExploreGridProps {
     tokens: any,
     fetchNextPage: any,
@@ -24,6 +25,8 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [loadStates, setLoadStates] = useState<Map<string, boolean | null>>(new Map());
     const inputRef = useRef<HTMLInputElement | null>(null);
+    const tokenIds = tokens.map((c: any) => c.tokenId.toString());
+    const tradesByToken = useTradesForTokens(tokenIds); // ✅ batched fetch
 
     // Handle image load states
     const handleLoad = useCallback((tokenId: string, status: boolean) => {
@@ -164,6 +167,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                                 key={coin.tokenId.toString()}
                                 coin={coin}
                                 loadState={loadStates.get(coin.tokenId.toString()) ?? null} // ✅ safe fallback
+                                trades={tradesByToken[coin.tokenId.toString()] ?? []}
                             // trades={trades.filter(
                             //     (trade) => trade.tokenId.toString() === coin.tokenId.toString()
                             // )} // Pass filtered trades

@@ -56,7 +56,7 @@ const TRADES_BY_TOKEN_QUERY = gql`
     }
   }
 `;
-function useTradesForTokens(tokenIds: string[]) {
+export function useTradesForTokens(tokenIds: string[]) {
     const setTrades = useTradeStore((state) => state.setTrades);
     const tradesByToken = useTradeStore((state) => state.trades);
 

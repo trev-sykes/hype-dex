@@ -5,7 +5,7 @@ import styles from './TokenCard.module.css';
 import { useCoinStore } from '../../store/coinStore';
 import { useWitdh } from '../../hooks/useWidth';
 import { getDominantColor } from '../../utils/colorTheif';
-import { useTokenActivity } from '../../hooks/useTokenActivity';
+// import { useTokenActivity } from '../../hooks/useTokenActivity';
 import TransparentCandlestickChart from '../chart/TransparentCandlestickChart';
 // import PlotlyLineChart from '../chart/PlotlyLineChart';
 
@@ -13,15 +13,16 @@ import TransparentCandlestickChart from '../chart/TransparentCandlestickChart';
 interface TokenCardProps {
     coin: any;
     loadState?: boolean | null; // true = loaded, false = error, null = loading
+    trades: any;
 }
 
-export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
+export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState, trades }) => {
     const navigate = useNavigate();
     const { setCoin } = useCoinStore();
     const width = useWitdh();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
-    const trades = useTokenActivity(coin.tokenId.toString());
+    // const trades = useTokenActivity(coin.tokenId.toString());
 
     const [tokenColor, setTokenColor] = useState('#1c67a8');
 
