@@ -1,5 +1,5 @@
 
-import { WagmiProvider } from 'wagmi'
+import { useAccount, useBalance, WagmiProvider } from 'wagmi'
 import { config } from './wagmi'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import './App.css'
@@ -15,6 +15,8 @@ import { ScrollToTop } from './hooks/useScrollToTop'
 import { useTradeUpdater } from './hooks/useTradeUpdater'
 import { useTokenCreationUpdater } from './hooks/useNewTokenCreationUpdater'
 import { useTokens } from './hooks/useTokens'
+import { useUserTokenBalance } from './hooks/useUserBalance'
+import { useTokenPriceData } from './hooks/useTokenPriceData'
 
 
 
@@ -34,6 +36,10 @@ export default function App() {
 
 function InnerApp() {
   const { tokens, fetchNextPage, hasNextPage, refetch, loading } = useTokens();
+  const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
+  const { refetchAll } = useTokenPriceData();
+  const { address } = useAccount();
+  const balance = useBalance({ address });
 
   return (
     <BrowserRouter>
@@ -55,7 +61,18 @@ function InnerApp() {
           />
           <Route path="/dashboard/create" element={<CreateTokenForm />} />
           <Route path="/dashboard/explore/:tokenId" element={<CoinInfo refetch={refetch} />} />
-          <Route path="/dashboard/explore/:tokenId/trade" element={<TradePage refetch={refetch} />} />
+          <Route path="/dashboard/explore/:tokenId/trade"
+            element={
+              <TradePage
+                refetch={refetch}
+                refetchBalance={refetchBalance}
+                refetchAll={refetchAll}
+                tokenBalance={tokenBalance}
+                address={address}
+                balance={balance}
+              />
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -16,14 +16,14 @@ const LandingPage = () => {
                 <div className={styles.textContent}>
                     <h1 className={styles.title}>Welcome to Hype</h1>
                     <p className={styles.tagline}>
-                        Launch your own ETH-backed coin with dynamic pricing that grows with demand.
-                        No gatekeepers, no fluff — just pure token power.
+                        Create your own digital coin that gets more valuable as more people want it.
+                        Simple, secure, and built on proven technology.
                     </p>
                 </div>
                 <div className={styles.buttonContainer}>
                     <Link to="/dashboard/" className={styles.enterButtonLink}>
                         <button className={styles.enterButton}>
-                            <span className={styles.buttonText}>Enter Dashboard</span>
+                            <span className={styles.buttonText}>Get Started</span>
                             <span className={styles.buttonArrow}>→</span>
                         </button>
                     </Link>

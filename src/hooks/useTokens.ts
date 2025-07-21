@@ -8,14 +8,15 @@ import { fetchAllTokenIds, fetchTokenMetadataRange, fetchTokenPrice } from './us
 import type { TokensQueryResult } from '../types/token';
 import { tokenCreatedQuery } from '../graphQl/tokenCreatedQuery';
 import { getDominantColor } from '../utils/colorTheif';
+import { useTradeStore } from '../store/tradeStore';
 
 
 const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
 const PAGE_SIZE = 10;
-const throttledFetchIpfsMetadata = pThrottle({ limit: 50, interval: 10000 })(fetchIpfsMetadata);
-const throttledFetchPrice = pThrottle({ limit: 50, interval: 10000 })(fetchTokenPrice);
+const throttledFetchIpfsMetadata = pThrottle({ limit: 20, interval: 10000 })(fetchIpfsMetadata);
+const throttledFetchPrice = pThrottle({ limit: 15, interval: 10000 })(fetchTokenPrice);
 
 export function useTokens(tokenId?: string) {
     const [hasEnrichedPostHydration, setHasEnrichedPostHydration] = useState(false);
@@ -55,24 +56,62 @@ export function useTokens(tokenId?: string) {
             console.log('[fetchStaticMetadata] Skipping: query not successful');
             return
         };
+        const nowSeconds = Math.floor(Date.now() / 1000);
+        const NEW_TOKEN_AGE_LIMIT = (24) * 10 * 60; // 10 minutes in seconds
 
         const currentTokens = useTokenStore.getState().tokens;
 
         // 1. Build sets for logic
         const existingIds = new Set(currentTokens.map((t: any) => t.tokenId.toString()));
         const newTokens = allFetchedTokens.filter((t: any) => !existingIds.has(t.tokenId.toString()));
-        const incompleteTokens = currentTokens.filter((t: any) =>
-            !t.imageUrl ||
-            !t.description ||
-            t.basePrice === null ||
-            t.basePrice === undefined ||
-            t.price === null ||
-            t.price === undefined
-        );
+        const tradeMap = useTradeStore.getState().trades;
+
+        const incompleteTokens = currentTokens.filter((t: any) => {
+            const isMissing = (v: any) => v === null || v === undefined;
+            // const hasSamePrice = t.price && t.basePrice && t.price.toString() === t.basePrice.toString();
+            const priceEqualsBase = t.price && t.basePrice && t.price.toString() === t.basePrice.toString();
+            const hasNoSupply = t.totalSupply === '0' || t.totalSupply === 0;
+
+            // 🧠 Check if this token has any trades
+            const tokenTrades = tradeMap[t.tokenId];
+            const hasTrades = Array.isArray(tokenTrades) && tokenTrades.length > 0;
+            const tokenAgeSeconds = nowSeconds - parseInt(t.blockTimestamp ?? '0', 10);
+            const isNew = tokenAgeSeconds < NEW_TOKEN_AGE_LIMIT;
+
+            const shouldSkipNewWithNoTrades = isNew && !hasTrades;
+            const shouldSkipOldWithNoSupplyAndTrades = hasNoSupply && hasTrades;
+
+            const shouldSkip = shouldSkipNewWithNoTrades || shouldSkipOldWithNoSupplyAndTrades;
+            if (shouldSkip) {
+                console.log(`[Skip Enrich] Token(${t.name}): Skipped due to skip logic`);
+                return false;
+            }
+
+            const needsEnrichment = (
+                !t.imageUrl ||
+                !t.description ||
+                isMissing(t.basePrice) ||
+                isMissing(t.price) ||
+                (!hasTrades)
+            );
+            if (needsEnrichment) {
+                console.log(`Token ${t.name} needs enrichment:`, {
+                    missingImage: !t.imageUrl,
+                    missingDescription: !t.description,
+                    missingBasePrice: isMissing(t.basePrice),
+                    missingPrice: isMissing(t.price),
+                    priceEqualsBase: priceEqualsBase && hasTrades
+                });
+            }
+
+            return (
+                needsEnrichment
+            );
+        });
 
         // 🔍 Log incomplete tokens found in store
         if (incompleteTokens.length > 0) {
-            console.log(`[fetchStaticMetadata] Found ${incompleteTokens.length} incomplete tokens in store:`, incompleteTokens.map(t => t.tokenId.toString()));
+            console.log(`[fetchStaticMetadata] Found ${incompleteTokens.length} incomplete tokens in store:`, incompleteTokens.map(t => t.name));
         }
 
         // 2. Merge new tokens and incomplete ones (avoiding duplicates)
@@ -88,7 +127,7 @@ export function useTokens(tokenId?: string) {
         const tokensToEnrich = Array.from(tokensToEnrichMap.values());
         // 🧠 Log which tokens we will enrich
         if (tokensToEnrich.length > 0) {
-            console.log(`[fetchStaticMetadata] Enriching ${tokensToEnrich.length} tokens:`, tokensToEnrich.map(t => t.tokenId.toString()));
+            console.log(`[fetchStaticMetadata] Enriching ${tokensToEnrich.length} tokens:`, tokensToEnrich.map(t => t.name));
         } else {
             console.log('[fetchStaticMetadata] No tokens to enrich.');
             return currentTokens;
@@ -139,7 +178,7 @@ export function useTokens(tokenId?: string) {
                         console.warn('getDominantColor failed:', e);
                     }
                 }
-                console.log(`✅ [Enrich Complete] Token ${tokenIdStr} enriched`);
+                console.log(`✅ [Enrich Complete] Token ${token.name} enriched`);
                 return {
                     tokenId: gqlToken.tokenId,
                     name: gqlToken.name,
@@ -175,63 +214,110 @@ export function useTokens(tokenId?: string) {
     }, [allFetchedTokens, isSuccess, setTokens]);
 
     const fetchAllPrices = useCallback(
-        async (tokensToFetch?: any[]) => {
+        async (tokensToFetch?: any[], metadata?: any[]) => {
             if (!tokensToFetch?.length) return;
+            console.log(`🔍 [fetchAllPrices] Starting price fetch for ${tokensToFetch.length} tokens`);
 
             setLoading(true);
             setPricesLoaded(false);
 
             try {
-                const tokenIds: any = await fetchAllTokenIds();
-                const metadata: any = await fetchTokenMetadataRange(0, tokenIds.length);
+                // Use provided metadata or fetch if not provided
+                const tokenIds: any = metadata ? [] : await fetchAllTokenIds();
+                const tokenMetadata: any = metadata || (await fetchTokenMetadataRange(0, tokenIds.length));
+                console.log(`📊 [fetchAllPrices] Got ${tokenIds.length || tokensToFetch.length} token IDs and ${tokenMetadata.length} metadata entries`);
 
-                const batchSize = 10;
-                for (let i = 0; i < tokensToFetch.length; i += batchSize) {
-                    const batch = tokensToFetch.slice(i, i + batchSize);
+                // Filter tokens that need price updates
+                const tokensNeedingPrice = tokensToFetch.filter((token) => {
+                    const isMissing = (v: any) => v === null || v === undefined;
+                    const hasSamePrice = token.price && token.basePrice && token.price.toString() === token.basePrice.toString();
+                    const tradeMap = useTradeStore.getState().trades;
+                    const tokenTrades = tradeMap[token.tokenId];
+                    const hasTrades = Array.isArray(tokenTrades) && tokenTrades.length > 0;
 
-                    await Promise.all(
-                        batch.map(async token => {
-                            try {
-                                if (token.price != null) return;
+                    const needsPriceUpdate = isMissing(token.price) || (hasSamePrice && hasTrades);
+                    if (!needsPriceUpdate) {
+                        console.log(`[fetchAllPrices] Skipping ${token.name}: Price data already complete`);
+                    }
+                    return needsPriceUpdate;
+                });
 
-                                const meta = metadata.find((m: any) => m.tokenId.toString() === token.tokenId.toString());
-                                if (!meta) return;
+                if (tokensNeedingPrice.length === 0) {
+                    console.log('[fetchAllPrices] No tokens need price updates');
+                    setLoading(false);
+                    setPricesLoaded(true);
+                    return;
+                }
 
-                                const price: any = await throttledFetchPrice(BigInt(token.tokenId));
+                console.log(`🔄 [fetchAllPrices] Processing ${tokensNeedingPrice.length} tokens needing price updates`);
 
-                                const base = parseFloat(meta.basePrice?.toString() || '0');
-                                const current = parseFloat(price?.toString() || '0');
-                                const percentChange = base > 0 ? ((current - base) / base) * 100 : null;
+                const batchSize = 100;
+                for (let i = 0; i < tokensNeedingPrice.length; i += batchSize) {
+                    const batch = tokensNeedingPrice.slice(i, i + batchSize);
+                    console.log(`🔄 [fetchAllPrices] Processing batch ${Math.floor(i / batchSize) + 1}, tokens:`, batch.map(t => t.name));
 
-                                updateToken(token.tokenId, {
-                                    basePrice: meta.basePrice?.toString(),
-                                    slope: meta.slope?.toString(),
-                                    reserve: meta.reserve?.toString(),
-                                    totalSupply: meta.totalSupply?.toString(),
-                                    price: price?.toString(),
-                                    percentChange,
-                                });
-                            } catch (err) {
-                                console.error('Failed price for token', token.tokenId, err);
-                                updateToken(token.tokenId, { price: null, percentChange: null });
+                    for (const token of batch) {
+                        try {
+                            console.log(`💰 [Price Check] Token ${token.name}: current price = ${token.price}`);
+
+                            const meta = tokenMetadata.find((m: any) => m.tokenId.toString() === token.tokenId.toString());
+                            if (!meta) {
+                                console.warn(`❌ [fetchAllPrices] No metadata found for token ${token.name}`);
+                                continue;
                             }
-                        })
-                    );
 
-                    if (i + batchSize < tokensToFetch.length) {
-                        await new Promise(res => setTimeout(res, 100));
+                            console.log(`📋 [Metadata] Token ${token.name}:`, {
+                                basePrice: meta.basePrice?.toString(),
+                                totalSupply: meta.totalSupply?.toString(),
+                                slope: meta.slope?.toString(),
+                                reserve: meta.reserve?.toString(),
+                            });
+
+                            const price: any = await throttledFetchPrice(BigInt(token.tokenId));
+                            console.log(`💲 [Price Fetched] Token ${token.name}: ${price?.toString()}`);
+
+                            const base = parseFloat(meta.basePrice?.toString() || '0');
+                            const current = parseFloat(price?.toString() || '0');
+                            const percentChange = base > 0 ? ((current - base) / base) * 100 : null;
+                            console.log(`📈 [Price Calculation] Token ${token.name}: base=${base}, current=${current}, change=${percentChange}%`);
+
+                            updateToken(token.tokenId, {
+                                basePrice: meta.basePrice?.toString(),
+                                slope: meta.slope?.toString(),
+                                reserve: meta.reserve?.toString(),
+                                totalSupply: meta.totalSupply?.toString(),
+                                price: price?.toString(),
+                                percentChange,
+                            });
+                            console.log(`✅ [Updated] Token ${token.name} updated successfully`);
+
+                            await new Promise(res => setTimeout(res, 500)); // 500ms delay between tokens
+                        } catch (err: any) {
+                            console.error('Failed price for token', token.tokenId, err);
+                            updateToken(token.tokenId, { price: null, percentChange: null });
+
+                            if (err.message?.includes('429') || err.message?.includes('Too Many Requests')) {
+                                console.log('⏳ Rate limited, waiting 3 seconds...');
+                                await new Promise(res => setTimeout(res, 3000));
+                            }
+                        }
+                    }
+
+                    if (i + batchSize < tokensNeedingPrice.length) {
+                        console.log('⏳ Waiting 2 seconds before next batch...');
+                        await new Promise(res => setTimeout(res, 2000));
                     }
                 }
             } catch (err) {
-                console.error('Error in fetchAllPrices:', err);
+                console.error('❌ [fetchAllPrices] Major error:', err);
             } finally {
                 setLoading(false);
                 setPricesLoaded(true);
+                console.log('✅ [fetchAllPrices] Completed');
             }
         },
         [updateToken]
     );
-
     // Single token enrich logic (same as before)
     const enrichToken = useCallback(
         async (tokenId: string, totalTokens: number) => {
@@ -341,25 +427,37 @@ export function useTokens(tokenId?: string) {
         fetchStaticMetadata().then(fetchAllPrices);
     }, [hydrated, fetchStaticMetadata, fetchAllPrices, refetchGraphQL]);
     useEffect(() => {
-        if (!hydrated || hasEnrichedPostHydration || tokenId) return;
+        if (!hydrated || hasEnrichedPostHydration || tokenId || !isSuccess) return;
 
         const currentTokens = useTokenStore.getState().tokens;
         const isMissing = (v: any) => v === null || v === undefined;
 
         const incomplete = currentTokens.some(
-            (t: any) =>
-                !t.imageUrl ||
-                !t.description ||
-                isMissing(t.basePrice) ||
-                isMissing(t.price)
+            (t: any) => {
+                return (
+                    !t.imageUrl ||
+                    !t.description ||
+                    isMissing(t.basePrice) ||
+                    isMissing(t.price)
+                );
+            }
         );
 
         if (incomplete) {
             console.log('[Hydration Enrich Trigger] Incomplete tokens found, enriching...');
-            setHasEnrichedPostHydration(true); // prevent re-triggering
+            setHasEnrichedPostHydration(true);
             fetchStaticMetadata().then(fetchAllPrices);
         }
     }, [hydrated, hasEnrichedPostHydration, tokenId, fetchStaticMetadata, fetchAllPrices]);
+    useEffect(() => {
+        const unsubscribe = useTradeStore.getState().subscribeToNewTrades((trade) => {
+            const tokenId = trade.tokenId;
+            console.log(`[useTokens] New trade detected for token ${trade.tokenId}, triggering enrichment`);
+            enrichToken(tokenId.toString(), tokens.length); // ✅ Enrich the traded token
+        });
+
+        return () => unsubscribe();
+    }, [tokens.length, enrichToken]);
 
     return {
         tokens: tokenId ? [] : tokens,

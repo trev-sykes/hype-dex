@@ -125,7 +125,7 @@ const CreateTokenForm = () => {
             setAlert({
                 action: 'create',
                 type: 'pending',
-                message: `Creation pending`
+                message: `Creating your coin`
             });
         }
 
@@ -133,7 +133,7 @@ const CreateTokenForm = () => {
             setAlert({
                 action: 'create',
                 type: 'success',
-                message: `Creation successful!`
+                message: `Your coin is now live!`
             });
 
             // Reset form state
@@ -159,7 +159,7 @@ const CreateTokenForm = () => {
         if (!address || !imageBuffer) {
             // Error will be shown in UI
             console.log(
-                !address ? "Wallet not connected" : "Please upload an image",
+                !address ? "Please connect your wallet" : "Please upload an image",
             );
             return;
         }
@@ -188,7 +188,7 @@ const CreateTokenForm = () => {
                 });
             } catch (error: any) {
                 const message = error instanceof Error ? error.message : 'Unknown error';
-                setUploadError(error.message || "Failed to upload token metadata");
+                setUploadError(error.message || "Failed to upload coin information");
                 setAlert({
                     action: 'create',
                     type: 'error',
@@ -206,7 +206,7 @@ const CreateTokenForm = () => {
             {!successPage ? (
                 <form className={styles.form} onSubmit={onSubmit}>
                     <div className={styles.formHeader}>
-                        <h2>Create Hype Coin</h2>
+                        <h2>Create Your Coin</h2>
                         <Logo size={'6rem'} />
                     </div>
                     {!isOnline && (
@@ -216,14 +216,14 @@ const CreateTokenForm = () => {
                         </div>
                     )}
                     <label>
-                        Name
+                        Coin Name
                         <input
                             disabled={!isOnline}
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
-                            placeholder="Token Name"
+                            placeholder="My Amazing Coin"
                         />
                     </label>
 
@@ -235,7 +235,7 @@ const CreateTokenForm = () => {
                             value={symbol}
                             onChange={(e) => setSymbol(e.target.value)}
                             required
-                            placeholder="SYM"
+                            placeholder="MAC"
                         />
                     </label>
 
@@ -247,7 +247,7 @@ const CreateTokenForm = () => {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             required
-                            placeholder="Token Description"
+                            placeholder="Tell people what makes your coin special"
                         />
                     </label>
                     <label htmlFor="photo">
@@ -303,28 +303,28 @@ const CreateTokenForm = () => {
                         </div>
                     </label>
                     <label>
-                        Base Price (ETH)
-                        <span>0.001</span>
+                        Starting Price
+                        <span>0.001 (automatically set for fairness)</span>
                     </label>
 
                     <label>
-                        Slope (ETH)
-                        <span>0.0001</span>
+                        Price Growth Rate
+                        <span>0.0001 (how much price increases per purchase)</span>
                     </label>
 
                     <button type="submit" disabled={isSubmitting || isPending || !isOnline || isTxLoading}>
-                        {isSubmitting || isPending ? "Submitting..." : "Create Token"}
+                        {isSubmitting || isPending ? "Creating Your Coin..." : "Create My Coin"}
                     </button>
                     {uploadError}
                 </form>
             ) : (
                 <div className={styles.successPage}>
-                    <h2 className={styles.successTitle}>🎉 Token Created Successfully!</h2>
-                    <p className={styles.successMessage}>Your token has been minted and is live on the blockchain.</p>
+                    <h2 className={styles.successTitle}>🎉 Your Coin is Live!</h2>
+                    <p className={styles.successMessage}>Congratulations! Your coin has been created and is ready for people to discover and buy.</p>
 
                     <div className={styles.successActions}>
                         <Link to={'/dashboard/explore'} className={styles.secondaryButton}>
-                            Explore Tokens
+                            See All Coins
                         </Link>
                     </div>
                 </div>
@@ -336,4 +336,3 @@ const CreateTokenForm = () => {
 };
 
 export default CreateTokenForm;
-

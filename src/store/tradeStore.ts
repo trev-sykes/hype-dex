@@ -9,8 +9,9 @@ interface TradeStore {
     setTrades: (key: string, trades: Trade[]) => void;
     appendTrade: (key: string, trade: Trade) => void;
     getLatestTimestamp: (key: string) => number;
+    subscribeToNewTrades: (callback: (trade: Trade) => void) => () => void;
 }
-
+let tradeListeners: ((trade: Trade) => void)[] = [];
 export const useTradeStore = create<TradeStore>()(
     persist(
         (set, get) => ({
@@ -27,12 +28,21 @@ export const useTradeStore = create<TradeStore>()(
                 set({
                     trades: { ...get().trades, [key]: updated },
                 });
+                tradeListeners.forEach(cb => cb(trade));
             },
             getLatestTimestamp: (key: number) => {
                 const trades = get().trades[key] ?? [];
                 return trades.length ? trades[trades.length - 1].timestamp : 0;
-            }
+            },
+
+            subscribeToNewTrades: (callback: any) => {
+                tradeListeners.push(callback);
+                return () => {
+                    tradeListeners = tradeListeners.filter(cb => cb !== callback);
+                };
+            },
         }),
+
 
         {
             name: 'trade-store',

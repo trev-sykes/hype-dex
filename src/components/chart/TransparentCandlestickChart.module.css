@@ -102,7 +102,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 1rem .25rem 0 .25rem;
+    padding: 1rem .25rem 0 .25rem;
     background-color: transparent;
     border-radius: 0 0 16px 16px;
     margin: 0 auto;
@@ -169,7 +169,7 @@
     }
 
     .chartContainer {
-        height: 300px;
+        max-height: 300px;
     }
 
     .priceContainer {

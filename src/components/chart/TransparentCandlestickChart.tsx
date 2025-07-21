@@ -374,7 +374,7 @@ export default function TransparentLineChart({
 
                 const chartOptions = {
                     width: container.clientWidth,
-                    height: height || 400,
+                    height: container.clientHeight, // instead of hardcoding 400
                     layout: {
                         background: { color: 'transparent' },
                         textColor: '#171717',
@@ -434,19 +434,18 @@ export default function TransparentLineChart({
 
                 let resizeObserver: ResizeObserver | null = null;
 
-                if (width || height) {
-                    const debouncedResize = debounce(() => {
-                        if (chartContainerRef.current) {
-                            chart.applyOptions({
-                                width: chartContainerRef.current.clientWidth,
-                                height: chartContainerRef.current.clientHeight,
-                            });
-                        }
-                    }, 200);
+                const debouncedResize = debounce(() => {
+                    if (chartContainerRef.current) {
+                        chart.applyOptions({
+                            width: chartContainerRef.current.clientWidth,
+                            height: chartContainerRef.current.clientHeight,
+                        });
+                    }
+                }, 200);
 
-                    resizeObserver = new ResizeObserver(debouncedResize);
-                    resizeObserver.observe(container);
-                }
+                resizeObserver = new ResizeObserver(debouncedResize);
+                resizeObserver.observe(container);
+
 
                 chart.timeScale().fitContent();
                 setIsChartInitialized(true);
@@ -534,7 +533,7 @@ export default function TransparentLineChart({
         }
 
         updateChartData(trades, selectedInterval);
-    }, [trades, selectedInterval, updateChartData, isChartInitialized, availableIntervals]);
+    }, [trades, updateChartData, isChartInitialized, availableIntervals]);
 
     const intervalOptions = getAvailableIntervals();
 
@@ -561,11 +560,24 @@ export default function TransparentLineChart({
                         )}
                     </div>
                     {width && height ? (
-                        <div ref={chartContainerRef} className={styles.chartContainerNS} style={{ width: width, height: height }} />
+                        <div ref={chartContainerRef} className={styles.chartContainerNS} style={{ width: width, height: height, pointerEvents: 'none' }} />
                     ) : (
                         <div ref={chartContainerRef} className={styles.chartContainer} />
                     )}
 
+
+
+                    {!width && !height && showSparseDataWarning && (
+                        <div className={styles.sparseDataWarning}>
+                            <p>Data too sparse for selected interval. Showing all trades.</p>
+                        </div>
+                    )}
+
+                    {!width && !height && !isLoading && trades.length === 0 && (
+                        <div className={styles.noDataOverlay}>
+                            <p>No trades available for this token.</p>
+                        </div>
+                    )}
                     {!width && !height && (
                         <div className={styles.intervalButtonGroup}>
                             {intervalOptions.map((option) => (
@@ -577,18 +589,6 @@ export default function TransparentLineChart({
                                     {option.label}
                                 </button>
                             ))}
-                        </div>
-                    )}
-
-                    {!width && !height && showSparseDataWarning && (
-                        <div className={styles.sparseDataWarning}>
-                            <p>Data too sparse for selected interval. Showing all trades.</p>
-                        </div>
-                    )}
-
-                    {!width && !height && !isLoading && trades.length === 0 && (
-                        <div className={styles.noDataOverlay}>
-                            <p>No trades available for this token.</p>
                         </div>
                     )}
                 </>

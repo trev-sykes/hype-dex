@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { parseEther, formatEther } from 'viem';
-import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import styles from './TradePage.module.css';
@@ -10,20 +10,19 @@ import TokenCandlestickChart from '../../../components/chart/CandlestickChart';
 import { useTokenActivity } from '../../../hooks/useTokenActivity';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
-import { useUserTokenBalance } from '../../../hooks/useUserBalance';
-import { useTokenPriceData } from '../../../hooks/useTokenPriceData';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 import { TradeHistoryTable } from './TradeHistoryTable';
 interface TradePageProps {
   refetch: any;
+  refetchAll: any;
+  refetchBalance: any;
+  tokenBalance: any;
+  address: any;
+  balance: any;
 }
-export const TradePage: React.FC<TradePageProps> = ({ refetch }) => {
-  const { address } = useAccount();
+export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchAll, refetchBalance, tokenBalance, address, balance }) => {
   const { coin } = useCoinStore();
   const { setAlert } = useAlertStore();
-  const balance = useBalance({ address });
-  const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
-  const { refetchAll } = useTokenPriceData();
   const [ethInput, setEthInput] = useState('');
   const [burnAmount, setBurnAmount] = useState('');
   const [isSellActive, setIsSellActive] = useState<boolean>(false);
