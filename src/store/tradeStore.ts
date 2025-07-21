@@ -21,10 +21,10 @@ export const useTradeStore = create<TradeStore>()(
             trades: {},
             setTrades: (key: string, trades: Trade[]) => {
                 set((state: any) => {
-                    // if (deepEqual(state.trades[key], trades)) {
-                    //     console.log(`[Trade Store] Skipping setTrades for key "${key}" (no changes)`);
-                    //     return state;
-                    // }
+                    if (deepEqual(state.trades[key], trades)) {
+                        console.log(`[Trade Store] Skipping setTrades for key "${key}" (no changes)`);
+                        return state;
+                    }
                     console.log(`[Trade Store] Setting trades for key "${key}". Total: ${trades.length}`);
                     return {
                         trades: { ...state.trades, [key]: trades },
