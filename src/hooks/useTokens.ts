@@ -54,7 +54,9 @@ export function useTokens(tokenId?: string) {
     const fetchStaticMetadata = useCallback(async () => {
         if (!isSuccess || allFetchedTokens.length === 0) return;
 
-        const existingIds = new Set(tokens.map((t: any) => t.tokenId.toString()));
+        // Get fresh tokens from store instead of using stale closure
+        const currentTokens = useTokenStore.getState().tokens;
+        const existingIds = new Set(currentTokens.map((t: any) => t.tokenId.toString()));
         const newTokens = allFetchedTokens.filter((t: any) => !existingIds.has(t.tokenId.toString()));
 
         if (newTokens.length === 0 && tokens.length > 0) {
@@ -135,7 +137,7 @@ export function useTokens(tokenId?: string) {
         });
         setTokens(updated);
         return filtered;
-    }, [allFetchedTokens, isSuccess, tokens, setTokens]);
+    }, [allFetchedTokens, isSuccess, setTokens]);
 
     const fetchAllPrices = useCallback(
         async (tokensToFetch?: any[]) => {
@@ -251,16 +253,15 @@ export function useTokens(tokenId?: string) {
 
     // Load all tokens (no tokenId)
     useEffect(() => {
-        if (tokenId) return;
-        if (hydrated) return;
-
+        if (tokenId || !hydrated) return; // ✅ Fixed condition
         const load = async () => {
             setLoading(true);
             try {
-                await fetchStaticMetadata();
+                const enrichedTokens = await fetchStaticMetadata();
 
-                if (!pricesLoaded || tokens.length === 0) {
-                    await fetchAllPrices(tokens);
+                // Use the returned tokens instead of stale closure
+                if (!pricesLoaded && enrichedTokens?.length > 0) {
+                    await fetchAllPrices(enrichedTokens);
                 }
             } catch (err) {
                 console.error('loadTokens error', err);
@@ -270,17 +271,17 @@ export function useTokens(tokenId?: string) {
         };
 
         load();
-    }, [hydrated, allFetchedTokens.length, fetchStaticMetadata, fetchAllPrices, pricesLoaded, tokenId, tokens]);
+    }, [hydrated, allFetchedTokens.length, fetchStaticMetadata, fetchAllPrices, pricesLoaded, tokenId]);
 
     // Fetch single token if tokenId present
     useEffect(() => {
-        if (hydrated || !tokenId) return;
+        if (!hydrated || !tokenId) return; // Changed to !hydrated
         fetchSingle();
     }, [hydrated, tokenId, fetchSingle]);
 
     // Force refetch if new tokens appear
     useEffect(() => {
-        if (hydrated || tokenId || !allFetchedTokens.length) return;
+        if (!hydrated || tokenId || !allFetchedTokens.length) return;
         const storeIds = new Set(tokens.map(t => t.tokenId.toString()));
         const hasNew = allFetchedTokens.some((t: any) => !storeIds.has(t.tokenId.toString()));
         if (hasNew) {
@@ -300,7 +301,7 @@ export function useTokens(tokenId?: string) {
     }, [hydrated, tokens.length, fetchStaticMetadata]);
 
     const refetch = useCallback(() => {
-        if (hydrated) return;
+        if (!hydrated) return; // ✅ Changed condition
         setPricesLoaded(false);
         refetchGraphQL();
         fetchStaticMetadata().then(fetchAllPrices);
