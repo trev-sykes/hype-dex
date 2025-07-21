@@ -418,7 +418,7 @@ export default function TransparentLineChart({
                 const areaSeries = chart.addAreaSeries({
                     topColor: hexToRgba(hexColor || '#1c67a8', 0.4),
                     bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),
-                    lineColor: hexColor ? hexColor : '#1c67a8',
+                    lineColor: '#1c67a8',
                     lineWidth: 2,
                     priceLineVisible: false,
                     priceFormat: {
@@ -484,7 +484,7 @@ export default function TransparentLineChart({
             areaSeriesRef.current.applyOptions({
                 topColor: hexToRgba(hexColor || '#1c67a8', 0.4),
                 bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),
-                lineColor: hexColor ? hexColor : '#1c67a8',
+                lineColor: '#1c67a8',
             });
         }
     }, [hexColor]);
