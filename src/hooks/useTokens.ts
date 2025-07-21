@@ -82,7 +82,7 @@ export function useTokens(tokenId?: string) {
                         const imageUrl = convertToIpfsUrl(ipfsData.image);
                         console.log(`Loading image for token ${gqlToken.tokenId}:`, imageUrl);
                         const img: any = new Image();
-                        img.crossOrigin = 'Anonymous'; // Important for CORS!
+                        img.crossOrigin = 'Anonymous';
                         img.src = imageUrl;
 
                         color = await new Promise<string | null>((resolve) => {

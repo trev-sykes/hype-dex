@@ -93,13 +93,11 @@ function useAllTrades() {
     }, [data, isSuccess]);
 
     useEffect(() => {
-        useEffect(() => {
-            if (parsedTrades.length === 0) return;
+        if (parsedTrades.length === 0) return;
 
-            if (!deepEqual(trades, parsedTrades)) {
-                setTrades('all', parsedTrades);
-            }
-        }, [parsedTrades, setTrades, trades]);
+        if (!deepEqual(trades, parsedTrades)) {
+            setTrades('all', parsedTrades);
+        }
     }, [parsedTrades, setTrades, trades.length]);
 
 
