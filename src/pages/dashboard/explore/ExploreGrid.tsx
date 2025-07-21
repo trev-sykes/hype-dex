@@ -3,14 +3,18 @@ import { BarLoader, FadeLoader } from 'react-spinners';
 import styles from './ExploreGrid.module.css';
 import Logo from '../../../components/logo/Logo';
 import { useOnline } from '../../../hooks/useOnline';
-import { useTokens } from '../../../hooks/useTokens';
 import { useWitdh } from '../../../hooks/useWidth';
 import { scrollToTop } from '../../../utils/scroll';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
-
-export const ExploreGrid: React.FC = () => {
+import type { Token } from '../../../types/token';
+interface ExploreGridProps {
+    tokens: any,
+    fetchNextPage: any,
+    hasNextPage: any,
+    loading: any
+}
+export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage, hasNextPage, loading }) => {
     const isOnline = useOnline();
-    const { tokens, fetchNextPage, hasNextPage, loading } = useTokens();
     const viewportWidth = useWitdh();
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
@@ -32,12 +36,12 @@ export const ExploreGrid: React.FC = () => {
     useEffect(() => {
         if (tokens && tokens.length) {
             const initialMap = new Map<string, boolean | null>();
-            tokens.forEach((coin) => {
+            tokens.forEach((coin: Token) => {
                 initialMap.set(coin.tokenId.toString(), null);
             });
             setLoadStates(initialMap);
 
-            tokens.forEach((coin) => {
+            tokens.forEach((coin: Token) => {
                 if (!coin.imageUrl) return;
                 const img = new Image();
                 img.src = coin.imageUrl;
@@ -152,7 +156,7 @@ export const ExploreGrid: React.FC = () => {
             ) : coinsToDisplay.length > 0 ? (
                 <>
                     <div className={styles.gridContainer}>
-                        {coinsToDisplay.map((coin) => (
+                        {coinsToDisplay.map((coin: Token) => (
                             <TokenCard
                                 key={coin.tokenId.toString()}
                                 coin={coin}

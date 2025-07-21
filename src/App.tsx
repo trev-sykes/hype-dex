@@ -13,32 +13,51 @@ import { TradePage } from './pages/dashboard/trade/TradePage'
 import { CoinInfo } from './pages/dashboard/coinInfo/CoinInfo'
 import { ScrollToTop } from './hooks/useScrollToTop'
 import { useTradeUpdater } from './hooks/useTradeUpdater'
+import { useTokenCreationUpdater } from './hooks/useNewTokenCreationUpdater'
+import { useTokens } from './hooks/useTokens'
 
 
-function App() {
+
+export default function App() {
   useTradeUpdater();
-  const queryClient = new QueryClient()
+  useTokenCreationUpdater();
+  const queryClient = new QueryClient();
 
   return (
-    <WagmiProvider config={config} >
+    <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter >
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route path='/dashboard/' element={<DashboardHome />} />
-              <Route path="/dashboard/explore" element={<ExploreGrid />} />
-              <Route path="/dashboard/create" element={<CreateTokenForm />} />
-              <Route path="/dashboard/explore/:tokenId" element={<CoinInfo />} />
-              <Route path="/dashboard/explore/:tokenId/trade" element={<TradePage />} />
-
-            </Route>
-          </Routes>
-        </BrowserRouter>
+        <InnerApp />
       </QueryClientProvider>
     </WagmiProvider>
-  )
+  );
 }
 
-export default App
+function InnerApp() {
+  const { tokens, fetchNextPage, hasNextPage, refetch, loading } = useTokens();
+
+  return (
+    <BrowserRouter>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route path="/dashboard/" element={<DashboardHome />} />
+          <Route
+            path="/dashboard/explore"
+            element={
+              <ExploreGrid
+                tokens={tokens}
+                fetchNextPage={fetchNextPage}
+                hasNextPage={hasNextPage}
+                loading={loading}
+              />
+            }
+          />
+          <Route path="/dashboard/create" element={<CreateTokenForm />} />
+          <Route path="/dashboard/explore/:tokenId" element={<CoinInfo refetch={refetch} />} />
+          <Route path="/dashboard/explore/:tokenId/trade" element={<TradePage refetch={refetch} />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}

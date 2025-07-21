@@ -14,11 +14,12 @@ import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
-import { useTokens } from '../../../hooks/useTokens';
 import { useTokenPriceData } from '../../../hooks/useTokenPriceData';
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
-
-export const CoinInfo: React.FC = () => {
+interface Props {
+    refetch: any;
+}
+export const CoinInfo: React.FC<Props> = ({ refetch }) => {
     const { coin } = useCoinStore();
     const { balanceEth, totalValueEth } = useUserTokenBalance();
     const trades = useTokenActivity(coin?.tokenId?.toString());
@@ -29,7 +30,6 @@ export const CoinInfo: React.FC = () => {
     const [visibleButtons, setVisibleButtons] = useState([false, false]);
     const [action, setAction] = useState<'buy' | 'sell' | ''>('');
     const { address } = useAccount();
-    const { refetch } = useTokens();
     const { setAlert } = useAlertStore();
     const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
     const { refetchAll } = useTokenPriceData();

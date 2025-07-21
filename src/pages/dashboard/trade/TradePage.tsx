@@ -11,14 +11,15 @@ import { useTokenActivity } from '../../../hooks/useTokenActivity';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
 import { useUserTokenBalance } from '../../../hooks/useUserBalance';
-import { useTokens } from '../../../hooks/useTokens';
 import { useTokenPriceData } from '../../../hooks/useTokenPriceData';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 import { TradeHistoryTable } from './TradeHistoryTable';
-export const TradePage: React.FC = () => {
+interface TradePageProps {
+  refetch: any;
+}
+export const TradePage: React.FC<TradePageProps> = ({ refetch }) => {
   const { address } = useAccount();
   const { coin } = useCoinStore();
-  const { refetch } = useTokens();
   const { setAlert } = useAlertStore();
   const balance = useBalance({ address });
   const { refetchBalance, tokenBalance }: any = useUserTokenBalance();

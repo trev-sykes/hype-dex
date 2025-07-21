@@ -9,11 +9,13 @@ interface TokenStore {
     addToken: (token: Token) => void;
     updateToken: (tokenId: string, newData: Partial<Token>) => void;
     clearTokens: () => void;
+    getLatestTimestamp: () => number;
+    appendToken: (token: Token) => void;
 }
 
 export const useTokenStore = create<TokenStore>()(
     persist(
-        (set) => ({
+        (set, get): TokenStore => ({
             tokens: [],
             hydrated: false,
 
@@ -36,6 +38,24 @@ export const useTokenStore = create<TokenStore>()(
             },
 
             clearTokens: () => set({ tokens: [] }),
+            // NEW method: get max blockTimestamp from tokens
+            getLatestTimestamp: () => {
+                const tokens = get().tokens;
+                if (tokens.length === 0) return 0;
+                return Math.max(...tokens.map((t: any) => t.blockTimestamp ?? 0));
+            },
+
+            appendToken: (token: Token) => {
+                const tokens = get().tokens;
+                const exists = tokens.find((t: any) => t.tokenId.toString() === token.tokenId.toString());
+                if (!exists) {
+                    set({ tokens: [...tokens, token] });
+                    console.log(`[Token Store] Appended tokenId ${token.tokenId}`);
+                } else {
+                    // optionally update existing token data here
+                    // For example, updateToken(token.tokenId, token)
+                }
+            },
         }),
         {
             name: 'token-storage',

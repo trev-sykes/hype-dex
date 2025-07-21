@@ -44,7 +44,7 @@ export function useTokens(tokenId?: string) {
         },
         initialPageParam: 0,
         enabled: !tokenId,
-        refetchInterval: 60000,
+        refetchInterval: 10000,
         refetchOnWindowFocus: false,
     });
     // Flatten all tokens fetched across pages
@@ -275,13 +275,13 @@ export function useTokens(tokenId?: string) {
 
     // Fetch single token if tokenId present
     useEffect(() => {
-        if (hydrated || !tokenId) return;
+        if (!hydrated || !tokenId) return;
         fetchSingle();
     }, [hydrated, tokenId, fetchSingle]);
 
     // Force refetch if new tokens appear
     useEffect(() => {
-        if (hydrated || tokenId || !allFetchedTokens.length) return;
+        if (!hydrated || tokenId || !allFetchedTokens.length) return;
         const storeIds = new Set(tokens.map(t => t.tokenId.toString()));
         const hasNew = allFetchedTokens.some((t: any) => !storeIds.has(t.tokenId.toString()));
         if (hasNew) {
@@ -301,11 +301,17 @@ export function useTokens(tokenId?: string) {
     }, [hydrated, tokens.length, fetchStaticMetadata]);
 
     const refetch = useCallback(() => {
-        if (hydrated) return;
         setPricesLoaded(false);
         refetchGraphQL();
         fetchStaticMetadata().then(fetchAllPrices);
     }, [hydrated, fetchStaticMetadata, fetchAllPrices, refetchGraphQL]);
+    useEffect(() => {
+        // Find tokens missing imageUrl or color
+        const incompleteTokens = tokens.filter(t => !t.imageUrl);
+        if (incompleteTokens.length) {
+            fetchStaticMetadata();
+        }
+    }, [tokens, fetchStaticMetadata]);
 
     return {
         tokens: tokenId ? [] : tokens,
