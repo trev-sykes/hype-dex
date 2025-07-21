@@ -171,7 +171,7 @@ export function useAllTrades() {
 
     return trades;
 }
-export function useTokenActivity(tokenId: string) {
+export function useTokenActivity(tokenId: any) {
     const allTrades: any = useTradeStore(state => state.trades['all'] || []);
     // memoize filtering by tokenId only if allTrades or tokenId changes
     return React.useMemo(() => {
