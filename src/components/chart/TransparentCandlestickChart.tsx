@@ -178,7 +178,7 @@ export default function TransparentLineChart({
             if (interval === -1) {
                 setShowSparseDataWarning(false);
 
-                const allTimeData = trades
+                const allTimeData: any = trades
                     .filter((trade) => isFinite(trade.price))
                     .map((trade) => ({ time: trade.timestamp, value: trade.price }));
 
@@ -189,7 +189,7 @@ export default function TransparentLineChart({
                     : null;
 
                 if (currentPrice !== null) {
-                    const maxPrice = processedData.length > 0 ? Math.max(...processedData.map((d: any) => d.value)) : -Infinity;
+                    const maxPrice: any = processedData.length > 0 ? Math.max(...processedData.map((d: any) => d.value)) : -Infinity;
 
                     if (processedData.length === 0 || currentPrice > maxPrice || currentPrice >= processedData[processedData.length - 1].value) {
                         if (processedData.length > 0 && processedData[processedData.length - 1].time === Math.floor(Date.now() / 1000)) {
@@ -270,7 +270,7 @@ export default function TransparentLineChart({
             const buckets = aggregateBuckets(trades, interval);
             if (Object.keys(buckets).length < 2 && interval !== -1) {
                 setShowSparseDataWarning(true);
-                updateChartData(trades, -1);
+                setSelectedInterval(-1);
                 return;
             } else {
                 setShowSparseDataWarning(false);
@@ -374,7 +374,7 @@ export default function TransparentLineChart({
 
                 const chartOptions = {
                     width: container.clientWidth,
-                    height: container.clientHeight, // instead of hardcoding 400
+                    height: container.clientHeight,
                     layout: {
                         background: { color: 'transparent' },
                         textColor: '#171717',
@@ -418,7 +418,7 @@ export default function TransparentLineChart({
                 const areaSeries = chart.addAreaSeries({
                     topColor: hexToRgba(hexColor || '#1c67a8', 0.4),
                     bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),
-                    lineColor: '#1c67a8',
+                    lineColor: hexColor ? hexColor : '#1c67a8',
                     lineWidth: 2,
                     priceLineVisible: false,
                     priceFormat: {
@@ -434,18 +434,19 @@ export default function TransparentLineChart({
 
                 let resizeObserver: ResizeObserver | null = null;
 
-                const debouncedResize = debounce(() => {
-                    if (chartContainerRef.current) {
-                        chart.applyOptions({
-                            width: chartContainerRef.current.clientWidth,
-                            height: chartContainerRef.current.clientHeight,
-                        });
-                    }
-                }, 200);
+                if (width || height) {
+                    const debouncedResize = debounce(() => {
+                        if (chartContainerRef.current) {
+                            chart.applyOptions({
+                                width: chartContainerRef.current.clientWidth,
+                                height: chartContainerRef.current.clientHeight,
+                            });
+                        }
+                    }, 200);
 
-                resizeObserver = new ResizeObserver(debouncedResize);
-                resizeObserver.observe(container);
-
+                    resizeObserver = new ResizeObserver(debouncedResize);
+                    resizeObserver.observe(container);
+                }
 
                 chart.timeScale().fitContent();
                 setIsChartInitialized(true);
@@ -484,7 +485,7 @@ export default function TransparentLineChart({
             areaSeriesRef.current.applyOptions({
                 topColor: hexToRgba(hexColor || '#1c67a8', 0.4),
                 bottomColor: hexToRgba(hexColor || '#1c67a8', 0.0),
-                lineColor: '#1c67a8',
+                lineColor: hexColor ? hexColor : '#1c67a8',
             });
         }
     }, [hexColor]);
@@ -519,7 +520,7 @@ export default function TransparentLineChart({
         return filteredByBuckets.length > 0 ? filteredByBuckets : [{ label: 'All', value: -1 }];
     }, [trades]);
 
-    const availableIntervals = useMemo(() => getAvailableIntervals(), [trades]);
+    const availableIntervals = useMemo(() => getAvailableIntervals(), [getAvailableIntervals]);
 
     useEffect(() => {
         if (!isChartInitialized) return;
@@ -527,15 +528,15 @@ export default function TransparentLineChart({
         const isSelectedAvailable = availableIntervals.some((i) => i.value === selectedInterval);
 
         if (!isSelectedAvailable) {
-            const fallback = availableIntervals.find((i) => i.value === -1) || availableIntervals.slice(-1)[0];
+            const fallback = availableIntervals.find((i) => i.value === -1) || availableIntervals[availableIntervals.length - 1];
             setSelectedInterval(fallback.value);
             return;
         }
 
         updateChartData(trades, selectedInterval);
-    }, [trades, updateChartData, isChartInitialized, availableIntervals]);
+    }, [trades, selectedInterval, updateChartData, isChartInitialized, availableIntervals]);
 
-    const intervalOptions = getAvailableIntervals();
+    const intervalOptions = availableIntervals;
 
     return (
         <div className={styles.container}>
@@ -560,24 +561,11 @@ export default function TransparentLineChart({
                         )}
                     </div>
                     {width && height ? (
-                        <div ref={chartContainerRef} className={styles.chartContainerNS} style={{ width: width, height: height, pointerEvents: 'none' }} />
+                        <div ref={chartContainerRef} className={styles.chartContainerNS} style={{ width: width, height: height }} />
                     ) : (
                         <div ref={chartContainerRef} className={styles.chartContainer} />
                     )}
 
-
-
-                    {!width && !height && showSparseDataWarning && (
-                        <div className={styles.sparseDataWarning}>
-                            <p>Data too sparse for selected interval. Showing all trades.</p>
-                        </div>
-                    )}
-
-                    {!width && !height && !isLoading && trades.length === 0 && (
-                        <div className={styles.noDataOverlay}>
-                            <p>No trades available for this token.</p>
-                        </div>
-                    )}
                     {!width && !height && (
                         <div className={styles.intervalButtonGroup}>
                             {intervalOptions.map((option) => (
@@ -589,6 +577,18 @@ export default function TransparentLineChart({
                                     {option.label}
                                 </button>
                             ))}
+                        </div>
+                    )}
+
+                    {!width && !height && showSparseDataWarning && (
+                        <div className={styles.sparseDataWarning}>
+                            <p>Data too sparse for selected interval. Showing all trades.</p>
+                        </div>
+                    )}
+
+                    {!width && !height && !isLoading && trades.length === 0 && (
+                        <div className={styles.noDataOverlay}>
+                            <p>No trades available for this token.</p>
                         </div>
                     )}
                 </>
