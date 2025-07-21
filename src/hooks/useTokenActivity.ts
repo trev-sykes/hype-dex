@@ -36,7 +36,68 @@ const ALL_TRADES_QUERY = gql`
   }
 }
 `;
+const TRADES_BY_TOKEN_QUERY = gql`
+  query Trades($tokenIds: [BigInt!]) {
+    burneds(where: { tokenId_in: $tokenIds }) {
+      id
+      seller
+      tokenId
+      amount
+      refund
+      blockTimestamp
+    }
+    minteds(where: { tokenId_in: $tokenIds }) {
+      id
+      buyer
+      tokenId
+      amount
+      cost
+      blockTimestamp
+    }
+  }
+`;
+function useTradesForTokens(tokenIds: string[]) {
+    const setTrades = useTradeStore((state) => state.setTrades);
+    const tradesByToken = useTradeStore((state) => state.trades);
 
+    // Only fetch if we don't already have trades for these tokens
+    const missingTokenIds = tokenIds.filter(id => !tradesByToken[id]);
+
+    const { data, isSuccess, error } = useQuery({
+        queryKey: ['token-trades', missingTokenIds.sort().join(',')],
+        queryFn: async () => {
+            const result = await request(url, TRADES_BY_TOKEN_QUERY, { tokenIds: missingTokenIds }, headers);
+            return result;
+        },
+        enabled: missingTokenIds.length > 0,
+        refetchOnWindowFocus: false,
+    });
+
+    const parsedTrades: Trade[] = useMemo(() => {
+        if (!data || !isSuccess) return [];
+        return parseTrades(data);
+    }, [data, isSuccess]);
+
+    useEffect(() => {
+        if (!parsedTrades.length) return;
+
+        const groupedByToken: any = parsedTrades.reduce((acc, trade) => {
+            if (!acc[trade.tokenId]) acc[trade.tokenId] = [];
+            acc[trade.tokenId].push(trade);
+            return acc;
+        }, {} as Record<string, Trade[]>);
+
+        for (const tokenId in groupedByToken) {
+            setTrades(tokenId, groupedByToken[tokenId]);
+        }
+    }, [parsedTrades, setTrades]);
+
+    if (error) {
+        console.error('[useTradesForTokens] Error fetching trades:', error);
+    }
+
+    return tradesByToken;
+}
 function parseTrades(data: any): Trade[] {
     const WEI_IN_ETH = 1e18;
 
@@ -107,6 +168,8 @@ function useAllTrades() {
     return trades;
 }
 export function useTokenActivity(tokenId: any) {
+    const tradesByToken = useTradesForTokens([tokenId]);
+    return tradesByToken[tokenId] ?? [];
     const allTrades = useAllTrades();
 
     return useMemo(() => {
