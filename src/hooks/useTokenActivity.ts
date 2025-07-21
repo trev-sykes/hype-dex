@@ -18,7 +18,7 @@ const headers = { Authorization: 'Bearer {api-key}' };
 
 const ALL_TRADES_QUERY = gql`
 {
-  burneds(first: 5000) {
+  burneds(first: 1000) {
     id
     seller
     tokenId
@@ -26,7 +26,7 @@ const ALL_TRADES_QUERY = gql`
     refund
     blockTimestamp
   }
-  minteds(first: 5000) {
+  minteds(first: 1000) {
     id
     buyer
     tokenId
@@ -93,12 +93,11 @@ function useAllTrades() {
     }, [data, isSuccess]);
 
     useEffect(() => {
-        if (parsedTrades.length === 0) return;
-
-        if (!deepEqual(trades, parsedTrades)) {
+        if (!parsedTrades.length) return;
+        if (!trades || !deepEqual(trades, parsedTrades)) {
             setTrades('all', parsedTrades);
         }
-    }, [parsedTrades, setTrades, trades]);
+    }, [parsedTrades, trades, setTrades]);
 
 
     if (error) {
