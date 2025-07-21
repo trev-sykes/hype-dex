@@ -7,6 +7,7 @@ import { useWitdh } from '../../../hooks/useWidth';
 import { scrollToTop } from '../../../utils/scroll';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
 import type { Token } from '../../../types/token';
+import { useTokenStore } from '../../../store/allTokensStore';
 interface ExploreGridProps {
     tokens: any,
     fetchNextPage: any,
@@ -15,6 +16,7 @@ interface ExploreGridProps {
 }
 export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage, hasNextPage, loading }) => {
     const isOnline = useOnline();
+    const { clearTokens } = useTokenStore();
     const viewportWidth = useWitdh();
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
@@ -147,6 +149,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
             <div className={`${styles.symbolText} ${styles.tokenCount}`}>
                 {coinsToDisplay.length} Tokens
             </div>
+            <button onClick={() => { clearTokens() }}>Clear Tokens</button>
 
             {/* Grid of Coins */}
             {isSearching ? (
