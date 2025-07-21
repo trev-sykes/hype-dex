@@ -18,6 +18,7 @@ const throttledFetchIpfsMetadata = pThrottle({ limit: 50, interval: 10000 })(fet
 const throttledFetchPrice = pThrottle({ limit: 50, interval: 10000 })(fetchTokenPrice);
 
 export function useTokens(tokenId?: string) {
+    const [hasEnrichedPostHydration, setHasEnrichedPostHydration] = useState(false);
     const { tokens, hydrated, setTokens, updateToken, clearTokens } = useTokenStore();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
@@ -60,7 +61,15 @@ export function useTokens(tokenId?: string) {
         // 1. Build sets for logic
         const existingIds = new Set(currentTokens.map((t: any) => t.tokenId.toString()));
         const newTokens = allFetchedTokens.filter((t: any) => !existingIds.has(t.tokenId.toString()));
-        const incompleteTokens = currentTokens.filter((t: any) => !t.imageUrl || !t.description);
+        const incompleteTokens = currentTokens.filter((t: any) =>
+            !t.imageUrl ||
+            !t.description ||
+            t.basePrice === null ||
+            t.basePrice === undefined ||
+            t.price === null ||
+            t.price === undefined
+        );
+
         // 🔍 Log incomplete tokens found in store
         if (incompleteTokens.length > 0) {
             console.log(`[fetchStaticMetadata] Found ${incompleteTokens.length} incomplete tokens in store:`, incompleteTokens.map(t => t.tokenId.toString()));
@@ -279,7 +288,7 @@ export function useTokens(tokenId?: string) {
 
     // Load all tokens (no tokenId)
     useEffect(() => {
-        if (tokenId || hydrated) return; // ✅ Fixed condition
+        if (tokenId || hydrated) return;
         const load = async () => {
             setLoading(true);
             try {
@@ -332,12 +341,25 @@ export function useTokens(tokenId?: string) {
         fetchStaticMetadata().then(fetchAllPrices);
     }, [hydrated, fetchStaticMetadata, fetchAllPrices, refetchGraphQL]);
     useEffect(() => {
-        // Find tokens missing imageUrl or color
-        const incompleteTokens = tokens.filter(t => !t.imageUrl || !t.description);
-        if (incompleteTokens.length) {
-            fetchStaticMetadata();
+        if (!hydrated || hasEnrichedPostHydration || tokenId) return;
+
+        const currentTokens = useTokenStore.getState().tokens;
+        const isMissing = (v: any) => v === null || v === undefined;
+
+        const incomplete = currentTokens.some(
+            (t: any) =>
+                !t.imageUrl ||
+                !t.description ||
+                isMissing(t.basePrice) ||
+                isMissing(t.price)
+        );
+
+        if (incomplete) {
+            console.log('[Hydration Enrich Trigger] Incomplete tokens found, enriching...');
+            setHasEnrichedPostHydration(true); // prevent re-triggering
+            fetchStaticMetadata().then(fetchAllPrices);
         }
-    }, [tokens, fetchStaticMetadata]);
+    }, [hydrated, hasEnrichedPostHydration, tokenId, fetchStaticMetadata, fetchAllPrices]);
 
     return {
         tokens: tokenId ? [] : tokens,
