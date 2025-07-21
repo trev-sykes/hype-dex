@@ -253,7 +253,7 @@ export function useTokens(tokenId?: string) {
 
     // Load all tokens (no tokenId)
     useEffect(() => {
-        if (tokenId || !hydrated) return; // ✅ Fixed condition
+        if (tokenId || hydrated) return; // ✅ Fixed condition
         const load = async () => {
             setLoading(true);
             try {
@@ -275,13 +275,13 @@ export function useTokens(tokenId?: string) {
 
     // Fetch single token if tokenId present
     useEffect(() => {
-        if (!hydrated || !tokenId) return; // Changed to !hydrated
+        if (hydrated || !tokenId) return;
         fetchSingle();
     }, [hydrated, tokenId, fetchSingle]);
 
     // Force refetch if new tokens appear
     useEffect(() => {
-        if (!hydrated || tokenId || !allFetchedTokens.length) return;
+        if (hydrated || tokenId || !allFetchedTokens.length) return;
         const storeIds = new Set(tokens.map(t => t.tokenId.toString()));
         const hasNew = allFetchedTokens.some((t: any) => !storeIds.has(t.tokenId.toString()));
         if (hasNew) {
@@ -301,7 +301,7 @@ export function useTokens(tokenId?: string) {
     }, [hydrated, tokens.length, fetchStaticMetadata]);
 
     const refetch = useCallback(() => {
-        if (!hydrated) return; // ✅ Changed condition
+        if (hydrated) return;
         setPricesLoaded(false);
         refetchGraphQL();
         fetchStaticMetadata().then(fetchAllPrices);
