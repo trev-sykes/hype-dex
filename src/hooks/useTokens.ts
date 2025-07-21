@@ -77,7 +77,8 @@ export function useTokens(tokenId?: string) {
             const hasTrades = Array.isArray(tokenTrades) && tokenTrades.length > 0;
             const tokenAgeSeconds = nowSeconds - parseInt(t.blockTimestamp ?? '0', 10);
             const isNew = tokenAgeSeconds < NEW_TOKEN_AGE_LIMIT;
-
+            // 💡 Skip logic should NOT apply if image is missing
+            const isImageMissing = !t.imageUrl;
             const shouldSkipNewWithNoTrades = isNew && !hasTrades;
             const shouldSkipOldWithNoSupplyAndTrades = hasNoSupply && hasTrades;
 
@@ -88,7 +89,7 @@ export function useTokens(tokenId?: string) {
             }
 
             const needsEnrichment = (
-                !t.imageUrl ||
+                isImageMissing ||
                 !t.description ||
                 isMissing(t.basePrice) ||
                 isMissing(t.price) ||
