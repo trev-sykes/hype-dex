@@ -1,6 +1,6 @@
 // PortfolioBalanceCard.tsx - Enhanced card component
 import React from 'react';
-import styles from './portfolioBalanceCard.module.css';
+import styles from "./PortfolioBalanceCard.module.css"
 import { Link, useNavigate } from 'react-router-dom';
 
 interface PortfolioBalanceCardProps {
