@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
-import styles from './TransparentCandlestickChart.module.css';
+import styles from './LineChart.module.css';
 import { FadeLoader } from 'react-spinners';
 import { formatEther } from 'ethers';
 import { useTradeStore } from '../../store/tradeStore';
-import { useTokenPriceData } from '../../hooks/useTokenPriceData';
+import { parsePrice } from '../../utils/parsePrice';
 
 interface Trade {
     tokenId: bigint;
@@ -68,7 +68,7 @@ function getValidColor(color: string, defaultColor: string = '#1c67a8'): string 
     return hexColor;
 }
 
-export default function TransparentLineChart({
+export default function LineChart({
     coin,
     trades,
     interval = 3600,
@@ -85,10 +85,8 @@ export default function TransparentLineChart({
     const [isLoading, setIsLoading] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const { setTrades } = useTradeStore();
-    const { price } = useTokenPriceData();
     const [hexColor, setHexColor] = useState('');
     const [showSparseDataWarning, setShowSparseDataWarning] = useState(false);
-
     // Set mounted state and initialize color
     useEffect(() => {
         setIsMounted(true);
@@ -141,10 +139,11 @@ export default function TransparentLineChart({
 
             if (!trades || trades.length === 0) {
                 setShowSparseDataWarning(false);
-                if (price) {
+                if (coin.price) {
                     const now: any = Math.floor(Date.now() / 1000);
                     const bucket: any = interval === -1 ? now : Math.floor(now / interval) * interval;
-                    const currentPrice: any = typeof price === 'bigint' ? Number(formatEther(price)) : price;
+                    const currentPrice: number = parsePrice(coin.price);
+
                     const data: any = [{ time: bucket, value: currentPrice }];
 
                     const processedData: any = processDataForChart(data);
@@ -184,9 +183,7 @@ export default function TransparentLineChart({
 
                 let processedData: any = processDataForChart(allTimeData);
 
-                const currentPrice: any = price
-                    ? (typeof price === 'bigint' ? Number(formatEther(price)) : price)
-                    : null;
+                const currentPrice: number = parsePrice(coin.price);
 
                 if (currentPrice !== null) {
                     const maxPrice = processedData.length > 0 ? Math.max(...processedData.map((d: any) => d.value)) : -Infinity;
@@ -282,10 +279,10 @@ export default function TransparentLineChart({
                     value: bucketData.total / bucketData.count,
                 }));
 
-            if (price && data.length > 0) {
+            if (coin.price && data.length > 0) {
                 const now = Math.floor(Date.now() / 1000);
                 const currentBucket = Math.floor(now / interval) * interval;
-                const currentPrice: any = typeof price === 'bigint' ? Number(formatEther(price)) : price;
+                const currentPrice: number = parsePrice(coin.price);
 
                 data.push({ time: currentBucket, value: currentPrice });
             }
@@ -309,7 +306,7 @@ export default function TransparentLineChart({
             areaSeriesRef.current?.setData(processedData);
 
             const markers: any[] = [];
-            const currentPrice: any = price ? (typeof price === 'bigint' ? Number(formatEther(price)) : price) : null;
+            const currentPrice: number = parsePrice(coin.price);
 
             if (!width && !height && highPoint && currentPrice !== high) {
                 markers.push({
@@ -349,7 +346,7 @@ export default function TransparentLineChart({
             chartRef.current?.timeScale().fitContent();
             setIsLoading(false);
         },
-        [price, width, height]
+        [coin.price, width, height]
     );
 
     // Chart initialization effect - only run when DOM is ready
@@ -548,7 +545,7 @@ export default function TransparentLineChart({
                                     <>
                                         <p className={styles.symbol}>{coin?.symbol}</p>
                                         <p className={styles.price}>
-                                            {price ? `$${typeof price === 'bigint' ? formatEther(price) : price} ETH` : '—'}
+                                            {coin.price ? `$${formatEther(coin.price)} ETH` : '—'}
                                         </p>
                                     </>
                                 ) : (

@@ -7,6 +7,7 @@ import { useWitdh } from '../../../hooks/useWidth';
 import { scrollToTop } from '../../../utils/scroll';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
 import type { Token } from '../../../types/token';
+// import { useTokenStore } from '../../../store/allTokensStore';
 interface ExploreGridProps {
     tokens: any,
     fetchNextPage: any,
@@ -14,6 +15,7 @@ interface ExploreGridProps {
     loading: any
 }
 export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage, hasNextPage, loading }) => {
+    // const { clearTokens } = useTokenStore();
     const isOnline = useOnline();
     const viewportWidth = useWitdh();
     const [searchTerm, setSearchTerm] = useState('');
@@ -35,22 +37,26 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
 
     // Preload images for tokens
     useEffect(() => {
-        if (tokens && tokens.length) {
-            const initialMap = new Map<string, boolean | null>();
-            tokens.forEach((coin: Token) => {
-                initialMap.set(coin.tokenId.toString(), null);
-            });
-            setLoadStates(initialMap);
+        if (!tokens || !tokens.length) return;
 
+        setLoadStates(prev => {
+            const newMap = new Map(prev);
             tokens.forEach((coin: Token) => {
-                if (!coin.imageUrl) return;
-                const img = new Image();
-                img.src = coin.imageUrl;
-                img.onload = () => handleLoad(coin.tokenId.toString(), true);
-                img.onerror = () => handleLoad(coin.tokenId.toString(), false);
+                const id = coin.tokenId.toString();
+                if (!newMap.has(id)) {
+                    newMap.set(id, null);
+                    if (coin.imageUrl) {
+                        const img = new Image();
+                        img.src = coin.imageUrl;
+                        img.onload = () => handleLoad(id, true);
+                        img.onerror = () => handleLoad(id, false);
+                    }
+                }
             });
-        }
+            return newMap;
+        });
     }, [tokens, handleLoad]);
+
 
     // Scroll handler to show/hide scroll-to-top button & infinite load
     useEffect(() => {
@@ -148,6 +154,13 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
             <div className={`${styles.symbolText} ${styles.tokenCount}`}>
                 {coinsToDisplay.length} Tokens
             </div>
+            {/* <button
+                onClick={() => {
+                    clearTokens()
+                }}
+            >
+                Refresh
+            </button> */}
             {/* Grid of Coins */}
             {isSearching ? (
                 <div className={styles.loadingMore}>

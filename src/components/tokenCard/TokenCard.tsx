@@ -6,7 +6,7 @@ import { useCoinStore } from '../../store/coinStore';
 import { useWitdh } from '../../hooks/useWidth';
 import { getDominantColor } from '../../utils/colorTheif';
 import { useTokenActivity } from '../../hooks/useTokenActivity';
-import TransparentCandlestickChart from '../chart/TransparentCandlestickChart';
+import TransparentCandlestickChart from '../chart/LineChart';
 // import PlotlyLineChart from '../chart/PlotlyLineChart';
 
 

@@ -1,13 +1,16 @@
+import { useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { useCoinStore } from '../store/coinStore';
+import { useBalanceStore } from "../store/balancesStore"
 import { ERC6909ABI, ERC6909Address } from '../services/ERC6909Metadata';
-import { formatUnits } from 'viem';
 
 export const useUserTokenBalance = () => {
     const { coin } = useCoinStore();
     const { address } = useAccount();
+    const setBalance = useBalanceStore((s) => s.setBalance);
+    const getBalance = useBalanceStore((s) => s.getBalance);
 
-    const decimals = 0; // Set default decimals or get from coin metadata
+    const decimals = 0; // Adjust as needed or read from metadata
 
     const {
         data,
@@ -21,20 +24,25 @@ export const useUserTokenBalance = () => {
         args: address && coin?.tokenId ? [address, coin.tokenId] : undefined,
     });
 
-    const tokenBalance = data as bigint | undefined;
-    const balanceEth = tokenBalance ? Number(formatUnits(tokenBalance, decimals)) : 0;
-    const coinPriceEth = coin?.price ? Number(formatUnits(coin.price, 18)) : undefined; // price in ETH wei format
+    // Update store whenever data or coin changes
+    useEffect(() => {
+        if (data && coin?.tokenId) {
+            setBalance(
+                coin.tokenId.toString(),
+                data as bigint,
+                decimals,
+                coin.price
+            );
+        }
+    }, [data, coin?.tokenId, coin?.price]);
 
-    const totalValueEth =
-        tokenBalance && coin?.price
-            ? balanceEth * coinPriceEth!
-            : undefined;
-
+    // Pull live data from the store
+    const stored = coin?.tokenId ? getBalance(coin.tokenId.toString()) : undefined;
 
     return {
-        tokenBalance,
-        balanceEth,
-        totalValueEth,
+        tokenBalance: stored?.balance,
+        balanceEth: stored?.formatted ?? 0,
+        totalValueEth: stored?.totalValueEth,
         isLoading,
         isError,
         refetchBalance: refetch,

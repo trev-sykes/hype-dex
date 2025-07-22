@@ -6,7 +6,7 @@ import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../s
 import styles from './TradePage.module.css';
 import { useCoinStore } from '../../../store/coinStore';
 import { RotateCwIcon } from 'lucide-react';
-import TokenCandlestickChart from '../../../components/chart/CandlestickChart';
+import TokenCandlestickChart from '../../../components/chart/CandlestickChartWithTradeView';
 import { useTokenActivity } from '../../../hooks/useTokenActivity';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
@@ -14,13 +14,12 @@ import { ExploreButton } from '../../../components/button/backToExplore/ExploreB
 import { TradeHistoryTable } from './TradeHistoryTable';
 interface TradePageProps {
   refetch: any;
-  refetchAll: any;
   refetchBalance: any;
   tokenBalance: any;
   address: any;
   balance: any;
 }
-export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchAll, refetchBalance, tokenBalance, address, balance }) => {
+export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchBalance, tokenBalance, address, balance }) => {
   const { coin } = useCoinStore();
   const { setAlert } = useAlertStore();
   const [ethInput, setEthInput] = useState('');
@@ -79,9 +78,7 @@ export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchAll, refet
         type: 'success',
         message: `You ${txTypeRef.current}ed ${amountRef.current} ${actionTypeRef.current?.slice(0, 6) ?? ''}!`
       });
-
       refetchBalance();
-      refetchAll();
       refetch();
     }
   }, [isTxSuccess]);
@@ -165,7 +162,7 @@ export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchAll, refet
         <div className={styles.left}>
           <div className={styles.cContainer}>
             <ExploreButton />
-            <TokenCandlestickChart trades={trades} interval={300} tokenId={tokenId} />
+            <TokenCandlestickChart coin={coin} trades={trades} interval={300} tokenId={tokenId} />
             <div className={styles.tradeCompact}>
               <div className={styles.tradeHeader}>
                 <div className={styles.tradeModeIndicator}>

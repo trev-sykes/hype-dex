@@ -29,6 +29,7 @@ const DashboardNav: React.FC = () => {
                 <Logo background={true} size={'4rem'} />
                 <div className={styles.navLinks}>
                     <NavLink to="/dashboard/" end className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>Home</NavLink>
+                    <NavLink to="/dashboard/account/" end className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>Account</NavLink>
                     <NavLink to="/dashboard/explore" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>Explore</NavLink>
                     <NavLink to="/dashboard/create" className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}>Create</NavLink>
                 </div>

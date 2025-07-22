@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCoinStore } from '../../../store/coinStore';
 import { useTokenActivity } from '../../../hooks/useTokenActivity';
-import TransparentCandlestickChart from '../../../components/chart/TransparentCandlestickChart';
+import TransparentCandlestickChart from '../../../components/chart/LineChart';
 import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
 import { useUserTokenBalance } from '../../../hooks/useUserBalance';
 import styles from './CoinInfo.module.css';
@@ -14,7 +14,6 @@ import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
-import { useTokenPriceData } from '../../../hooks/useTokenPriceData';
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 interface Props {
     refetch: any;
@@ -32,7 +31,6 @@ export const CoinInfo: React.FC<Props> = ({ refetch }) => {
     const { address } = useAccount();
     const { setAlert } = useAlertStore();
     const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
-    const { refetchAll } = useTokenPriceData();
     const ethBalance = useBalance({ address });
 
     const [amount, setAmount] = useState<string>("");
@@ -83,7 +81,6 @@ export const CoinInfo: React.FC<Props> = ({ refetch }) => {
             });
 
             refetchBalance();
-            refetchAll();
             refetch();
         }
     }, [isTxSuccess]);

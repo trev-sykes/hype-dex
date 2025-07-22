@@ -1,0 +1,360 @@
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.dashboardHeader {
+    background: white;
+    border-radius: 24px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.headerContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.titleSection {
+    flex: 1;
+    min-width: 200px;
+}
+
+.title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1f2937, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+.subtitle {
+    color: #6b7280;
+    font-size: 1.125rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.headerActions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.refreshButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+}
+
+.refreshButton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+}
+
+.refreshIcon {
+    font-size: 1.125rem;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.refreshButton:hover .refreshIcon {
+    transform: rotate(180deg);
+}
+
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summaryCard {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.summaryCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6);
+}
+
+.summaryCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.summaryLabel {
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.summaryValue {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.primaryAmount {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.2;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+.primaryAmount.positive {
+    color: #059669;
+}
+
+.primaryAmount.negative {
+    color: #dc2626;
+}
+
+.secondaryAmount {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.portfolioControls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 1.5rem 2rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.controlsLeft,
+.controlsRight {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sortControls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.controlLabel {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.sortSelect {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.sortSelect:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.viewToggle {
+    display: flex;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 0.25rem;
+}
+
+.viewButton {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6b7280;
+}
+
+.viewButton.active {
+    background: white;
+    color: #3b82f6;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.portfolioGrid {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.portfolioGrid.grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.portfolioGrid.list {
+    grid-template-columns: 1fr;
+    max-width: 800px;
+    margin: 0 auto 2rem auto;
+}
+
+.loadingState,
+.errorState,
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 20px;
+    margin: 2rem 0;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.loadingSpinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.emptyIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.emptyState h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 0.5rem 0;
+}
+
+.emptyState p {
+    color: #6b7280;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.retryButton {
+    padding: 0.75rem 1.5rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.retryButton:hover {
+    background: #dc2626;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 0.75rem;
+    }
+
+    .dashboardHeader {
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .title {
+        font-size: 1.875rem;
+    }
+
+    .headerContent {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .summaryCard {
+        padding: 1.5rem;
+    }
+
+    .portfolioControls {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem 1.5rem;
+    }
+
+    .portfolioGrid.grid {
+        grid-template-columns: 1fr;
+    }
+
+    .balanceCard {
+        padding: 1.25rem;
+    }
+}

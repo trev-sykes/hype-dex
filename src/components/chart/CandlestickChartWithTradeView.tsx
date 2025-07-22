@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
-import styles from './CandlestickChart.module.css';
-import { useCoinStore } from '../../store/coinStore';
+import styles from './CandlestickChartWithTradeView.module.css';
 import { useWitdh } from '../../hooks/useWidth';
-import { formatEther } from 'ethers';
 import { useTradeStore } from '../../store/tradeStore';
-import { useTokenPriceData } from '../../hooks/useTokenPriceData';
 import { Link } from 'react-router-dom';
+import { parsePrice } from '../../utils/parsePrice';
 
 interface Trade {
     tokenId: bigint;
@@ -18,13 +16,13 @@ interface Trade {
 }
 
 interface Props {
+    coin: any;
     trades: Trade[];
     interval?: number; // in seconds (default 1 hour)
     tokenId?: any;
 }
 
-export default function CandlestickChartWithTradeView({ trades, interval = 3600 }: Props) {
-    const { coin } = useCoinStore();
+export default function CandlestickChartWithTradeView({ coin, trades, interval = 3600 }: Props) {
     const viewportWidth = useWitdh();
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -33,7 +31,6 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
     const [isChartInitialized, setIsChartInitialized] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const { setTrades } = useTradeStore();
-    const { price } = useTokenPriceData();
 
     const debounce = (func: () => void, wait: number) => {
         let timeout: NodeJS.Timeout;
@@ -54,11 +51,12 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
 
             if (!trades || trades.length === 0) {
                 // If we have current price but no trades, create a minimal chart
-                if (price) {
+                if (coin.price) {
                     const currentTime: any = Math.floor(Date.now() / 1000);
                     const bucket: any = Math.floor(currentTime / interval) * interval;
                     // Convert price to number - handle both BigInt and number types
-                    const currentPrice: any = typeof price === 'bigint' ? Number(formatEther(price)) : price;
+                    const currentPrice: number = parsePrice(coin.price);
+
                     const currentCandle: any = [{
                         time: bucket,
                         open: currentPrice,
@@ -136,14 +134,13 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
                 .sort((a, b) => a.time - b.time);
 
             // Handle current price integration
-            if (price && candles.length > 0) {
+            if (coin.price && candles.length > 0) {
                 const currentTime = Math.floor(Date.now() / 1000);
                 const currentBucket = Math.floor(currentTime / interval) * interval;
                 const lastCandle = candles[candles.length - 1];
 
                 // Convert price to number - handle both BigInt and number types
-                const currentPrice: any = typeof price === 'bigint' ? Number(formatEther(price)) : price;
-
+                const currentPrice: number = parsePrice(coin.price);
                 if (lastCandle.time === currentBucket) {
                     // Update the existing last candle with current price
                     lastCandle.high = Math.max(lastCandle.high, currentPrice);
@@ -167,7 +164,7 @@ export default function CandlestickChartWithTradeView({ trades, interval = 3600 
             chartRef.current?.timeScale().fitContent();
             setIsLoading(false);
         },
-        [price]
+        [coin.price]
     );
     useEffect(() => {
         if (typeof window === 'undefined' || !chartContainerRef.current) {

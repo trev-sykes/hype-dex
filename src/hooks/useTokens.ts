@@ -14,9 +14,9 @@ import { useTradeStore } from '../store/tradeStore';
 const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
-const PAGE_SIZE = 10;
-const throttledFetchIpfsMetadata = pThrottle({ limit: 20, interval: 10000 })(fetchIpfsMetadata);
-const throttledFetchPrice = pThrottle({ limit: 15, interval: 10000 })(fetchTokenPrice);
+const PAGE_SIZE = 50;
+const throttledFetchIpfsMetadata = pThrottle({ limit: 50, interval: 1000 })(fetchIpfsMetadata);
+const throttledFetchPrice = pThrottle({ limit: 50, interval: 1000 })(fetchTokenPrice);
 
 export function useTokens(tokenId?: string) {
     const [hasEnrichedPostHydration, setHasEnrichedPostHydration] = useState(false);
@@ -252,7 +252,7 @@ export function useTokens(tokenId?: string) {
 
                 console.log(`🔄 [fetchAllPrices] Processing ${tokensNeedingPrice.length} tokens needing price updates`);
 
-                const batchSize = 100;
+                const batchSize = 50;
                 for (let i = 0; i < tokensNeedingPrice.length; i += batchSize) {
                     const batch = tokensNeedingPrice.slice(i, i + batchSize);
                     console.log(`🔄 [fetchAllPrices] Processing batch ${Math.floor(i / batchSize) + 1}, tokens:`, batch.map(t => t.name));
@@ -292,7 +292,7 @@ export function useTokens(tokenId?: string) {
                             });
                             console.log(`✅ [Updated] Token ${token.name} updated successfully`);
 
-                            await new Promise(res => setTimeout(res, 500)); // 500ms delay between tokens
+                            await new Promise(res => setTimeout(res, 150)); // 150ms delay between tokens
                         } catch (err: any) {
                             console.error('Failed price for token', token.tokenId, err);
                             updateToken(token.tokenId, { price: null, percentChange: null });

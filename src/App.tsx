@@ -16,9 +16,9 @@ import { useTradeUpdater } from './hooks/useTradeUpdater'
 import { useTokenCreationUpdater } from './hooks/useNewTokenCreationUpdater'
 import { useTokens } from './hooks/useTokens'
 import { useUserTokenBalance } from './hooks/useUserBalance'
-import { useTokenPriceData } from './hooks/useTokenPriceData'
 import { useAllTrades } from './hooks/useTokenActivity'
 import { useTradeStore } from './store/tradeStore'
+import { Portfolio } from './pages/dashboard/portfolio/Portfolio'
 
 
 
@@ -41,7 +41,6 @@ function InnerApp() {
   const trades = useAllTrades();
   const { setTrades } = useTradeStore();
   const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
-  const { refetchAll } = useTokenPriceData();
   const { address } = useAccount();
   const balance = useBalance({ address });
   setTrades('all', trades);
@@ -52,6 +51,14 @@ function InnerApp() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route path="/dashboard/" element={<DashboardHome />} />
+          <Route
+            path="/dashboard/account"
+            element={
+              <Portfolio
+                tokens={tokens}
+              />
+            }
+          />
           <Route
             path="/dashboard/explore"
             element={
@@ -70,7 +77,6 @@ function InnerApp() {
               <TradePage
                 refetch={refetch}
                 refetchBalance={refetchBalance}
-                refetchAll={refetchAll}
                 tokenBalance={tokenBalance}
                 address={address}
                 balance={balance}
