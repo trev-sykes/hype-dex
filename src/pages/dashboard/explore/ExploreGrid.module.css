@@ -249,7 +249,7 @@
     width: 56px;
     height: 56px;
     position: fixed;
-    bottom: 2rem;
+    bottom: 4rem;
     right: 2rem;
     background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
     color: white;
@@ -321,10 +321,10 @@
     }
 
     .scrollToTopButton {
-        width: 44px;
-        height: 44px;
-        bottom: 1rem;
-        right: 1rem;
+        width: 25px;
+        height: 25px;
+        bottom: 5rem;
+        right: 0.3rem;
         font-size: 1.25rem;
     }
 

@@ -3,18 +3,15 @@
     margin: 0 auto;
     padding: 0 1rem;
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+
 }
 
 .dashboardHeader {
-    background: white;
+    background: var(--color-neutral-100);
     border-radius: 24px;
     padding: 2rem;
     margin: 2rem 0;
-    box-shadow:
-        0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+
 }
 
 .headerContent {
@@ -33,7 +30,7 @@
 .title {
     font-size: 2.25rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #1f2937, #3b82f6);
+    background: linear-gradient(135deg, var(--color-neutral-900), var(--color-accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -42,7 +39,7 @@
 }
 
 .subtitle {
-    color: #6b7280;
+    color: var(--color-neutral-800);
     font-size: 1.125rem;
     margin: 0;
     font-weight: 500;
@@ -59,8 +56,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #3b82f6, #06b6d4);
-    color: white;
+    background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+    color: var(--color-neutral-100);
     border: none;
     border-radius: 12px;
     font-weight: 600;
@@ -71,7 +68,7 @@
 
 .refreshButton:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(20, 76, 126, 0.1);
 }
 
 .refreshIcon {
@@ -92,7 +89,7 @@
 }
 
 .summaryCard {
-    background: white;
+    background: var(--color-neutral-100);
     padding: 2rem;
     border-radius: 20px;
     box-shadow:
@@ -111,17 +108,12 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #f59e0b, #ef4444, #8b5cf6);
-}
-
-.summaryCard:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(90deg, var(--color-mint), var(--color-burn), var(--color-accent));
 }
 
 .summaryLabel {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--color-neutral-700);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 0.75rem;
@@ -137,22 +129,22 @@
 .primaryAmount {
     font-size: 2rem;
     font-weight: 800;
-    color: #111827;
+    color: var(--color-neutral-800);
     line-height: 1.2;
     font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
 }
 
 .primaryAmount.positive {
-    color: #059669;
+    color: var(--color-mint);
 }
 
 .primaryAmount.negative {
-    color: #dc2626;
+    color: var(--color-burn);
 }
 
 .secondaryAmount {
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--color-neutral-800);
     font-weight: 500;
 }
 
@@ -160,7 +152,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: var(--color-neutral-200);
     padding: 1.5rem 2rem;
     border-radius: 16px;
     margin-bottom: 1.5rem;
@@ -186,14 +178,14 @@
 .controlLabel {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #374151;
+    color: var(--color-accent);
 }
 
 .sortSelect {
     padding: 0.5rem 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 8px;
-    background: white;
+    background: var(--color-neutral-100);
     font-size: 0.875rem;
     cursor: pointer;
     transition: border-color 0.2s ease;
@@ -201,13 +193,13 @@
 
 .sortSelect:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--color-accent-light);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .viewToggle {
     display: flex;
-    background: #f3f4f6;
+    background: var(--color-neutral-300);
     border-radius: 10px;
     padding: 0.25rem;
 }
@@ -221,12 +213,12 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: #6b7280;
+    color: var(--color-neutral-700);
 }
 
 .viewButton.active {
-    background: white;
-    color: #3b82f6;
+    background: var(--color-neutral-100);
+    color: var(--color-accent-light);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -255,7 +247,7 @@
     justify-content: center;
     padding: 4rem 2rem;
     text-align: center;
-    background: white;
+    background: var(--color-neutral-100);
     border-radius: 20px;
     margin: 2rem 0;
     border: 1px solid rgba(226, 232, 240, 0.8);
@@ -265,7 +257,7 @@
     width: 40px;
     height: 40px;
     border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
+    border-top: 4px solid var(--color-accent-light);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 1rem;
@@ -289,20 +281,20 @@
 .emptyState h3 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--color-neutral-900);
     margin: 0 0 0.5rem 0;
 }
 
 .emptyState p {
-    color: #6b7280;
+    color: var(--color-neutral-800);
     font-size: 1rem;
     margin: 0;
 }
 
 .retryButton {
     padding: 0.75rem 1.5rem;
-    background: #ef4444;
-    color: white;
+    background: var(--color-burn);
+    color: var(--color-neutral-100);
     border: none;
     border-radius: 8px;
     font-weight: 500;
@@ -311,9 +303,6 @@
     transition: background-color 0.2s ease;
 }
 
-.retryButton:hover {
-    background: #dc2626;
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {

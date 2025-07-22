@@ -1,5 +1,5 @@
 // PortfolioBalanceCard.tsx - Enhanced card component
-import React from 'react';
+import React, { useState } from 'react';
 import styles from "./PortfolioBalanceCard.module.css"
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -17,6 +17,7 @@ export const PortfolioBalanceCard: React.FC<PortfolioBalanceCardProps> = ({
     tokenId, name, symbol, imageUrl, balance, totalValueEth, totalValueUsd
 }) => {
     const navigate = useNavigate();
+    const [imageError, setImageError] = useState(false);
 
     // Calculate percentage change (mock data - replace with real data)
     const priceChange = Math.random() * 20 - 10; // -10% to +10%
@@ -31,11 +32,17 @@ export const PortfolioBalanceCard: React.FC<PortfolioBalanceCardProps> = ({
             <div className={styles.cardHeader}>
                 <div className={styles.tokenInfo}>
                     <div className={styles.imageContainer}>
-                        {imageUrl ? (
-                            <img src={imageUrl} alt={name} className={styles.coinImage} />
+                        {imageUrl && !imageError ? (
+                            <img
+                                src={imageUrl}
+                                alt={name}
+                                className={styles.coinImage}
+                                onError={() => setImageError(true)}
+                            />
                         ) : (
                             <div className={styles.imageFallback}>{symbol}</div>
                         )}
+
                     </div>
                     <div className={styles.tokenMeta}>
                         <div className={styles.tokenSymbol}>{symbol}</div>
