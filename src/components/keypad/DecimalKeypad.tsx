@@ -30,7 +30,6 @@ export const MobileKeypad: React.FC<Props> = ({ value, onChange, onClose }) => {
     return (
         <div className={styles.backdrop} onClick={onClose}>
             <div className={styles.sheet} onClick={e => e.stopPropagation()}>
-                <div className={styles.display}>{value || '0'}</div>
                 <div className={styles.keypad}>
                     {keys.map((key, i) => (
                         <button key={i} onClick={() => handlePress(key)} className={styles.key}>

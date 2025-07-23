@@ -21,7 +21,10 @@ export function useTokenCreationUpdater() {
     const getLatestTimestamp = useTokenStore((s: any) => s.getLatestTimestamp);
 
     useEffect(() => {
-        const interval = setInterval(async () => {
+        let retryDelay = 30000; // Start at 30 seconds
+        let timeoutId: NodeJS.Timeout;
+
+        const fetchTokens = async () => {
             const since = getLatestTimestamp();
 
             try {
@@ -41,11 +44,23 @@ export function useTokenCreationUpdater() {
                 if (newTokens.length > 0) {
                     console.log(`[TokenCreationUpdater] Appended ${newTokens.length} new tokens`);
                 }
-            } catch (e) {
-                console.error('[TokenCreationUpdater] Error fetching new tokens', e);
-            }
-        }, 30_000); // 30 seconds
 
-        return () => clearInterval(interval);
+                retryDelay = 30000; // Reset backoff on success
+            } catch (e: any) {
+                if (e?.response?.status === 429) {
+                    retryDelay = Math.min(retryDelay * 2, 5 * 60 * 1000); // Cap at 5 minutes
+                    console.warn('[TokenCreationUpdater] Rate limited, increasing retry delay to', retryDelay);
+                } else {
+                    console.error('[TokenCreationUpdater] Error fetching new tokens', e);
+                }
+            } finally {
+                timeoutId = setTimeout(fetchTokens, retryDelay);
+            }
+        };
+
+        fetchTokens();
+
+        return () => clearTimeout(timeoutId);
     }, []);
+
 }

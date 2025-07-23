@@ -1,37 +1,41 @@
-/* DashboardNav.module.css */
-
 .desktopNav {
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    background: linear-gradient(135deg, var(--color-neutral-300) 0%, var(--color-neutral-400) 100%);
     border-top: 1px solid #e2e8f0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
     position: sticky;
     bottom: 0;
     z-index: 50;
     backdrop-filter: blur(12px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    transition: max-height 0.3s ease;
+    max-height: 400px;
+    /* max when expanded */
 }
+
 
 .toggleButton {
     background: none;
     border: none;
-    color: #475569;
+    color: var(--color-accent);
     cursor: pointer;
-    padding: 16px;
+    padding: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
     border-bottom: 1px solid #e2e8f0;
     position: relative;
     transition: all 0.2s ease;
+    min-height: 44px;
+    /* Touch-friendly minimum size */
 }
 
 .toggleButton::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    background: linear-gradient(90deg, var(--color-accent-light), var(--color-accent));
     opacity: 0;
     transition: opacity 0.2s ease;
     z-index: -1;
@@ -42,53 +46,50 @@
 }
 
 .toggleButton:hover {
-    color: #1e293b;
+    color: var(--color-accent-light);
     transform: translateY(-1px);
 }
 
+/* Mobile-first approach */
 .navContent {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 32px;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
     transition: all 0.3s ease;
     overflow: hidden;
     opacity: 1;
-    max-height: 120px;
+    max-height: 300px;
 }
 
 .hidden {
     opacity: 0;
     max-height: 0;
-    padding: 0 32px;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .logoContainer {
     display: flex;
+    justify-content: center;
     align-items: center;
-    min-width: 120px;
-}
-
-.logoPlaceholder {
-    font-weight: 700;
-    font-size: 20px;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: transparent;
+    order: 3;
+    /* Logo at bottom on mobile */
 }
 
 .navLinks {
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    align-items: center;
-    flex: 1;
-    justify-content: center;
+    align-items: stretch;
+    order: 1;
+    /* Navigation links at top on mobile */
 }
 
 .navLink {
-    color: #64748b;
+    color: var(--color-accent-light);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
@@ -96,18 +97,21 @@
     border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     position: relative;
     overflow: hidden;
     white-space: nowrap;
     transition: all 0.2s ease;
+    min-height: 44px;
+    /* Touch-friendly size */
+    justify-content: flex-start;
 }
 
 .navLink::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    background: linear-gradient(135deg, var(--color-neutral-100), var(--color-neutral-200));
     opacity: 0;
     transition: opacity 0.2s ease;
     z-index: -1;
@@ -118,162 +122,167 @@
 }
 
 .navLink:hover {
-    color: #1e293b;
-    transform: translateY(-2px);
+    color: var(--color-neutral-900);
+    transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .active {
-    color: #ffffff;
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: var(--color-neutral-100);
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
     font-weight: 600;
     box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
 }
 
+.navLabel {
+    font-size: 14px;
+}
+
 .profileContainer {
     display: flex;
+    justify-content: center;
     align-items: center;
-    min-width: 120px;
-    justify-content: flex-end;
+    order: 2;
+    /* Profile in middle on mobile */
 }
 
 .profilePlaceholder {
     padding: 8px 16px;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    background: linear-gradient(135deg, var(--color-neutral-200), var(--color-neutral-300));
     border-radius: 20px;
     font-size: 14px;
     font-weight: 500;
-    color: #475569;
+    color: var(--color-neutral-900);
     cursor: pointer;
     transition: all 0.2s ease;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .profilePlaceholder:hover {
-    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    background: linear-gradient(135deg, var(--color-accent-light), var(--color-neutral-100));
     transform: translateY(-1px);
 }
 
-.mobileNav {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 60;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-top: 1px solid #e2e8f0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(12px);
+.collapsed {
+    max-height: 60px;
+    /* enough to show just the toggle button */
+    overflow: hidden;
 }
 
-
-.mobileNavHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-bottom: 1px solid #e2e8f0;
-    position: sticky;
-    top: 0;
-    z-index: 60;
-    backdrop-filter: blur(12px);
-}
-
-.mobileMenuButton {
-    background: none;
-    border: none;
-    color: #475569;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-
-.mobileMenuButton:hover {
-    background: #f1f5f9;
-    color: #1e293b;
-}
-
-.mobileOverlay {
-    position: fixed;
-    top: 73px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.open {
-    opacity: 1;
-    visibility: visible;
-}
-
-.mobileNavContent {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    padding: 24px 20px;
-    border-radius: 0 0 24px 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
-.mobileOverlay.open .mobileNavContent {
-    transform: translateY(0);
-}
-
-.mobileNavLinks {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 24px;
-}
-
-.mobileNavLink {
-    color: #64748b;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 500;
-    padding: 16px 20px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.2s ease;
-}
-
-.mobileNavLink:hover {
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    color: #1e293b;
-}
-
-.mobileNavLink.active {
-    color: #ffffff;
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-    font-weight: 600;
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-}
-
-.mobileProfileContainer {
-    padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
-}
-
-@media (max-width: 768px) {
-    .desktopNav {
-        display: none;
+/* Tablet styles */
+@media (min-width: 768px) {
+    .toggleButton {
+        padding: 16px;
     }
 
-    .mobileNav {
-        display: block;
+    .navContent {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        max-height: 120px;
+        gap: 20px;
+    }
+
+    .logoContainer {
+        order: 1;
+        justify-content: flex-start;
+        flex: 0 0 auto;
+    }
+
+    .navLinks {
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+        flex: 1;
+        justify-content: center;
+        order: 2;
+    }
+
+    .navLink {
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .profileContainer {
+        order: 3;
+        justify-content: flex-end;
+        flex: 0 0 auto;
+        min-width: 120px;
+    }
+
+    .hidden {
+        padding: 0;
+        overflow: hidden;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .navContent {
+        padding: 20px 32px;
+    }
+
+    .hidden {
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .navLinks {
+        gap: 12px;
+    }
+
+    .navLink {
+        padding: 12px 20px;
+    }
+}
+
+/* Large desktop styles */
+@media (min-width: 1440px) {
+    .navContent {
+        padding: 20px 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .navLinks {
+        gap: 16px;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+    .toggleButton:hover,
+    .navLink:hover,
+    .profilePlaceholder:hover {
+        transform: none;
+    }
+
+    .toggleButton:active,
+    .navLink:active,
+    .profilePlaceholder:active {
+        transform: scale(0.98);
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+
+    .desktopNav,
+    .toggleButton,
+    .navContent,
+    .navLink,
+    .profilePlaceholder {
+        transition: none;
+    }
+
+    .toggleButton:hover,
+    .navLink:hover,
+    .profilePlaceholder:hover {
+        transform: none;
     }
 }

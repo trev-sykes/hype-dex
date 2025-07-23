@@ -10,7 +10,7 @@ import TokenCandlestickChart from '../../../components/chart/CandlestickChartWit
 import { useTokenActivity } from '../../../hooks/useTokenActivity';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
-import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
+import { BackButton } from '../../../components/button/back/BackButton';
 import { TradeHistoryTable } from './TradeHistoryTable';
 interface TradePageProps {
   refetch: any;
@@ -161,7 +161,7 @@ export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchBalance, t
       <div className={styles.container}>
         <div className={styles.left}>
           <div className={styles.cContainer}>
-            <ExploreButton />
+            <BackButton />
             <TokenCandlestickChart coin={coin} trades={trades} interval={300} tokenId={tokenId} />
             <div className={styles.tradeCompact}>
               <div className={styles.tradeHeader}>

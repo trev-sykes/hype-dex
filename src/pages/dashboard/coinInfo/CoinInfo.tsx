@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { useCoinStore } from '../../../store/coinStore';
 import { useTokenActivity } from '../../../hooks/useTokenActivity';
 import TransparentCandlestickChart from '../../../components/chart/LineChart';
-import { ExploreButton } from '../../../components/button/backToExplore/ExploreButton';
+import { BackButton } from '../../../components/button/back/BackButton';
 import { useUserTokenBalance } from '../../../hooks/useUserBalance';
 import styles from './CoinInfo.module.css';
+import { useParams } from 'react-router-dom';
+
 
 import { Minus, Plus } from 'lucide-react';
 import { parseEther } from 'viem';
@@ -14,37 +16,71 @@ import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import { useBurnEstimation, useMintEstimation } from '../../../hooks/useTradeEstimation';
 import { useAlertStore, type ActionType } from '../../../store/alertStore';
+import { useScrollDirection } from '../../../hooks/useScrollDirection';
+import { useTokenStore } from '../../../store/allTokensStore';
+import { MobileKeypad } from '../../../components/keypad/DecimalKeypad';
 const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 interface Props {
     refetch: any;
 }
 export const CoinInfo: React.FC<Props> = ({ refetch }) => {
-    const { coin } = useCoinStore();
     const { balanceEth, totalValueEth } = useUserTokenBalance();
-    const trades = useTokenActivity(coin?.tokenId?.toString());
     const [imageLoaded, setImageLoaded] = useState<boolean | null>(null);
     const [showTradeModal, setShowTradeModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'balance' | 'insights'>('balance');
     const [showCTA, setShowCTA] = useState(true);
-    const [visibleButtons, setVisibleButtons] = useState([false, false]);
     const [action, setAction] = useState<'buy' | 'sell' | ''>('');
     const { address } = useAccount();
     const { setAlert } = useAlertStore();
     const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
     const ethBalance = useBalance({ address });
-
+    const { getTokenById } = useTokenStore();
+    const { setCoin } = useCoinStore();
     const [amount, setAmount] = useState<string>("");
     const [debouncedAmount, setDebouncedAmount] = useState(amount);
-
-
+    const { tokenId }: any = useParams<{ tokenId: string }>();
+    const coin: any = getTokenById(tokenId);
+    const trades = useTokenActivity(tokenId);
     const txTypeRef = useRef<ActionType | null>(null);
     const amountRef = useRef<any>(null);
     const actionTypeRef = useRef<any>(null);
+    const [showKeypad, setShowKeypad] = useState(false);
 
-    const tokenId = coin?.tokenId ? BigInt(coin.tokenId) : undefined;
 
     const mintEstimation = useMintEstimation(tokenId, debouncedAmount);
     const burnEstimation = useBurnEstimation(tokenId, debouncedAmount);
+    const bottomRef = useRef<HTMLDivElement | null>(null);
+    const isScrollingUp = useScrollDirection();
+    useEffect(() => {
+        if (tokenId) {
+            const token: any = getTokenById(tokenId); // however your app stores them
+            setCoin(token);
+        }
+    }, [tokenId]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                const nearBottom = entry.isIntersecting;
+                const scrolledDownFar = window.scrollY > 100;
+
+                // Show CTA if near bottom or scrolling up and not near top
+                const shouldShow = nearBottom || (isScrollingUp && scrolledDownFar);
+
+                setShowCTA(shouldShow);
+            },
+            {
+                root: null,
+                threshold: 0.1,
+            }
+        );
+
+        if (bottomRef.current) observer.observe(bottomRef.current);
+
+        return () => {
+            if (bottomRef.current) observer.unobserve(bottomRef.current);
+        };
+    }, [isScrollingUp]);
 
     const { data: isOperator } = useReadContract({
         address: ERC6909Address,
@@ -162,61 +198,6 @@ export const CoinInfo: React.FC<Props> = ({ refetch }) => {
         }
     };
 
-
-
-    useEffect(() => {
-        let lastScrollY = window.scrollY;
-        let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-        const handleScroll = () => {
-            if (timeoutId) clearTimeout(timeoutId);
-
-            const currentScrollY = window.scrollY;
-            // const isScrollingDown = currentScrollY > lastScrollY;
-            const isScrollingUp = currentScrollY < lastScrollY;
-            lastScrollY = currentScrollY;
-
-            timeoutId = setTimeout(() => {
-                const scrollPosition = window.innerHeight + currentScrollY;
-                const pageHeight = document.documentElement.scrollHeight;
-
-                const isAtBottom = scrollPosition >= pageHeight - 20;
-                const isNearTop = currentScrollY <= 100;
-
-                let shouldShow = false;
-                if (!isNearTop && (isScrollingUp || isAtBottom)) {
-                    shouldShow = true;
-                }
-
-                setShowCTA(shouldShow);
-            }, 50);
-        };
-
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            if (timeoutId) clearTimeout(timeoutId);
-        };
-    }, []);
-    useEffect(() => {
-        if (showCTA) {
-            // Show buttons one by one with 150ms delay
-            visibleButtons.forEach((_, i) => {
-                setTimeout(() => {
-                    setVisibleButtons(prev => {
-                        const newState = [...prev];
-                        newState[i] = true;
-                        return newState;
-                    });
-                }, i * 50);
-            });
-        } else {
-            // Hide all buttons immediately
-            setVisibleButtons([false, false]);
-        }
-    }, [showCTA]);
-
     if (!coin) {
         return (
             <div className={styles.loadingContainer}>
@@ -244,7 +225,7 @@ export const CoinInfo: React.FC<Props> = ({ refetch }) => {
 
     return (
         <div className={styles.container}>
-            <ExploreButton />
+            <BackButton />
 
             <div className={styles.chartWrapper}>
                 <TransparentCandlestickChart coin={coin} trades={trades} interval={300} tokenId={coin.tokenId} />
@@ -321,14 +302,14 @@ export const CoinInfo: React.FC<Props> = ({ refetch }) => {
             </div>
             <div className={styles.ctaWrapper}>
                 <button
-                    className={`${styles.tradeButton} ${!visibleButtons[0] ? styles.ctaHidden : ''}`}
+                    className={`${styles.tradeButton} ${!showCTA ? styles.ctaHidden : ''}`}
                     onClick={() => setShowTradeModal(true)}
                 >
                     Buy & Sell
                 </button>
                 <Link
                     to={`/dashboard/explore/${coin.tokenId}/trade`}
-                    className={`${styles.tradeButton} ${!visibleButtons[1] ? styles.ctaHidden : ''}`}
+                    className={`${styles.tradeButton} ${!showCTA ? styles.ctaHidden : ''}`}
                 >
                     Trade
                 </Link>
@@ -374,15 +355,20 @@ export const CoinInfo: React.FC<Props> = ({ refetch }) => {
                                 )}
                             </h2>
 
-                            <input
-                                type="number"
-                                className={styles.modalInput}
-                                placeholder={action == 'buy' ? "Amount in ETH" : `Amount in ${coin.symbol}`}
-                                min="0"
-                                step="any"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                            />
+                            <button
+                                className={styles.modalInputButton}
+                                onClick={() => setShowKeypad(true)}
+                            >
+                                {amount || (action == 'buy' ? "Enter ETH amount" : `Enter ${coin.symbol} amount`)}
+                            </button>
+                            {showKeypad && (
+                                <MobileKeypad
+                                    value={amount}
+                                    onChange={setAmount}
+                                    onClose={() => setShowKeypad(false)}
+                                />
+                            )}
+
 
                             <div className={styles.modalActions}>
                                 {/* Buttons */}
@@ -407,7 +393,6 @@ export const CoinInfo: React.FC<Props> = ({ refetch }) => {
                                 >
                                     Cancel
                                 </button>
-
                                 {/* Estimations & Errors */}
                                 <div className={styles.modalCalculationPreview}>
                                     {action == 'buy' ? (
@@ -446,6 +431,7 @@ export const CoinInfo: React.FC<Props> = ({ refetch }) => {
                     </div>
                 </div>
             )}
+            <div ref={bottomRef} style={{ height: '1px' }} />
         </div>
     );
 };

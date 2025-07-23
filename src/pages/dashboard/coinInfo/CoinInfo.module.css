@@ -658,20 +658,22 @@
 
 .ctaWrapper {
     position: fixed;
-    bottom: 75px;
+    background: none;
+    bottom: 5rem;
     left: 0;
-    right: 0;
+    width: 100%;
+    padding: 1rem;
+    /* or your bg */
     display: flex;
     justify-content: center;
-    transition: transform 0.4s ease, opacity 0.4s ease;
-    z-index: 10;
-    pointer-events: auto;
-    opacity: 1;
-    transform: translateY(0);
+    gap: 1rem;
+    z-index: 1000;
 }
+
 
 .ctaHidden {
     opacity: 0;
+    display: none;
     transform: translateY(100%);
     pointer-events: none;
 }
@@ -812,15 +814,19 @@
         font-size: 0.95rem;
         padding: 12px 14px;
     }
+
+    .ctaWrapper {
+        bottom: 3rem;
+        padding: 0..25rem;
+        gap: .25rem;
+    }
 }
 
 .modalContainer {
-    background-color: var(--color-neutral-100);
-    border-radius: 20px;
+    background: none;
     padding: 24px;
-    max-width: 420px;
+    height: 75vh;
     width: 100%;
-    margin: 0 auto;
     font-family: var(--font-family-text);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }

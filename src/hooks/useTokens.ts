@@ -15,8 +15,8 @@ const url = import.meta.env.VITE_GRAPHQL_URL;
 const headers = { Authorization: 'Bearer {api-key}' };
 
 const PAGE_SIZE = 50;
-const throttledFetchIpfsMetadata = pThrottle({ limit: 50, interval: 1000 })(fetchIpfsMetadata);
-const throttledFetchPrice = pThrottle({ limit: 50, interval: 1000 })(fetchTokenPrice);
+const throttledFetchIpfsMetadata = pThrottle({ limit: 1, interval: 5000 })(fetchIpfsMetadata);
+const throttledFetchPrice = pThrottle({ limit: 1, interval: 5000 })(fetchTokenPrice);
 
 export function useTokens(tokenId?: string) {
     const [hasEnrichedPostHydration, setHasEnrichedPostHydration] = useState(false);
@@ -45,9 +45,10 @@ export function useTokens(tokenId?: string) {
             return allPages.length * PAGE_SIZE;
         },
         initialPageParam: 0,
-        enabled: !tokenId,
-        refetchInterval: 10000,
+        enabled: !tokenId && hydrated,
         refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        retry: false, // or set retry count to a low number
     });
     // Flatten all tokens fetched across pages
     const allFetchedTokens: any = data?.pages.flatMap((p: any) => p.tokenCreateds) || [];
@@ -375,7 +376,7 @@ export function useTokens(tokenId?: string) {
 
     // Load all tokens (no tokenId)
     useEffect(() => {
-        if (tokenId || hydrated) return;
+        if (tokenId || !hydrated) return;
         const load = async () => {
             setLoading(true);
             try {
@@ -414,7 +415,7 @@ export function useTokens(tokenId?: string) {
     // Fallback hydration slow check
     useEffect(() => {
         const timeout = setTimeout(() => {
-            if (hydrated && tokens.length === 0) {
+            if (!hydrated && tokens.length === 0) {
                 console.warn('Zustand hydration slow, forcing metadata fetch...');
                 fetchStaticMetadata();
             }

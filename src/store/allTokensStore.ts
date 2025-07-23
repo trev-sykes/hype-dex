@@ -10,6 +10,7 @@ interface TokenStore {
     updateToken: (tokenId: string, newData: Partial<Token>) => void;
     clearTokens: () => void;
     getLatestTimestamp: () => number;
+    getTokenById: (tokenId: string) => Token | undefined;
     appendToken: (token: Token) => void;
 }
 
@@ -44,7 +45,10 @@ export const useTokenStore = create<TokenStore>()(
                 if (tokens.length === 0) return 0;
                 return Math.max(...tokens.map((t: any) => t.blockTimestamp ?? 0));
             },
-
+            getTokenById: (tokenId: string) => {
+                const tokens = get().tokens;
+                return tokens.find((t: any) => t.tokenId.toString() === tokenId.toString());
+            },
             appendToken: (token: Token) => {
                 const tokens = get().tokens;
                 const exists = tokens.find((t: any) => t.tokenId.toString() === token.tokenId.toString());

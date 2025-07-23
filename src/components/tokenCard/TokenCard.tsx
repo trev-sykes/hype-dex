@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { formatUnits } from 'ethers';
 import styles from './TokenCard.module.css';
 import { useCoinStore } from '../../store/coinStore';
@@ -16,7 +16,6 @@ interface TokenCardProps {
 }
 
 export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
-    const navigate = useNavigate();
     const { setCoin } = useCoinStore();
     const width = useWitdh();
     const [imageLoaded, setImageLoaded] = useState(false);
@@ -128,7 +127,6 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
             className={styles.coinCard}
             onClick={() => {
                 setCoin(coin);
-                navigate(`/dashboard/explore/${coin.tokenId}/trade`);
             }}
         >
             <div className={styles.imageContainer}>

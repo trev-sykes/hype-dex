@@ -4,9 +4,9 @@ import styles from './ExploreGrid.module.css';
 import Logo from '../../../components/logo/Logo';
 import { useOnline } from '../../../hooks/useOnline';
 import { useWitdh } from '../../../hooks/useWidth';
-import { scrollToTop } from '../../../utils/scroll';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
 import type { Token } from '../../../types/token';
+import { ScrollToTopButton } from '../../../components/button/scrollToTop/ScrollToTopButton';
 // import { useTokenStore } from '../../../store/allTokensStore';
 interface ExploreGridProps {
     tokens: any,
@@ -21,7 +21,6 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
-    const [showScrollButton, setShowScrollButton] = useState(false);
     const [loadStates, setLoadStates] = useState<Map<string, boolean | null>>(new Map());
     const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -58,23 +57,6 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     }, [tokens, handleLoad]);
 
 
-    // Scroll handler to show/hide scroll-to-top button & infinite load
-    useEffect(() => {
-        const onScroll = () => {
-            setShowScrollButton(window.scrollY > 200);
-
-            // Infinite scroll: load next page if near bottom (300px)
-            if (
-                window.innerHeight + window.scrollY >= document.body.offsetHeight - 300
-            ) {
-                // if (hasNextPage && !loading) {
-                //     fetchNextPage();
-                // }
-            }
-        };
-        window.addEventListener('scroll', onScroll);
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
 
 
     useEffect(() => {
@@ -212,15 +194,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                     )}
                 </div>
             )}
-
-            {/* Scroll to Top */}
-            <button
-                className={`${styles.scrollToTopButton} ${showScrollButton ? styles.show : ''}`}
-                onClick={scrollToTop}
-                aria-label="Scroll to top"
-            >
-                ↑
-            </button>
+            <ScrollToTopButton />
         </div>
     );
 };
