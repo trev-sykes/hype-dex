@@ -26,7 +26,6 @@ export const useTradeStore = create<TradeStore>()(
             setTrades: (key: string, trades: Trade[]) => {
                 set((state: any) => {
                     if (deepEqual(state.trades[key], trades)) {
-                        console.log(`[Trade Store] Skipping setTrades for key "${key}" (no changes)`);
                         return state;
                     }
                     console.log(`[Trade Store] Setting trades for key "${key}". Total: ${trades.length}`);
@@ -65,7 +64,6 @@ export const useTradeStore = create<TradeStore>()(
             name: 'trade-store',
             partialize: (state: any) => ({ trades: state.trades }),
             onRehydrateStorage: () => (state) => {
-                console.log('[Trade Store] Rehydrated state:', state);
                 state.hydrated = true;
             },
         }

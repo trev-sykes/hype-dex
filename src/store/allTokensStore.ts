@@ -64,8 +64,6 @@ export const useTokenStore = create<TokenStore>()(
         {
             name: 'token-storage',
             onRehydrateStorage: () => (state: any) => {
-                console.log('[Token Store] Rehydrated state:', state);
-                // ✅ Explicitly mark the store as hydrated , calling set runs into problems so direct mutation is needed
                 state.hydrated = true;
             },
 

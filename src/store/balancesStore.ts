@@ -65,7 +65,6 @@ export const useBalanceStore = create<BalanceStore>()(
             version: 1,
             onRehydrateStorage: () => (state: any) => {
                 state.hydrated = true;
-                console.log('[Balance Store] Rehydrated', state);
             },
         }
     )

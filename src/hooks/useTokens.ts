@@ -1,5 +1,5 @@
 import pThrottle from 'p-throttle';
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { useTokenStore } from '../store/allTokensStore';
 import request from 'graphql-request';
 import { useInfiniteQuery } from 'wagmi/query';
@@ -25,7 +25,7 @@ export function useTokens(tokenId?: string) {
     const [error, setError] = useState<Error | null>(null);
     const [token, setToken] = useState<any>(null);
     const [pricesLoaded, setPricesLoaded] = useState(false);
-
+    const isLoadingRef = useRef(false);
     // Infinite Query for paginated tokens
     const {
         data,
@@ -45,10 +45,10 @@ export function useTokens(tokenId?: string) {
             return allPages.length * PAGE_SIZE;
         },
         initialPageParam: 0,
-        enabled: !tokenId && hydrated,
+        enabled: !tokenId && !hydrated,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
-        retry: false, // or set retry count to a low number
+        retry: false,
     });
     // Flatten all tokens fetched across pages
     const allFetchedTokens: any = data?.pages.flatMap((p: any) => p.tokenCreateds) || [];
@@ -239,7 +239,6 @@ export function useTokens(tokenId?: string) {
 
                     const needsPriceUpdate = isMissing(token.price) || (hasSamePrice && hasTrades);
                     if (!needsPriceUpdate) {
-                        console.log(`[fetchAllPrices] Skipping ${token.name}: Price data already complete`);
                     }
                     return needsPriceUpdate;
                 });
@@ -320,7 +319,7 @@ export function useTokens(tokenId?: string) {
         },
         [updateToken]
     );
-    // Single token enrich logic (same as before)
+
     const enrichToken = useCallback(
         async (tokenId: string, totalTokens: number) => {
             try {
@@ -373,29 +372,28 @@ export function useTokens(tokenId?: string) {
             setLoading(false);
         }
     }, [tokenId, tokens, fetchStaticMetadata, enrichToken]);
-
+    const load = async () => {
+        if (isLoadingRef.current) return;
+        isLoadingRef.current = true;
+        setLoading(true);
+        try {
+            const enrichedTokens = await fetchStaticMetadata();
+            // Use the returned tokens instead of stale closure
+            if (!pricesLoaded && enrichedTokens && enrichedTokens.length > 0) {
+                await fetchAllPrices(enrichedTokens);
+            }
+        } catch (err) {
+            console.error('loadTokens error', err);
+        } finally {
+            setLoading(false);
+            isLoadingRef.current = false;
+        }
+    };
     // Load all tokens (no tokenId)
     useEffect(() => {
-        if (tokenId || !hydrated) return;
-        const load = async () => {
-            setLoading(true);
-            try {
-                const enrichedTokens = await fetchStaticMetadata();
-
-                // Use the returned tokens instead of stale closure
-                if (!pricesLoaded && enrichedTokens && enrichedTokens.length > 0) {
-                    await fetchAllPrices(enrichedTokens);
-                }
-            } catch (err) {
-                console.error('loadTokens error', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
+        if (tokenId || !hydrated || loading) return;
         load();
     }, [hydrated, allFetchedTokens.length, fetchStaticMetadata, fetchAllPrices, pricesLoaded, tokenId]);
-
     // Fetch single token if tokenId present
     useEffect(() => {
         if (!hydrated || !tokenId) return;
@@ -428,6 +426,8 @@ export function useTokens(tokenId?: string) {
         refetchGraphQL();
         fetchStaticMetadata().then(fetchAllPrices);
     }, [hydrated, fetchStaticMetadata, fetchAllPrices, refetchGraphQL]);
+
+
     useEffect(() => {
         if (!hydrated || hasEnrichedPostHydration || tokenId || !isSuccess) return;
 
@@ -451,6 +451,7 @@ export function useTokens(tokenId?: string) {
             fetchStaticMetadata().then(fetchAllPrices);
         }
     }, [hydrated, hasEnrichedPostHydration, tokenId, fetchStaticMetadata, fetchAllPrices]);
+
     useEffect(() => {
         const unsubscribe = useTradeStore.getState().subscribeToNewTrades((trade) => {
             const tokenId = trade.tokenId;

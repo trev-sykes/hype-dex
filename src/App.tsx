@@ -19,6 +19,7 @@ import { useUserTokenBalance } from './hooks/useUserBalance'
 import { useAllTrades } from './hooks/useTokenActivity'
 import { useTradeStore } from './store/tradeStore'
 import { Portfolio } from './pages/dashboard/portfolio/Portfolio'
+import { BuySell } from './pages/dashboard/buySell/BuySell'
 
 
 
@@ -71,7 +72,11 @@ function InnerApp() {
             }
           />
           <Route path="/dashboard/create" element={<CreateTokenForm />} />
-          <Route path="/dashboard/explore/:tokenId" element={<CoinInfo refetch={refetch} />} />
+          <Route path='/dashboard/trade/:tokenId' element={
+            <BuySell
+              balance={balance} refetch={refetch} />
+          } />
+          <Route path="/dashboard/explore/:tokenId" element={<CoinInfo />} />
           <Route path="/dashboard/explore/:tokenId/trade"
             element={
               <TradePage

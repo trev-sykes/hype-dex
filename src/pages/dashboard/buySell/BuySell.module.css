@@ -1,0 +1,183 @@
+.tradePage {
+    padding: 20px;
+    font-family: var(--font-family-text);
+    gap: 20px;
+    background: var(--color-neutral-100);
+    max-height: 90vh;
+    position: relative;
+}
+
+.backButtonContainer {
+    padding: 0 0 25px 0;
+}
+
+.modeToggle {
+    display: flex;
+    gap: 3px;
+    background: var(--color-neutral-300);
+    border-radius: 999px;
+    justify-content: flex-start;
+    width: 50%;
+
+}
+
+.modeToggle button {
+    flex: 1;
+    padding: 5px 0;
+    font-size: .95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--color-neutral-300);
+    color: var(--color-neutral-500);
+    font-family: var(--font-family-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modeToggle .active {
+    background-color: var(--color-neutral-900);
+    color: white;
+}
+
+.inputSection {
+    font-size: 40px;
+    font-family: var(--font-family-number);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    color: var(--color-neutral-900);
+    border-bottom: 2px solid var(--color-neutral-300);
+    padding: 0;
+    width: 50%;
+
+}
+
+.amountWrapper {
+    flex: 1;
+    display: inline-block;
+    max-width: 100%;
+    font-size: 4rem;
+    font-family: var(--font-family-number);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transform-origin: left center;
+    transition: transform 0.2s ease-out;
+}
+
+.scalingWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0px;
+    transform-origin: left center;
+    transition: transform 0.2s ease-in-out;
+    white-space: nowrap;
+}
+
+.amount {
+    text-align: right;
+    flex: 1;
+}
+
+.currencyToggle {
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-family-text);
+    color: var(--color-neutral-400);
+    font-size: 4rem;
+    font-weight: 400;
+    cursor: pointer;
+    text-align: right;
+}
+
+.conversion {
+    font-size: 14px;
+    color: var(--color-neutral-600);
+    font-family: var(--font-family-number);
+}
+
+.actionButton {
+    margin-top: auto;
+    padding: 14px 24px;
+    width: 100%;
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: bold;
+    font-family: var(--font-family-number);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.actionButton:hover {
+    background-color: var(--color-accent-light);
+}
+
+.inputDisplay {
+    font-size: 2rem;
+    font-family: monospace;
+    display: inline-block;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 4px;
+    min-width: 100px;
+}
+
+.cursor {
+    display: inline-block;
+    width: 1px;
+    background-color: var(--color-neutral-500);
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+    height: 1em;
+    /* Match the current font size */
+    vertical-align: middle;
+    /* Better alignment */
+}
+
+
+@keyframes blink {
+
+    from,
+    to {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.previewSection {
+    margin: 16px 0;
+    padding: 12px;
+    background-color: #f7f7f7;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+    color: #333;
+}
+
+.balanceRow {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.previewRow {
+    color: #666;
+}
+
+.keypad {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    /* optional styles to visually separate keypad */
+    padding: 10px 0;
+    /* make sure it's above other content */
+}

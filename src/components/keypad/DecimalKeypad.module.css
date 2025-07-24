@@ -1,26 +1,7 @@
-.backdrop {
-    inset: 0;
-
-    background: none;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    z-index: 1000;
-}
-
-.sheet {
+.persistentKeypad {
     width: 100%;
-    padding: 1rem;
-    border-radius: 1rem 1rem 0 0;
-}
-
-.display {
-    font-size: 2rem;
-    text-align: right;
-    padding: 0.5rem 1rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    background: none;
+    padding: .75rem 1rem;
 }
 
 .keypad {
@@ -30,20 +11,23 @@
 }
 
 .key {
-    font-size: 1.5rem;
-    padding: 1rem;
+    font-size: 1.2rem;
+    font-family: var(--font-family-number);
+    font-weight: 800;
+    padding: .5rem 0;
     border: none;
-    background: #f0f0f0;
-    border-radius: 0.5rem;
+    border-radius: 1rem;
+    background: none;
+    color: var(--color-neutral-900);
+    transition: background 0.15s, transform 0.1s;
 }
 
-.done {
-    width: 100%;
-    margin-top: 1rem;
-    padding: 1rem;
-    font-size: 1rem;
-    background: var(--color-accent-light);
-    color: var(--color-neutral-100);
-    border: none;
-    border-radius: 0.5rem;
+.key:active {
+    background: var(--color-neutral-300);
+    transform: scale(0.97);
+}
+
+.key.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

@@ -1,11 +1,12 @@
-// MobileKeypad.tsx
 import React from 'react';
 import styles from './DecimalKeypad.module.css';
 
 type Props = {
     value: string;
     onChange: (val: string) => void;
-    onClose: () => void;
+    allowDecimals?: boolean; // control decimal input
+    maxValue?: number;       // max allowed input
+    restrict?: boolean;      // restrict inputs exceeding max
 };
 
 const keys = [
@@ -14,30 +15,56 @@ const keys = [
     '7', '8', '9',
     '.', '0', '←'
 ];
-
-export const MobileKeypad: React.FC<Props> = ({ value, onChange, onClose }) => {
+export const MobileKeypad: React.FC<Props> = ({ value, onChange, allowDecimals = true, maxValue, restrict }) => {
     const handlePress = (key: string) => {
+        let newValue = value;
+
         if (key === '←') {
             onChange(value.slice(0, -1));
-        } else {
-            // Prevent multiple decimals or leading zeros
-            if (key === '.' && value.includes('.')) return;
-            if (key === '.' && value === '') return onChange('0.');
-            onChange(value + key);
+            return;
         }
+
+        if (key === '.') {
+            if (!allowDecimals || value.includes('.')) return;
+            newValue = value === '' ? '0.' : value + '.';
+        } else {
+            if (key === '0') {
+                if (value === '' || value === '0') return;
+            }
+
+            if (value === '0' && key !== '.') {
+                newValue = key;
+            } else {
+                newValue = value + key;
+            }
+        }
+
+        if (restrict && maxValue !== undefined) {
+            const isNumeric = /^-?\d*(\.\d+)?$/.test(newValue);
+            const parsed = parseFloat(newValue);
+
+            if (isNumeric && !isNaN(parsed) && parsed > maxValue) {
+                return;
+            }
+        }
+
+
+        onChange(newValue);
     };
 
     return (
-        <div className={styles.backdrop} onClick={onClose}>
-            <div className={styles.sheet} onClick={e => e.stopPropagation()}>
-                <div className={styles.keypad}>
-                    {keys.map((key, i) => (
-                        <button key={i} onClick={() => handlePress(key)} className={styles.key}>
-                            {key}
-                        </button>
-                    ))}
-                </div>
-                <button onClick={onClose} className={styles.done}>Done</button>
+        <div className={styles.persistentKeypad}>
+            <div className={styles.keypad}>
+                {keys.map((key, i) => (
+                    <button
+                        key={i}
+                        onClick={() => handlePress(key)}
+                        className={`${styles.key} ${key === '.' && !allowDecimals ? styles.disabled : ''}`}
+                        disabled={key === '.' && !allowDecimals}
+                    >
+                        {key}
+                    </button>
+                ))}
             </div>
         </div>
     );
