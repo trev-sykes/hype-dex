@@ -25,13 +25,6 @@ const DashboardLayout = () => {
             persistAlerts.forEach((alert) => {
                 alertStore.clearAlert(alert.id);
             });
-
-            // 2. Show brief 'network restored' alert
-            alertStore.setAlert({
-                action: null,
-                type: 'network',
-                message: '✅ Connected',
-            });
         } else {
             // Only show if not already displayed
             const hasPersist = alertStore.alerts.some(

@@ -45,13 +45,14 @@ export function useTokens(tokenId?: string) {
             return allPages.length * PAGE_SIZE;
         },
         initialPageParam: 0,
-        enabled: !tokenId && !hydrated,
+        enabled: !tokenId && hydrated,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
         retry: false,
     });
     // Flatten all tokens fetched across pages
     const allFetchedTokens: any = data?.pages.flatMap((p: any) => p.tokenCreateds) || [];
+
     const fetchStaticMetadata = useCallback(async () => {
         if (!isSuccess) {
             console.log('[fetchStaticMetadata] Skipping: query not successful');

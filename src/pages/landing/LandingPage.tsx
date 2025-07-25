@@ -6,9 +6,6 @@ import Logo from '../../components/logo/Logo'
 const LandingPage = () => {
     return (
         <div className={styles.container}>
-            <div className={styles.background}>
-                <div className={styles.backgroundPattern}></div>
-            </div>
             <div className={styles.content}>
                 <div className={styles.logoContainer}>
                     <Logo size={'8rem'} />
