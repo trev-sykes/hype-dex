@@ -84,7 +84,7 @@ export function useTokens(tokenId?: string) {
             const shouldSkipNewWithNoTrades = isNew && !hasTrades;
             const shouldSkipOldWithNoSupplyAndTrades = hasNoSupply && hasTrades;
 
-            const shouldSkip = shouldSkipNewWithNoTrades || shouldSkipOldWithNoSupplyAndTrades;
+            // const shouldSkip = shouldSkipNewWithNoTrades || shouldSkipOldWithNoSupplyAndTrades;
             if (shouldSkipNewWithNoTrades || shouldSkipOldWithNoSupplyAndTrades) {
                 console.log(`[Skip Enrich] Token(${t.name}): Skipped due to skip logic new with no trades${shouldSkipNewWithNoTrades} old wiht no supply and trades: ${shouldSkipOldWithNoSupplyAndTrades}`);
 
