@@ -6,7 +6,6 @@
     padding: 1.25rem 2rem;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(76, 186, 255, 0.12);
-    border: 2px solid var(--color-neutral-300);
     cursor: pointer;
     text-decoration: none;
     width: 100%;
