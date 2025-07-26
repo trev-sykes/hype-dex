@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { deepEqual } from 'wagmi';
 import type { Trade } from '../types/trade';
+import { useTokenStore } from './allTokensStore';
 
 type TradeMap = Record<string, Trade[]>;
 
@@ -35,6 +36,13 @@ export const useTradeStore = create<TradeStore>()(
                 });
             },
             appendTrade: (key: string, trade: Trade) => {
+                const token = useTokenStore.getState().getTokenById(key);
+                if (!token?.needsPriceUpdate) {
+                    useTokenStore.getState().updateToken(key, {
+                        needsPriceUpdate: true,
+                    });
+                }
+
                 set((state: any) => {
                     const existing = state.trades[key] || [];
                     if (existing.some((t: any) => deepEqual(t, trade))) {

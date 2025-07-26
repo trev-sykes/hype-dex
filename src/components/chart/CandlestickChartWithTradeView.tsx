@@ -42,7 +42,6 @@ export default function CandlestickChartWithTradeView({ coin, trades, interval =
     const updateChartData = useCallback(
         (trades: Trade[], interval: number) => {
             setIsLoading(true);
-            console.log(`[updateChartData] Processing ${trades.length} trades for interval: ${interval}s`);
 
             if (!candleSeriesRef.current) {
                 setIsLoading(false);
@@ -158,7 +157,6 @@ export default function CandlestickChartWithTradeView({ coin, trades, interval =
                 }
             }
 
-            console.log(`[updateChartData] Final candles:`, candles.length);
 
             candleSeriesRef.current.setData(candles);
             chartRef.current?.timeScale().fitContent();
@@ -171,8 +169,6 @@ export default function CandlestickChartWithTradeView({ coin, trades, interval =
             console.warn('[useEffect] No window or container ref');
             return;
         }
-
-        console.log('[useEffect] Initializing chart');
 
         let resizeObserver: ResizeObserver | null = null;
 
@@ -221,8 +217,6 @@ export default function CandlestickChartWithTradeView({ coin, trades, interval =
 
                 chartRef.current = chart;
                 candleSeriesRef.current = candleSeries;
-
-                console.log('[useEffect] Chart initialized');
 
                 chart.subscribeCrosshairMove((param: any) => {
                     const container = chartContainerRef.current!;
@@ -278,7 +272,6 @@ export default function CandlestickChartWithTradeView({ coin, trades, interval =
             });
 
         return () => {
-            console.log('[useEffect] Cleaning up chart');
             if (resizeObserver && chartContainerRef.current) {
                 resizeObserver.unobserve(chartContainerRef.current);
             }
@@ -293,10 +286,8 @@ export default function CandlestickChartWithTradeView({ coin, trades, interval =
 
     useEffect(() => {
         if (!isChartInitialized) {
-            console.log('[useEffect] Chart not initialized, skipping update');
             return;
         }
-        console.log(`[useEffect] Updating chart with ${trades.length} trades, interval ${selectedInterval}`);
         updateChartData(trades, selectedInterval);
     }, [trades, selectedInterval, updateChartData, isChartInitialized]);
 

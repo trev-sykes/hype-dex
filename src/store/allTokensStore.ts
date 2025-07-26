@@ -51,13 +51,20 @@ export const useTokenStore = create<TokenStore>()(
             },
             appendToken: (token: Token) => {
                 const tokens = get().tokens;
+                const existing = tokens.find((t: any) => t.tokenId.toString() === token.tokenId.toString());
                 const exists = tokens.find((t: any) => t.tokenId.toString() === token.tokenId.toString());
                 if (!exists) {
                     set({ tokens: [...tokens, token] });
                     console.log(`[Token Store] Appended tokenId ${token.tokenId}`);
                 } else {
-                    // optionally update existing token data here
-                    // For example, updateToken(token.tokenId, token)
+                    // Optional: merge with new data if needed
+                    const merged = { ...existing, ...token };
+                    set({
+                        tokens: tokens.map((t: any) =>
+                            t.tokenId.toString() === token.tokenId.toString() ? merged : t
+                        ),
+                    });
+                    console.log(`[Token Store] Merged update for tokenId ${token.tokenId}`);
                 }
             },
         }),

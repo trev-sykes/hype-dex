@@ -36,9 +36,6 @@ export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchBalance, t
 
   const mintEstimation = useMintEstimation(tokenId, ethInput);
   const burnEstimation = useBurnEstimation(tokenId, burnAmount)
-  console.log("Balance data", balance.data);
-  console.log("Balance value (bigint)", balance.data?.value);
-  console.log("Balance formatted", balance.data?.formatted);
 
 
   const { data: isOperator } = useReadContract({

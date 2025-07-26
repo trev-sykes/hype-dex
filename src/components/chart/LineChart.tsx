@@ -346,7 +346,7 @@ export default function LineChart({
             chartRef.current?.timeScale().fitContent();
             setIsLoading(false);
         },
-        [coin.price, width, height]
+        [coin.price, trades, width, height]
     );
 
     // Chart initialization effect - only run when DOM is ready
@@ -470,7 +470,7 @@ export default function LineChart({
                 console.error('Failed to load lightweight-charts:', err);
                 setIsLoading(false);
             });
-    }, [isMounted, hexColor, width, height, updateChartData, trades, selectedInterval, coin?.tokenId, setTrades]);
+    }, [isMounted, hexColor, width, height, updateChartData, trades, selectedInterval, coin?.tokenId, coin.price, setTrades]);
 
     // Update series colors when hexColor changes
     useEffect(() => {
@@ -530,7 +530,7 @@ export default function LineChart({
         }
 
         updateChartData(trades, selectedInterval);
-    }, [trades, updateChartData, isChartInitialized, availableIntervals]);
+    }, [trades, coin.price, updateChartData, isChartInitialized, availableIntervals]);
 
     const intervalOptions = getAvailableIntervals();
 

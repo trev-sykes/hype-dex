@@ -14,6 +14,8 @@ export type Token = {
     reserve?: bigint | null;
     totalSupply?: bigint | null;
     percentChange?: number | null;
+    priceLastFetchedAt?: number;
+    needsPriceUpdate?: boolean;
 
 };
 export type TokenMetadata = {
