@@ -42,7 +42,7 @@ export default function App() {
 }
 
 function InnerApp() {
-  const { tokens, fetchNextPage, hasNextPage, refetch, loading } = useTokens();
+  const { tokens, fetchNextPage, hasNextPage, refetch, loading, fetchStaticMetadata, fetchAllPrices } = useTokens();
   const trades = useAllTrades();
   const { setTrades } = useTradeStore();
   const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
@@ -72,6 +72,8 @@ function InnerApp() {
                 fetchNextPage={fetchNextPage}
                 hasNextPage={hasNextPage}
                 loading={loading}
+                fetchStaticMetadata={fetchStaticMetadata}
+                fetchAllPrices={fetchAllPrices}
               />
             }
           />

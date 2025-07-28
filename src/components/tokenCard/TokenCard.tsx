@@ -24,7 +24,7 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     );
 
     const trades = rawTrades ?? [];
-
+    console.log("TOKEN PASSED TO COIN", coin)
     const [tokenColor, setTokenColor] = useState('#1c67a8');
 
     // Handle image loading locally if no loadState is provided

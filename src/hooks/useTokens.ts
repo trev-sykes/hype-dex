@@ -380,6 +380,7 @@ export function useTokens(tokenId?: string) {
         enrichToken,
         fetchNextPage,
         fetchStaticMetadata,
+        fetchAllPrices,
         hasNextPage,
         pricesLoaded,
     };
