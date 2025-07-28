@@ -19,8 +19,11 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     const width = useWitdh();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
-    const trades = useTradeStore(state => state.trades[coin.tokenId.toString()] ?? []);
+    const rawTrades = useTradeStore(
+        React.useCallback(state => state.trades[coin.tokenId.toString()], [coin.tokenId])
+    );
 
+    const trades = rawTrades ?? [];
 
     const [tokenColor, setTokenColor] = useState('#1c67a8');
 

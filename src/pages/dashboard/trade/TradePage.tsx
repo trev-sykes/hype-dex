@@ -153,6 +153,8 @@ export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchBalance, t
     }
   };
 
+  console.log(styles.buttonCompact, styles.sell);
+
   return (
     <>
       <div className={styles.container}>

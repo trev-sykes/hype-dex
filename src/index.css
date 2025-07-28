@@ -80,6 +80,13 @@ main.burn-effect::before {
   /* red burn tint */
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 /* Tint fade animation */
 @keyframes tintFlash {
   0% {

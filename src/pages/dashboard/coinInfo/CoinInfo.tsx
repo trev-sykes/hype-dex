@@ -16,6 +16,7 @@ export const CoinInfo: React.FC = () => {
     const [imageLoaded, setImageLoaded] = useState<boolean | null>(null);
     const [activeTab, setActiveTab] = useState<'balance' | 'insights'>('balance');
     const [showCTA, setShowCTA] = useState(true);
+    const [isImageToggled, setIsImageToggled] = useState<boolean>(false);
     // const [action, setAction] = useState<'buy' | 'sell' | ''>('');
     const { getTokenById } = useTokenStore();
     const { setCoin } = useCoinStore();
@@ -63,7 +64,10 @@ export const CoinInfo: React.FC = () => {
             </div>
         );
     }
-
+    const handleImageToggle = () => {
+        console.log("Image Toggle State", isImageToggled)
+        setIsImageToggled(prev => !prev);
+    }
     // useEffect(() => {
     //     const handler = setTimeout(() => {
     //         setDebouncedAmount(amount);
@@ -73,15 +77,39 @@ export const CoinInfo: React.FC = () => {
     //         clearTimeout(handler);
     //     };
     // }, [amount]);
+    useEffect(() => {
+        if (isImageToggled) {
+            // Disable scroll
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Re-enable scroll
+            document.body.style.overflow = '';
+        }
+
+        // Clean up on unmount (in case component unmounts while fullscreen)
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isImageToggled]);
 
     const totalSupply = Number(coin.totalSupply);
     const currentPriceEth = Number(formatEther(coin.price));  // converts from wei to ETH
 
     const marketCapEth = totalSupply * currentPriceEth;
 
-
     return (
         <div className={styles.container}>
+            {isImageToggled && (
+                <div className={styles.fullScreen} onClick={handleImageToggle}>
+                    <div className={styles.circleWrapper}>
+                        <img
+                            src={coin.imageUrl}
+                            alt={coin.symbol}
+                            className={styles.fullScreenImage}
+                        />
+                    </div>
+                </div>
+            )}
             <BackButton />
             <div className={styles.chartWrapper}>
                 <TransparentCandlestickChart coin={coin} trades={trades} interval={300} tokenId={coin.tokenId} />
@@ -110,13 +138,16 @@ export const CoinInfo: React.FC = () => {
                             {imageLoaded === false && (
                                 <div className={styles.imageFallback}>{coin.symbol}</div>
                             )}
-                            <img
-                                src={coin.imageUrl}
-                                alt={coin.symbol}
-                                className={`${styles.tokenImage} ${imageLoaded !== true ? styles.hidden : ''}`}
-                                onLoad={() => setImageLoaded(true)}
-                                onError={() => setImageLoaded(false)}
-                            />
+                            <div className={`${styles.imageContainer}`}>
+                                <img
+                                    src={coin.imageUrl}
+                                    alt={coin.symbol}
+                                    className={`${styles.tokenImage} ${imageLoaded !== true ? styles.hidden : ''}`}
+                                    onLoad={() => setImageLoaded(true)}
+                                    onError={() => setImageLoaded(false)}
+                                    onClick={() => { handleImageToggle() }}
+                                />
+                            </div>
                             <div className={styles.balanceInfo}>
                                 <p className={styles.balanceAmount}>{balanceEth} {coin.symbol}</p>
                                 <p className={styles.ethValue}>≈ {totalValueEth?.toFixed(4)} ETH</p>
@@ -205,6 +236,7 @@ export const CoinInfo: React.FC = () => {
                     )}
                 </div>
             )} */}
+
             <div ref={bottomRef} style={{ height: '1px' }} />
         </div>
     );

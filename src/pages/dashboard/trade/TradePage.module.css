@@ -152,8 +152,7 @@
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
-    flex-shrink: 0;
-    min-width: 90px;
+    text-align: left;
     border-radius: 0;
     transition: 0.3s ease;
 }

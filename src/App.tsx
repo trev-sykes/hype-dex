@@ -20,6 +20,7 @@ import { useAllTrades } from './hooks/useTokenActivity'
 import { useTradeStore } from './store/tradeStore'
 import { Portfolio } from './pages/dashboard/portfolio/Portfolio'
 import { BuySell } from './pages/dashboard/buySell/BuySell'
+import { useEffect } from 'react'
 
 
 
@@ -27,6 +28,9 @@ export default function App() {
   useTradeUpdater();
   useTokenCreationUpdater();
   const queryClient = new QueryClient();
+  useEffect(() => {
+    console.log("Window History Length: ", window.history.length)
+  }, [window.history.length])
 
   return (
     <WagmiProvider config={config}>
