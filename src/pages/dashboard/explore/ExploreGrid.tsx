@@ -7,7 +7,8 @@ import { useWitdh } from '../../../hooks/useWidth';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
 import type { Token } from '../../../types/token';
 import { ScrollToTopButton } from '../../../components/button/scrollToTop/ScrollToTopButton';
-// import { useTokenStore } from '../../../store/allTokensStore';
+import { useTokenStore } from '../../../store/allTokensStore';
+import { useTradeStore } from '../../../store/tradeStore';
 interface ExploreGridProps {
     tokens: any,
     fetchNextPage: any,
@@ -23,7 +24,8 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
     const [loadStates, setLoadStates] = useState<Map<string, boolean | null>>(new Map());
     const inputRef = useRef<HTMLInputElement | null>(null);
-
+    const { clearTokens } = useTokenStore();
+    const { clearTrades } = useTradeStore()
 
     // Handle image load states
     const handleLoad = useCallback((tokenId: string, status: boolean) => {
@@ -136,13 +138,14 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
             <div className={`${styles.symbolText} ${styles.tokenCount}`}>
                 {coinsToDisplay.length} Tokens
             </div>
-            {/* <button
+            <button
                 onClick={() => {
                     clearTokens()
+                    clearTrades()
                 }}
             >
                 Refresh
-            </button> */}
+            </button>
             {/* Grid of Coins */}
             {isSearching ? (
                 <div className={styles.loadingMore}>

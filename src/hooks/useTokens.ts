@@ -40,36 +40,67 @@ export function useTokens(tokenId?: string) {
     // Flatten all tokens fetched across pages
     const allFetchedTokens: any = data?.pages.flatMap((p: any) => p.tokenCreateds) || [];
 
-    const fetchStaticMetadata = useCallback(async (source = "unknown") => {
+
+    const enrichmentAttemptsRef = useRef(new Map<string, number>());
+    const lastEnrichTimeRef = useRef(0);
+    const MAX_ATTEMPTS = 10;
+    const COOLDOWN_MS = 30000;
+
+    const fetchStaticMetadata = useCallback(async (source = "unknown", currentTokens: any) => {
+        console.log("SOURCE", source);
         if (isFetchingStaticMetadataRef.current) {
             console.log('[fetchStaticMetadata] Skipped: already fetching');
             return;
         }
+        const nowMs = Date.now();
+        if (nowMs - lastEnrichTimeRef.current < COOLDOWN_MS) {
+            console.log('[fetchStaticMetadata] Skipped: cooldown active');
+            return;
+        }
+        lastEnrichTimeRef.current = nowMs;
+
         isFetchingStaticMetadataRef.current = true;
         try {
-            const currentTokens = useTokenStore.getState().tokens;
-            const tokenIds: any = await fetchTokenIds();
-            const rawMetadata: any = await fetchMetaDataFromBlockchain(0, tokenIds.length)
-            console.log(`Call from ${source}`);
+            const tokenIds = await fetchTokenIds();
+            const rawMetadata = await fetchMetaDataFromBlockchain(0, tokenIds.length);
             if (!isSuccess) {
                 console.log('[fetchStaticMetadata] Skipping: query not successful');
-                return
-            };
+                return;
+            }
             const nowSeconds = Math.floor(Date.now() / 1000);
-            const NEW_TOKEN_AGE_LIMIT = (24) * 10 * 60; // 10 minutes in seconds
-            const tokensToEnrich: any = filterTokensForEnrichment(rawMetadata, currentTokens, nowSeconds, NEW_TOKEN_AGE_LIMIT);
-            console.log('[fetchStaticMetadata] Enriching', tokensToEnrich.length, 'tokens:', tokensToEnrich);
-            console.log("[fetchStaticMetadata] Calling enrichTokens...");
+            const NEW_TOKEN_AGE_LIMIT = 24 * 10 * 60; // 10 minutes in seconds
+            let tokensToEnrich = filterTokensForEnrichment(rawMetadata, currentTokens, nowSeconds, NEW_TOKEN_AGE_LIMIT);
+
+            // Filter by enrichment attempts to prevent infinite loops
+            tokensToEnrich = tokensToEnrich.filter((t: any) => {
+                const attempts = enrichmentAttemptsRef.current.get(t.tokenId) || 0;
+                if (attempts >= MAX_ATTEMPTS) {
+                    console.log(`Token ${t.name} reached max enrichment attempts (${MAX_ATTEMPTS}), skipping.`);
+                    return false;
+                }
+                return true;
+            });
+
+            if (tokensToEnrich.length === 0) {
+                console.log('[fetchStaticMetadata] No tokens to enrich after filtering attempts.');
+                return currentTokens;
+            }
+
             const enrichedTokens = await enrichTokens(currentTokens, tokensToEnrich, allFetchedTokens, rawMetadata, setTokens);
-            console.log("[fetchStaticMetadata] EnrichTokens returned", enrichedTokens);
-            isFetchingStaticMetadataRef.current = false;
+
+            // Update attempts for enriched tokens
+            tokensToEnrich.forEach((t: any) => {
+                enrichmentAttemptsRef.current.set(t.tokenId, (enrichmentAttemptsRef.current.get(t.tokenId) || 0) + 1);
+            });
+
             return enrichedTokens;
-        } catch (error: any) {
-            console.warn("Issue fetching static metadata");
+        } catch (error) {
+            console.warn("Issue fetching static metadata", error);
         } finally {
             isFetchingStaticMetadataRef.current = false;
         }
     }, [allFetchedTokens, isSuccess, setTokens]);
+
     const fetchAllPrices = useCallback(
         async (tokensToFetch?: any[], metadata?: any[]) => {
             if (!tokensToFetch?.length) return;
@@ -236,7 +267,7 @@ export function useTokens(tokenId?: string) {
                 return;
             }
             if (isSuccess) {
-                fetchStaticMetadata("Fetch Single");
+                fetchStaticMetadata("Fetch Single", tokens);
             }
 
             const refreshed = useTokenStore.getState().tokens.find(t => t.tokenId === tokenId);
@@ -254,7 +285,7 @@ export function useTokens(tokenId?: string) {
         if (tokenId || !hydrated || loading || !isSuccess) return;  // <- add isSuccess here
         setLoading(true);
         try {
-            const enrichedTokens = await fetchStaticMetadata("Load");
+            const enrichedTokens = await fetchStaticMetadata("Load", tokens);
             // Use the returned tokens instead of stale closure
             if (!pricesLoaded && enrichedTokens && enrichedTokens.length > 0) {
                 await fetchAllPrices(enrichedTokens);
@@ -283,7 +314,7 @@ export function useTokens(tokenId?: string) {
         const storeIds = new Set(tokens.map(t => t.tokenId.toString()));
         const hasNew = allFetchedTokens.some((t: any) => !storeIds.has(t.tokenId.toString()));
         if (hasNew && isSuccess) {
-            fetchStaticMetadata("useEffect if new tokens appear");
+            fetchStaticMetadata("useEffect if new tokens appear", tokens);
         }
     }, [allFetchedTokens, hydrated, tokenId, tokens, fetchStaticMetadata]);
 
@@ -292,7 +323,7 @@ export function useTokens(tokenId?: string) {
         const timeout = setTimeout(() => {
             if (!hydrated && tokens.length === 0) {
                 console.warn('Zustand hydration slow, forcing metadata fetch...');
-                fetchStaticMetadata("fallback hydration slow check");
+                fetchStaticMetadata("fallback hydration slow check", tokens);
             }
         }, 2000);
         return () => clearTimeout(timeout);
@@ -301,7 +332,7 @@ export function useTokens(tokenId?: string) {
     const refetch = useCallback(() => {
         setPricesLoaded(false);
         refetchGraphQL();
-        fetchStaticMetadata("refetch").then(fetchAllPrices);
+        fetchStaticMetadata("refetch", tokens).then(fetchAllPrices);
     }, [hydrated, fetchStaticMetadata, fetchAllPrices, refetchGraphQL]);
 
 
@@ -325,7 +356,7 @@ export function useTokens(tokenId?: string) {
         if (incomplete) {
             console.log('[Hydration Enrich Trigger] Incomplete tokens found, enriching...');
             setHasEnrichedPostHydration(true);
-            fetchStaticMetadata("Incomplete Tokens Hook").then(fetchAllPrices);
+            fetchStaticMetadata("Incomplete Tokens Hook", tokens).then(fetchAllPrices);
         }
     }, [hydrated, hasEnrichedPostHydration, tokenId, fetchStaticMetadata, fetchAllPrices]);
 

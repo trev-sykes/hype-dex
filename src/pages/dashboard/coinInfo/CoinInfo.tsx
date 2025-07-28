@@ -180,7 +180,7 @@ export const CoinInfo: React.FC = () => {
                             </div>
                             <div>
                                 <label>Total Supply</label>
-                                <span>{coin.totalSupply.toLocaleString()}</span>
+                                <span>{coin.totalSupply && coin.totalSupply.toLocaleString()}</span>
                             </div>
                         </div>
 
