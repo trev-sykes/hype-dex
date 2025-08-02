@@ -30,7 +30,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     // const { clearTokens } = useTokenStore();
     // const { clearTrades } = useTradeStore();
 
-    const COOLDOWN_TIME = 1 * 1000; // 60 seconds
+    const COOLDOWN_TIME = 120 * 1000; // 60 seconds
     const LAST_REFRESH_KEY = 'last_soft_refresh';
 
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
