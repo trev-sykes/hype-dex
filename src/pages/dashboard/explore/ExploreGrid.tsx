@@ -34,7 +34,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     const LAST_REFRESH_KEY = 'last_soft_refresh';
 
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
-    const [isCooldownActive, setIsCooldownActive] = useState(true);
+    const [isCooldownActive, setIsCooldownActive] = useState(false);
     useEffect(() => {
         const interval = setInterval(() => {
             const lastRefresh = localStorage.getItem(LAST_REFRESH_KEY);
