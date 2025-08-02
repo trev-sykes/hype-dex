@@ -7,16 +7,18 @@ import { useWitdh } from '../../../hooks/useWidth';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
 import type { Token } from '../../../types/token';
 import { ScrollToTopButton } from '../../../components/button/scrollToTop/ScrollToTopButton';
+// import { useTokenStore } from '../../../store/allTokensStore';
+// import { useTradeStore } from '../../../store/tradeStore';
 
 interface ExploreGridProps {
     tokens: any,
     fetchNextPage: any,
     hasNextPage: any,
     loading: any,
-    fetchStaticMetadata: any,
-    fetchAllPrices: any
+    fetchStaticMetadata?: any,
+    fetchAllPrices?: any
 }
-export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage, hasNextPage, loading, fetchStaticMetadata, fetchAllPrices }) => {
+export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage, hasNextPage, loading, fetchStaticMetadata }) => {
     // const { clearTokens } = useTokenStore();
     const isOnline = useOnline();
     const viewportWidth = useWitdh();
@@ -25,8 +27,10 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
     const [loadStates, setLoadStates] = useState<Map<string, boolean | null>>(new Map());
     const inputRef = useRef<HTMLInputElement | null>(null);
+    // const { clearTokens } = useTokenStore();
+    // const { clearTrades } = useTradeStore();
 
-    const COOLDOWN_TIME = 60 * 1000; // 60 seconds
+    const COOLDOWN_TIME = 1 * 1000; // 60 seconds
     const LAST_REFRESH_KEY = 'last_soft_refresh';
 
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
@@ -162,6 +166,12 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
             <div className={`${styles.symbolText} ${styles.tokenCount}`}>
                 {coinsToDisplay.length} Tokens
             </div>
+            {/* <button onClick={async () => await fetchStaticMetadata()}>
+                reload
+            </button> */}
+            {/* <button onClick={() => clearTokens()}>
+                Clear Tokens
+            </button> */}
             <button
                 disabled={isCooldownActive}
                 onClick={async () => {
@@ -174,21 +184,25 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                     setCooldownRemaining(Math.ceil(COOLDOWN_TIME / 1000));
                     setIsCooldownActive(true);
 
-                    await fetchStaticMetadata("Manual Refresh", tokens);
-                    await fetchAllPrices(tokens);
+                    await fetchStaticMetadata("Manual Refresh");
                 }}
 
             >
                 {isCooldownActive ? `Cooldown: ${cooldownRemaining}s` : 'Refresh'}
             </button>
-
+            {/* <button onClick={() => {
+                clearTokens()
+                clearTrades()
+            }}>
+                Refresh Data
+            </button> */}
 
             {/* Grid of Coins */}
             {isSearching ? (
                 <div className={styles.loadingMore}>
                     <BarLoader color="#144c7e" width={200} height={6} speedMultiplier={3.5} />
                 </div>
-            ) : coinsToDisplay.length > 0 ? (
+            ) : coinsToDisplay.length > 0 && !loading ? (
                 <>
                     <div className={styles.gridContainer}>
                         {coinsToDisplay.map((coin: Token) => (

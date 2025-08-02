@@ -1,30 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatUnits } from 'ethers';
 import styles from './TokenCard.module.css';
 import { useCoinStore } from '../../store/coinStore';
 import { useWitdh } from '../../hooks/useWidth';
 import { getDominantColor } from '../../utils/colorTheif';
 import TransparentCandlestickChart from '../chart/LineChart';
 import { useTradeStore } from '../../store/tradeStore';
-
+import { useTokenStore } from '../../store/allTokensStore';
 
 interface TokenCardProps {
     coin: any;
     loadState?: boolean | null;
 }
+const updatedTokens = new Set<string>();
 
 export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     const { setCoin } = useCoinStore();
+    const updateToken = useTokenStore(state => state.updateToken);
     const width = useWitdh();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const rawTrades = useTradeStore(
         React.useCallback(state => state.trades[coin.tokenId.toString()], [coin.tokenId])
     );
+    useEffect(() => {
+        if (
+            !coin.dominantColor &&
+            coin.imageUrl &&
+            (imageLoaded || loadState === true) &&
+            !updatedTokens.has(coin.tokenId.toString())
+        ) {
+            updatedTokens.add(coin.tokenId.toString());
+            getDominantColor(coin.imageUrl)
+                .then((color) => {
+                    updateToken(coin.tokenId, { dominantColor: color });
+                })
+                .catch(console.error);
+        }
+    }, [coin.tokenId, coin.imageUrl, coin.dominantColor, imageLoaded, loadState]);
 
     const trades = rawTrades ?? [];
-    const [tokenColor, setTokenColor] = useState('#1c67a8');
+    // const tokenColor = coin.dominantColor || '#1c67a8';
+
 
     // Handle image loading locally if no loadState is provided
     useEffect(() => {
@@ -107,22 +124,6 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
         );
     };
 
-    useEffect(() => {
-        if (!coin.imageUrl || (!imageLoaded && loadState !== true)) return;
-
-        const img = new Image();
-        img.src = coin.imageUrl;
-
-        img.onload = async () => {
-            try {
-                const color = await getDominantColor(img.src);
-                setTokenColor(color);
-            } catch (error) {
-                console.error('Error getting dominant color:', error);
-            }
-        };
-    }, [coin.imageUrl, imageLoaded, loadState]);
-
     return (
         <Link
             to={`/dashboard/explore/${coin.tokenId}`}
@@ -150,21 +151,14 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
                     trades={trades}
                     height={50}
                     width={'100%'}
-                    lineColor={tokenColor}
+                // lineColor={tokenColor || '#1c67a8'}
                 />
-                {/* <PlotlyLineChart
-                        coin={coin}
-                        trades={trades}
-                        height={150}
-                        width={'100%'}
-                        lineColor={tokenColor}
-                    /> */}
             </div>
 
             <div className={styles.priceSection}>
                 <p>
                     <span className={styles.priceValue}>
-                        {coin.price != null ? formatUnits(coin.price) : 'N/A'}
+                        {coin.price != null ? coin.price.toString() : 'N/A'}
                     </span>
                 </p>
             </div>

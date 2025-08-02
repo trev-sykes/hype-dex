@@ -46,6 +46,7 @@ export const useBurnEstimation = (tokenId: bigint | string | undefined, burnInpu
             const supply = BigInt(totalSupply);
 
             if (BigInt(burnAmount) > supply) {
+                console.warn("[🔥 BURN] Burn amount exceeds supply", { burnAmount, supply });
                 setEstimation(null);
                 return;
             }
@@ -60,9 +61,8 @@ export const useBurnEstimation = (tokenId: bigint | string | undefined, burnInpu
                 ethToReceive: Number(formatEther(refund)),
                 burnAmount: burnAmount,
             });
-
         } catch (error) {
-            console.error('Burn estimation error:', error);
+            console.error('🔥 Burn estimation error:', error);
             setEstimation(null);
         }
     }, [tokenId, burnInput, tokenConfig, totalSupply]);
@@ -70,11 +70,9 @@ export const useBurnEstimation = (tokenId: bigint | string | undefined, burnInpu
     return estimation;
 };
 
-
 export const useMintEstimation = (tokenId: bigint | string | undefined, ethInput: string) => {
     const [estimation, setEstimation] = useState<MintEstimation | null>(null);
 
-    // Read token configuration (basePrice and slope)
     const { data: tokenConfig }: any = useReadContract({
         address: ETHBackedTokenMinterAddress,
         abi: ETHBackedTokenMinterABI,
@@ -82,7 +80,6 @@ export const useMintEstimation = (tokenId: bigint | string | undefined, ethInput
         args: [tokenId],
     });
 
-    // Read total supply
     const { data: totalSupply }: any = useReadContract({
         address: ERC6909Address,
         abi: ERC6909ABI,
@@ -102,17 +99,15 @@ export const useMintEstimation = (tokenId: bigint | string | undefined, ethInput
             return;
         }
 
-
         try {
-            const ethAmount = parseEther(ethInput); // Convert ETH input to wei
-            const basePrice = BigInt(tokenConfig[0]); // basePrice from tokenConfigs
-            const slope = BigInt(tokenConfig[1]); // slope from tokenConfigs
-            const supply = BigInt(totalSupply); // Current total supply
+            const ethAmount = parseEther(ethInput);
+            const basePrice = BigInt(tokenConfig[0]);
+            const slope = BigInt(tokenConfig[1]);
+            const supply = BigInt(totalSupply);
 
             let amountToMint = 0;
             let cost = BigInt(0);
 
-            // Simulate minting up to 1000 tokens (same as contract)
             for (let i = 1; i <= 1000; i++) {
                 const unitPrice = basePrice + slope * (supply + BigInt(i - 1));
                 if (cost + unitPrice > ethAmount) break;
@@ -121,18 +116,20 @@ export const useMintEstimation = (tokenId: bigint | string | undefined, ethInput
             }
 
             if (amountToMint === 0) {
+                console.warn("[🪙 MINT] Not enough ETH to mint any tokens", { ethAmount: ethAmount.toString() });
                 setEstimation(null);
                 return;
             }
 
             const refund = ethAmount - cost;
+
             setEstimation({
                 tokensToMint: amountToMint,
                 totalCostETH: Number(formatEther(cost)),
                 refundETH: Number(formatEther(refund)),
             });
         } catch (error) {
-            console.error('Estimation error:', error);
+            console.error('🪙 Mint estimation error:', error);
             setEstimation(null);
         }
     }, [tokenId, ethInput, tokenConfig, totalSupply]);

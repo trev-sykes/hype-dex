@@ -139,7 +139,7 @@ export default function CandlestickChartWithTradeView({ coin, trades, interval =
                 const lastCandle = candles[candles.length - 1];
 
                 // Convert price to number - handle both BigInt and number types
-                const currentPrice: number = parsePrice(coin.price);
+                const currentPrice: number = Number(coin.price);
                 if (lastCandle.time === currentBucket) {
                     // Update the existing last candle with current price
                     lastCandle.high = Math.max(lastCandle.high, currentPrice);

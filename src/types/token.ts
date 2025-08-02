@@ -8,7 +8,7 @@ export type Token = {
     imageUrl: string | null;
 
     // Enrichable fields
-    price?: bigint | null;
+    price?: bigint | string | number | null;
     basePrice?: bigint | null;
     slope?: bigint | null;
     reserve?: bigint | null;
@@ -16,6 +16,9 @@ export type Token = {
     percentChange?: number | null;
     priceLastFetchedAt?: number;
     needsPriceUpdate?: boolean;
+
+    // Color for charting
+    dominantColor?: any;
 
 };
 export type TokenMetadata = {

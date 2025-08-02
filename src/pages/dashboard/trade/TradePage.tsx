@@ -13,13 +13,12 @@ import { useAlertStore, type ActionType } from '../../../store/alertStore';
 import { BackButton } from '../../../components/button/back/BackButton';
 import { TradeHistoryTable } from './TradeHistoryTable';
 interface TradePageProps {
-  refetch: any;
   refetchBalance: any;
   tokenBalance: any;
   address: any;
   balance: any;
 }
-export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchBalance, tokenBalance, address, balance }) => {
+export const TradePage: React.FC<TradePageProps> = ({ refetchBalance, tokenBalance, address, balance }) => {
   const { coin } = useCoinStore();
   const { setAlert } = useAlertStore();
   const [ethInput, setEthInput] = useState('');
@@ -76,7 +75,6 @@ export const TradePage: React.FC<TradePageProps> = ({ refetch, refetchBalance, t
         message: `You ${txTypeRef.current}ed ${amountRef.current} ${actionTypeRef.current?.slice(0, 6) ?? ''}!`
       });
       refetchBalance();
-      refetch();
     }
   }, [isTxSuccess]);
 

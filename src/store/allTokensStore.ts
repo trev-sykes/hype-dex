@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Token } from '../types/token';
+import { deepEqual } from 'wagmi'; // already being used in your trade store
+import { sanitizeTokensForStorage } from '../utils/sanitizeTokenForStorage';
+
 
 interface TokenStore {
     tokens: Token[];
@@ -19,10 +22,14 @@ export const useTokenStore = create<TokenStore>()(
         (set, get): TokenStore => ({
             tokens: [],
             hydrated: false,
-
-            setTokens: (tokens: any) => {
-                console.log('[Token Store] Setting tokens:', tokens);
-                set({ tokens })
+            setTokens: (tokens: Token[]) => {
+                set((state: TokenStore) => {
+                    if (deepEqual(state.tokens, tokens)) {
+                        return state; // no update needed
+                    }
+                    console.log('[Token Store] Setting tokens:', tokens);
+                    return { tokens };
+                });
             },
             addToken: (token: any) =>
                 set((state: any) => ({
@@ -70,6 +77,9 @@ export const useTokenStore = create<TokenStore>()(
         }),
         {
             name: 'token-storage',
+            partialize: (state) => ({
+                tokens: sanitizeTokensForStorage(state.tokens),
+            }),
             onRehydrateStorage: () => (state: any) => {
                 state.hydrated = true;
             },

@@ -103,7 +103,6 @@ export const Portfolio: React.FC<MyPortfolioProps> = ({ tokens }) => {
             ) : (
                 <div className={`${styles.portfolioGrid} ${styles[viewMode]}`}>
                     {portfolioTokens.map((token: any) => {
-                        console.log("TOKEN PASSED TO PORTFOLIO: ", token);
                         return (
                             <PortfolioBalanceCard
                                 coin={token}

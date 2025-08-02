@@ -12,21 +12,20 @@ import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteCont
 import { ERC6909ABI, ERC6909Address } from '../../../services/ERC6909Metadata';
 import { ETHBackedTokenMinterABI, ETHBackedTokenMinterAddress } from '../../../services/ETHBackedTokenMinter';
 import { useBurnEstimation } from '../../../hooks/useTradeEstimation';
-
+import { enrichTokenPrice } from '../../../lib/pricing/enrichTokenPrice';
 type Currency = 'ETH' | 'TOKEN';
 type TradeMode = 'BUY' | 'SELL';
 
 interface Props {
     balance: any;
-    refetch: any;
 }
 
-export const BuySell: React.FC<Props> = ({ balance, refetch }) => {
+export const BuySell: React.FC<Props> = ({ balance }) => {
     const { tokenId }: any = useParams<{ tokenId: string }>();
     const { address } = useAccount();
     const { setAlert } = useAlertStore();
     const { refetchBalance }: any = useUserTokenBalance();
-    const { getTokenById } = useTokenStore();
+    const { tokens, getTokenById, updateToken } = useTokenStore();
     const coin: any = getTokenById(tokenId);
     const ethBalance = balance?.data ? parseFloat(formatEther(balance.data.value)) : 0;
     const { balanceEth } = useUserTokenBalance();
@@ -76,9 +75,8 @@ export const BuySell: React.FC<Props> = ({ balance, refetch }) => {
                 type: 'success',
                 message: `You ${txTypeRef.current}ed ${amountRef.current} ${actionTypeRef.current?.slice(0, 6) ?? ''}!`
             });
-
+            enrichTokenPrice(tokens, tokenId, tokens.length, updateToken)
             refetchBalance();
-            refetch();
         }
     }, [isTxSuccess]);
 
@@ -90,7 +88,7 @@ export const BuySell: React.FC<Props> = ({ balance, refetch }) => {
 
         const val = parseFloat(amount || '0');
         if (!val) return `0 ${currency === 'ETH' ? coin.symbol : 'ETH'}`;
-        const coinPriceInEth = Number(formatEther(coin.price));
+        const coinPriceInEth = coin.price;
         const finalAmount = (val * coinPriceInEth).toFixed(6);
         const sentAmount: any = currency == "ETH" ? parseEther(amount) : parseEther(finalAmount)
         const tokensToMint = currency === 'ETH'
@@ -165,15 +163,13 @@ export const BuySell: React.FC<Props> = ({ balance, refetch }) => {
     };
 
 
-
-
     const switchCurrency = () => {
         if (mode === 'SELL') {
             setCurrency(coin.symbol);
             return;
         }
 
-        const coinPriceInEth = Number(formatEther(coin.price));
+        const coinPriceInEth = coin && coin.price ? coin.price : 0;
         const val = parseFloat(amount || '0');
         if (!val) {
             setCurrency(prev => (prev === 'ETH' ? coin.symbol : 'ETH'));
@@ -196,7 +192,7 @@ export const BuySell: React.FC<Props> = ({ balance, refetch }) => {
     const getDisplayConversion = () => {
         const val = parseFloat(amount || '0');
         if (!val) return `0 ${currency === 'ETH' ? coin.symbol : 'ETH'}`;
-        const coinPriceInEth = Number(formatEther(coin.price));
+        const coinPriceInEth = coin && coin.price ? coin.price : 0;
 
         if (currency === 'ETH') {
             // ETH → token
@@ -212,7 +208,7 @@ export const BuySell: React.FC<Props> = ({ balance, refetch }) => {
     const getFinalEstimate = () => {
         const val = parseFloat(amount || '0');
         if (!val) return '0';
-        const coinPriceInEth = Number(formatEther(coin.price));
+        const coinPriceInEth = coin && coin.price ? coin.price : 0;
 
         if (mode === 'BUY') {
             if (currency === 'ETH') {
@@ -270,7 +266,7 @@ export const BuySell: React.FC<Props> = ({ balance, refetch }) => {
             setMaxValue(maxValue)
             setRestrict(restrict)
         } else if (currency === coin.symbol && mode == "BUY") {
-            const coinPriceInEth = Number(formatEther(coin.price));
+            const coinPriceInEth = coin && coin.price ? coin.price : 0;
 
             maxValue = ethBalance / coinPriceInEth;
             restrict = true;

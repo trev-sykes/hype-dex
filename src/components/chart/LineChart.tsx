@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import styles from './LineChart.module.css';
 import { FadeLoader } from 'react-spinners';
-import { formatEther } from 'ethers';
 import { useTradeStore } from '../../store/tradeStore';
 import { parsePrice } from '../../utils/parsePrice';
 
@@ -25,16 +24,15 @@ interface Props {
     lineColor?: any;
 }
 
-function rgbToHex(rgb: string): string | null {
-    const result = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-    if (!result) return null;
-    const r = parseInt(result[1], 10);
-    const g = parseInt(result[2], 10);
-    const b = parseInt(result[3], 10);
-
-    return "#" + [r, g, b].map(x => x.toString(16).padStart(2, "0")).join("");
+// Helper function to convert RGB to Hex
+function rgbToHex(rgb: string): string {
+    const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (!match) return '';
+    const r = parseInt(match[1]).toString(16).padStart(2, '0');
+    const g = parseInt(match[2]).toString(16).padStart(2, '0');
+    const b = parseInt(match[3]).toString(16).padStart(2, '0');
+    return `#${r}${g}${b}`;
 }
-
 const hexToRgba = (hex: any, alpha = 1) => {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -43,26 +41,60 @@ const hexToRgba = (hex: any, alpha = 1) => {
 };
 
 function getValidColor(color: string, defaultColor: string = '#1c67a8'): string {
+    if (!color) {
+        return defaultColor
+    }
     const hexColor = color.startsWith('rgb') ? rgbToHex(color) : color;
     if (!hexColor || !/^#[0-9A-Fa-f]{6}$/.test(hexColor)) {
         return defaultColor;
     }
 
-    const r = parseInt(hexColor.slice(1, 3), 16) / 255;
-    const g = parseInt(hexColor.slice(3, 5), 16) / 255;
-    const b = parseInt(hexColor.slice(5, 7), 16) / 255;
+    let r = parseInt(hexColor.slice(1, 3), 16) / 255;
+    let g = parseInt(hexColor.slice(3, 5), 16) / 255;
+    let b = parseInt(hexColor.slice(5, 7), 16) / 255;
 
     const linearize = (value: number) => value;
     const R = linearize(r);
     const G = linearize(g);
     const B = linearize(b);
 
-    const luminance = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+    let luminance = 0.2126 * R + 0.7152 * G + 0.0722 * B;
     const minLuminance = 0.25;
     const maxLuminance = 0.75;
 
     if (luminance < minLuminance || luminance > maxLuminance) {
-        return defaultColor;
+        // Calculate scaling factor to adjust luminance
+        const targetLuminance = (minLuminance + maxLuminance) / 2; // Aim for middle of range
+        const currentLuminance = luminance;
+
+        if (currentLuminance === 0) {
+            return defaultColor; // Avoid division by zero
+        }
+
+        const scale = targetLuminance / currentLuminance;
+
+        // Apply scaling to RGB values
+        r = Math.min(1, Math.max(0, r * scale));
+        g = Math.min(1, Math.max(0, g * scale));
+        b = Math.min(1, Math.max(0, b * scale));
+
+        // Recalculate luminance to ensure it's within bounds
+        const newR = linearize(r);
+        const newG = linearize(g);
+        const newB = linearize(b);
+        luminance = 0.2126 * newR + 0.7152 * newG + 0.0722 * newB;
+
+        // If still out of bounds, fall back to default
+        if (luminance < minLuminance || luminance > maxLuminance) {
+            return defaultColor;
+        }
+
+        // Convert back to hex
+        const toHex = (value: number) => {
+            const hex = Math.round(value * 255).toString(16).padStart(2, '0');
+            return hex;
+        };
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 
     return hexColor;
@@ -74,7 +106,6 @@ export default function LineChart({
     interval = 3600,
     width,
     height,
-    lineColor = '#1c67a8'
 }: Props) {
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -87,12 +118,13 @@ export default function LineChart({
     const { setTrades } = useTradeStore();
     const [hexColor, setHexColor] = useState('');
     const [showSparseDataWarning, setShowSparseDataWarning] = useState(false);
+
     // Set mounted state and initialize color
     useEffect(() => {
         setIsMounted(true);
-        const c = getValidColor(lineColor);
+        const c = getValidColor(coin.dominantColor);
         setHexColor(c);
-    }, [lineColor]);
+    }, [coin.dominantColor]);
 
     const debounce = (func: () => void, wait: number) => {
         let timeout: NodeJS.Timeout;
@@ -183,7 +215,7 @@ export default function LineChart({
 
                 let processedData: any = processDataForChart(allTimeData);
 
-                const currentPrice: number = parsePrice(coin.price);
+                const currentPrice: number = Number(coin.price);
 
                 if (currentPrice !== null) {
                     const maxPrice = processedData.length > 0 ? Math.max(...processedData.map((d: any) => d.value)) : -Infinity;
@@ -282,7 +314,7 @@ export default function LineChart({
             if (coin.price && data.length > 0) {
                 const now = Math.floor(Date.now() / 1000);
                 const currentBucket = Math.floor(now / interval) * interval;
-                const currentPrice: number = parsePrice(coin.price);
+                const currentPrice: number = Number(coin.price);
 
                 data.push({ time: currentBucket, value: currentPrice });
             }
@@ -306,7 +338,7 @@ export default function LineChart({
             areaSeriesRef.current?.setData(processedData);
 
             const markers: any[] = [];
-            const currentPrice: number = parsePrice(coin.price);
+            const currentPrice: number = Number(coin.price);
 
             if (!width && !height && highPoint && currentPrice !== high) {
                 markers.push({
@@ -346,7 +378,7 @@ export default function LineChart({
             chartRef.current?.timeScale().fitContent();
             setIsLoading(false);
         },
-        [coin.price, trades, width, height]
+        [coin.price, width, height]
     );
 
     // Chart initialization effect - only run when DOM is ready
@@ -364,6 +396,7 @@ export default function LineChart({
 
         import('lightweight-charts')
             .then(({ createChart }) => {
+
                 // Triple-check container still exists after async import
                 if (!chartContainerRef.current || !container) {
                     return;
@@ -470,7 +503,7 @@ export default function LineChart({
                 console.error('Failed to load lightweight-charts:', err);
                 setIsLoading(false);
             });
-    }, [isMounted, hexColor, width, height, updateChartData, trades, selectedInterval, coin?.tokenId, coin.price, setTrades]);
+    }, [isMounted, hexColor, width, height, trades, selectedInterval, coin?.tokenId, coin.price, setTrades]);
 
     // Update series colors when hexColor changes
     useEffect(() => {
@@ -530,7 +563,7 @@ export default function LineChart({
         }
 
         updateChartData(trades, selectedInterval);
-    }, [trades, coin.price, updateChartData, isChartInitialized, availableIntervals]);
+    }, [trades, coin.price, updateChartData, isChartInitialized, availableIntervals, selectedInterval]);
 
     const intervalOptions = getAvailableIntervals();
 
@@ -545,7 +578,7 @@ export default function LineChart({
                                     <>
                                         <p className={styles.symbol}>{coin?.symbol}</p>
                                         <p className={styles.price}>
-                                            {coin.price ? `$${formatEther(coin.price)} ETH` : '—'}
+                                            {coin.price ? `$${coin.price.toString()} ETH` : '—'}
                                         </p>
                                     </>
                                 ) : (
@@ -575,21 +608,23 @@ export default function LineChart({
                             <p>No trades available for this token.</p>
                         </div>
                     )}
-                    {!width && !height && (
-                        <div className={styles.intervalButtonGroup}>
-                            {intervalOptions.map((option) => (
-                                <button
-                                    key={option.value}
-                                    className={`${styles.intervalButton} ${selectedInterval === option.value ? styles.active : ''}`}
-                                    onClick={() => setSelectedInterval(option.value)}
-                                >
-                                    {option.label}
-                                </button>
-                            ))}
-                        </div>
-                    )}
                 </>
             )}
+            {!width && !height &&
+                (
+                    <div className={styles.intervalButtonGroup}>
+                        {intervalOptions.map((option) => (
+                            <button
+                                key={option.value}
+                                className={`${styles.intervalButton} ${selectedInterval === option.value ? styles.active : ''}`}
+                                onClick={() => setSelectedInterval(option.value)}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                )
+            }
         </div>
     );
 }

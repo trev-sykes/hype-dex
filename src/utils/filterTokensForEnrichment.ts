@@ -5,7 +5,7 @@ export const filterTokensForEnrichment = (allFetchedTokens: any, currentTokens: 
     const incompleteTokens = currentTokens.filter((t: any) => {
         const isMissing = (v: any) => v === null || v === undefined;
         // const hasSamePrice = t.price && t.basePrice && t.price.toString() === t.basePrice.toString();
-        const priceEqualsBase = t.price && t.basePrice && t.price.toString() === t.basePrice.toString();
+        // const priceEqualsBase = t.price && t.basePrice && t.price.toString() === t.basePrice.toString();
         // Check if image url is missing from token
         const isImageMissing = !t.imageUrl;
 
@@ -17,15 +17,15 @@ export const filterTokensForEnrichment = (allFetchedTokens: any, currentTokens: 
             isMissing(t.basePrice) ||
             isMissing(t.price)
         );
-        if (needsEnrichment) {
-            console.log(`Token ${t.name} needs enrichment:`, {
-                missingImage: !t.imageUrl,
-                missingDescription: !t.description,
-                missingBasePrice: isMissing(t.basePrice),
-                missingPrice: isMissing(t.price),
-                priceEqualsBase: priceEqualsBase
-            });
-        }
+        // if (needsEnrichment) {
+        //     console.log(`Token ${t.name} needs enrichment:`, {
+        //         missingImage: !t.imageUrl,
+        //         missingDescription: !t.description,
+        //         missingBasePrice: isMissing(t.basePrice),
+        //         missingPrice: isMissing(t.price),
+        //         priceEqualsBase: priceEqualsBase
+        //     });
+        // }
 
         return (
             needsEnrichment

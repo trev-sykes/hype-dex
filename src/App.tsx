@@ -21,6 +21,8 @@ import { useTradeStore } from './store/tradeStore'
 import { Portfolio } from './pages/dashboard/portfolio/Portfolio'
 import { BuySell } from './pages/dashboard/buySell/BuySell'
 import { useEffect } from 'react'
+import { useTokenStore } from './store/allTokensStore'
+import { useTokensRefresh } from './hooks/useTokensRefresh'
 
 
 
@@ -42,13 +44,16 @@ export default function App() {
 }
 
 function InnerApp() {
-  const { tokens, fetchNextPage, hasNextPage, refetch, loading, fetchStaticMetadata, fetchAllPrices } = useTokens();
+  const { tokensd, fetchStaticMetadata, loading } = useTokensRefresh();
+  const { tokens, fetchNextPage, hasNextPage, fetchAllPrices } = useTokens();
+  const { setTokens } = useTokenStore();
   const trades = useAllTrades();
   const { setTrades } = useTradeStore();
   const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
   const { address } = useAccount();
   const balance = useBalance({ address });
   setTrades('all', trades);
+  setTokens(tokensd);
   return (
     <BrowserRouter>
       <ScrollToTop />
@@ -80,13 +85,12 @@ function InnerApp() {
           <Route path="/dashboard/create" element={<CreateTokenForm />} />
           <Route path='/dashboard/trade/:tokenId' element={
             <BuySell
-              balance={balance} refetch={refetch} />
+              balance={balance} />
           } />
           <Route path="/dashboard/explore/:tokenId" element={<CoinInfo />} />
           <Route path="/dashboard/explore/:tokenId/trade"
             element={
               <TradePage
-                refetch={refetch}
                 refetchBalance={refetchBalance}
                 tokenBalance={tokenBalance}
                 address={address}

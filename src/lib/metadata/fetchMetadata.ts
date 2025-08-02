@@ -1,10 +1,16 @@
 import { fetchTokenMetadataRange } from "../../hooks/useContractRead";
-
-export const fetchMetaDataFromBlockchain: any = async (start = 0, end: any) => {
+import { fetchTokenIds } from "./fetchTokenIds";
+// Grabs metadata from contract returns array of update
+export const fetchMetaDataFromBlockchain = async (
+    start: number = 0,
+    end?: number
+): Promise<any> => {
     try {
-        return await fetchTokenMetadataRange(start, end);
+        // is no end arg is given, we fetch the tokens length from blockchain
+        const finalEnd = end ?? (await fetchTokenIds()).length;
+        return await fetchTokenMetadataRange(start, finalEnd);
     } catch (err: any) {
-        console.error(err.message);
-        return []
+        console.error(err.message || err);
+        return [];
     }
-}
+};

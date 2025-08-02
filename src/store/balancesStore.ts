@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { formatUnits } from 'viem';
+import { formatUnits, parseUnits } from 'viem';
 
 interface TokenBalance {
     tokenId: any;
@@ -29,26 +29,48 @@ export const useBalanceStore = create<BalanceStore>()(
             hydrated: false,
 
             setBalance: (tokenId, balance, decimals, price) => {
-                if (price === undefined) {
-                    console.warn(`No price passed for tokenId ${tokenId}`);
+                try {
+                    const balanceBigInt =
+                        typeof balance === 'bigint'
+                            ? balance
+                            : BigInt(balance); // Assuming `balance` is already in wei
+                    const formatted = Number(formatUnits(balanceBigInt, decimals));
+
+                    const priceBigInt =
+                        price !== undefined
+                            ? typeof price === 'bigint'
+                                ? price
+                                : parseUnits(price.toString(), 18) // ✅ Use viem here
+                            : undefined;
+                    const priceEth = priceBigInt
+                        ? Number(formatUnits(priceBigInt, 18))
+                        : undefined;
+                    set((state: any) => {
+                        const existing = state.balances[tokenId];
+                        const isSame =
+                            existing?.balance === balanceBigInt.toString() &&
+                            existing?.formatted === formatted &&
+                            existing?.totalValueEth === (priceEth ? formatted * priceEth : undefined);
+
+                        if (isSame) return state; // ✅ Avoid updating if nothing changed
+
+                        return {
+                            balances: {
+                                ...state.balances,
+                                [tokenId]: {
+                                    tokenId,
+                                    balance: balanceBigInt.toString(),
+                                    formatted,
+                                    totalValueEth: priceEth ? formatted * priceEth : undefined,
+                                },
+                            },
+                        };
+                    });
+
+                } catch (e) {
+                    console.error(`Failed to set balance for token ${tokenId}:`, e);
                 }
-                const formatted = Number(formatUnits(balance, decimals));
-                const priceEth = price ? Number(formatUnits(BigInt(price), 18)) : undefined;
-
-                set((state: any) => ({
-                    balances: {
-                        ...state.balances,
-                        [tokenId]: {
-                            tokenId,
-                            balance: balance.toString(),
-                            formatted,
-                            totalValueEth: priceEth ? formatted * priceEth : undefined,
-                        },
-                    },
-                }));
             },
-
-
             getBalance: (tokenId) => {
                 const stored = get().balances[tokenId];
                 if (!stored) return undefined;

@@ -1,11 +1,15 @@
 import { formatEther } from "viem";
 
 export const parsePrice = (rawPrice: string | bigint | number): number => {
-    if (typeof rawPrice === 'string') {
-        return parseFloat(formatEther(BigInt(rawPrice)));
+    if (typeof rawPrice === 'number') {
+        return rawPrice;
     }
-    if (typeof rawPrice === 'bigint') {
-        return parseFloat(formatEther(rawPrice));
+
+    try {
+        const priceBigInt = BigInt(rawPrice);
+        return parseFloat(formatEther(priceBigInt));
+    } catch {
+        console.warn("Invalid rawPrice:", rawPrice);
+        return 0;
     }
-    return rawPrice;
 };
