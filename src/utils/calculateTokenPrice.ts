@@ -1,8 +1,3 @@
-type TokenData = {
-    basePrice: string;
-    slope: string;
-    totalSupply: string;
-};
 
 export function calculateTokenPrice(basePrice: string, slope: string, totalSupply: string): number {
     const base = BigInt(basePrice);
