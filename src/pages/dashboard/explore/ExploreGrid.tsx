@@ -3,12 +3,10 @@ import { BarLoader, FadeLoader } from 'react-spinners';
 import styles from './ExploreGrid.module.css';
 import Logo from '../../../components/logo/Logo';
 import { useOnline } from '../../../hooks/useOnline';
-import { useWitdh } from '../../../hooks/useWidth';
+import { useWidth } from '../../../hooks/useWidth';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
 import type { Token } from '../../../types/token';
 import { ScrollToTopButton } from '../../../components/button/scrollToTop/ScrollToTopButton';
-// import { useTokenStore } from '../../../store/allTokensStore';
-// import { useTradeStore } from '../../../store/tradeStore';
 
 interface ExploreGridProps {
     tokens: any,
@@ -21,20 +19,20 @@ interface ExploreGridProps {
 export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage, hasNextPage, loading, fetchStaticMetadata }) => {
     // const { clearTokens } = useTokenStore();
     const isOnline = useOnline();
-    const viewportWidth = useWitdh();
+    const viewportWidth = useWidth();
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
     const [loadStates, setLoadStates] = useState<Map<string, boolean | null>>(new Map());
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    // const { clearTokens } = useTokenStore();
-    // const { clearTrades } = useTradeStore();
+    const [sortOption, setSortOption] = useState<'percentChange' | 'a-z'>('percentChange');
 
-    const COOLDOWN_TIME = 120 * 1000; // 60 seconds
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
+    const COOLDOWN_TIME = 60 * 60 * 1000; // 1 hour
     const LAST_REFRESH_KEY = 'last_soft_refresh';
 
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
-    const [isCooldownActive, setIsCooldownActive] = useState(false);
+    const [isCooldownActive, setIsCooldownActive] = useState<boolean | null>(null);
     useEffect(() => {
         const interval = setInterval(() => {
             const lastRefresh = localStorage.getItem(LAST_REFRESH_KEY);
@@ -42,7 +40,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                 const timePassed = Date.now() - parseInt(lastRefresh, 10);
                 const remaining = COOLDOWN_TIME - timePassed;
                 if (remaining > 0) {
-                    setCooldownRemaining(Math.ceil(remaining / 1000));
+                    setCooldownRemaining(Math.ceil(remaining / 1000 / 60)); // convert to minutes
                     setIsCooldownActive(true);
                 } else {
                     setCooldownRemaining(0);
@@ -113,6 +111,23 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
 
 
     const coinsToDisplay = searchTerm ? filteredCoins : tokens;
+    const sortedCoins = [...coinsToDisplay].sort((a, b) => {
+        switch (sortOption) {
+            case 'percentChange':
+                // Sort descending by percentChange
+                return (b.percentChange ?? 0) - (a.percentChange ?? 0);
+
+            case 'a-z':
+                // Sort alphabetically by name or symbol
+                const nameA = a.name?.toLowerCase() || a.symbol.toLowerCase();
+                const nameB = b.name?.toLowerCase() || b.symbol.toLowerCase();
+                if (nameA < nameB) return -1;
+                if (nameA > nameB) return 1;
+                return 0;
+            default:
+                return 0;
+        }
+    });
 
     if (!isOnline) return <div className={styles.error}>No Internet Connection</div>;
 
@@ -166,36 +181,36 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
             <div className={`${styles.symbolText} ${styles.tokenCount}`}>
                 {coinsToDisplay.length} Tokens
             </div>
-            {/* <button onClick={async () => await fetchStaticMetadata()}>
-                reload
-            </button> */}
-            {/* <button onClick={() => clearTokens()}>
-                Clear Tokens
-            </button> */}
-            <button
-                disabled={isCooldownActive}
-                onClick={async () => {
-                    if (isCooldownActive) return;
+            <div className={styles.sortContainer}>
+                <label htmlFor="sort-select">Sort by: </label>
+                <select
+                    id="sort-select"
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value as any)}
+                >
+                    <option value="percentChange">Percent Change</option>
+                    <option value="a-z">A-Z</option>
+                </select>
+                <button
+                    disabled={isCooldownActive || isCooldownActive == null}
+                    onClick={async () => {
+                        if (isCooldownActive) return;
 
-                    const now = Date.now();
-                    localStorage.setItem(LAST_REFRESH_KEY, now.toString());
+                        const now = Date.now();
+                        localStorage.setItem(LAST_REFRESH_KEY, now.toString());
 
-                    // Immediately update state
-                    setCooldownRemaining(Math.ceil(COOLDOWN_TIME / 1000));
-                    setIsCooldownActive(true);
+                        // Immediately update state
+                        setCooldownRemaining(Math.ceil(COOLDOWN_TIME / 1000 / 60)); // convert to minutes
 
-                    await fetchStaticMetadata("Manual Refresh");
-                }}
+                        setIsCooldownActive(true);
 
-            >
-                {isCooldownActive ? `Cooldown: ${cooldownRemaining}s` : 'Refresh'}
-            </button>
-            {/* <button onClick={() => {
-                clearTokens()
-                clearTrades()
-            }}>
-                Refresh Data
-            </button> */}
+                        await fetchStaticMetadata("Manual Refresh");
+                    }}
+
+                >
+                    {isCooldownActive && isCooldownActive != null ? `${cooldownRemaining}m` : 'Refresh'}
+                </button>
+            </div>
 
             {/* Grid of Coins */}
             {isSearching ? (
@@ -205,13 +220,14 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
             ) : coinsToDisplay.length > 0 && !loading ? (
                 <>
                     <div className={styles.gridContainer}>
-                        {coinsToDisplay.map((coin: Token) => (
+                        {sortedCoins.map((coin: Token) => (
                             <TokenCard
                                 key={coin.tokenId.toString()}
                                 coin={coin}
-                                loadState={loadStates.get(coin.tokenId.toString()) ?? null} // ✅ safe fallback
+                                loadState={loadStates.get(coin.tokenId.toString()) ?? null}
                             />
                         ))}
+
                     </div>
 
                     {/* Load more button if hasNextPage */}

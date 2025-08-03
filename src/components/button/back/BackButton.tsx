@@ -11,7 +11,6 @@ export const BackButton: React.FC = () => {
     useEffect(() => {
         // Check if the navigation history has an entry before this
         // Simple heuristic: if current location key is not the first one
-        console.log("Window History Length: ", window.history.length)
         if (window.history.length > 2) {
             setCanGoBack(true);
         }

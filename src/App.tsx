@@ -30,10 +30,6 @@ export default function App() {
   useTradeUpdater();
   useTokenCreationUpdater();
   const queryClient = new QueryClient();
-  useEffect(() => {
-    console.log("Window History Length: ", window.history.length)
-  }, [window.history.length])
-
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
@@ -44,16 +40,20 @@ export default function App() {
 }
 
 function InnerApp() {
-  const { tokensd, fetchStaticMetadata, loading } = useTokensRefresh();
-  const { tokens, fetchNextPage, hasNextPage, fetchAllPrices } = useTokens();
+  const { tokens, fetchStaticMetadata, loading } = useTokensRefresh();
+  const { fetchNextPage, hasNextPage, fetchAllPrices } = useTokens();
   const { setTokens } = useTokenStore();
   const trades = useAllTrades();
   const { setTrades } = useTradeStore();
   const { refetchBalance, tokenBalance }: any = useUserTokenBalance();
   const { address } = useAccount();
   const balance = useBalance({ address });
-  setTrades('all', trades);
-  setTokens(tokensd);
+  useEffect(() => {
+    setTrades('all', trades);
+  }, [trades])
+  useEffect(() => {
+    setTokens(tokens);
+  }, [tokens])
   return (
     <BrowserRouter>
       <ScrollToTop />

@@ -42,7 +42,6 @@ export function useTokenCreationUpdater() {
                 });
 
                 if (newTokens.length > 0) {
-                    console.log(`[TokenCreationUpdater] Appended ${newTokens.length} new tokens`);
                 }
 
                 retryDelay = 30000; // Reset backoff on success

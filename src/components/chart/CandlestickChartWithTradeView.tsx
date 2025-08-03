@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import styles from './CandlestickChartWithTradeView.module.css';
-import { useWitdh } from '../../hooks/useWidth';
+import { useWidth } from '../../hooks/useWidth';
 import { useTradeStore } from '../../store/tradeStore';
 import { Link } from 'react-router-dom';
 import { parsePrice } from '../../utils/parsePrice';
@@ -23,7 +23,7 @@ interface Props {
 }
 
 export default function CandlestickChartWithTradeView({ coin, trades, interval = 3600 }: Props) {
-    const viewportWidth = useWitdh();
+    const viewportWidth = useWidth();
     const chartContainerRef = useRef<HTMLDivElement | null>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);

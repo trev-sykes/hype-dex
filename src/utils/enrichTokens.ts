@@ -13,10 +13,6 @@ export const enrichTokens = async (
     setTokens: (updatedTokens: any[]) => void
 ) => {
     try {
-        console.log("🔄 Starting token enrichment");
-        console.log(`📦 Tokens to enrich: ${tokensToEnrich.length}`);
-        console.log(`📚 Raw metadata entries: ${rawMetadata.length}`);
-
         const metadataMap = new Map<string, any>();
         rawMetadata.forEach((m) => {
             const id = m.tokenId.toString();
@@ -25,11 +21,10 @@ export const enrichTokens = async (
 
         const enriched = await Promise.all(
             tokensToEnrich.map(async (token: any, index: number) => {
+                const i = index;
+                i;
                 const tokenIdStr = token.tokenId.toString();
-                console.log(`\n🧪 Enriching token [${index + 1}/${tokensToEnrich.length}]: ${token.name} (${tokenIdStr})`);
-
                 if (failedTokens.has(tokenIdStr)) {
-                    console.log(`⏩ Skipping previously failed token ${tokenIdStr}`);
                     return currentTokens.find((t) => t.tokenId.toString() === tokenIdStr) || null;
                 }
 
@@ -40,7 +35,6 @@ export const enrichTokens = async (
                         return null;
                     }
 
-                    console.log(`🔗 Fetching IPFS metadata for token ${tokenIdStr}`);
                     const ipfsData = onChain.uri
                         ? await throttledFetchIpfsMetadata(onChain.uri)
                         : null;
@@ -53,7 +47,6 @@ export const enrichTokens = async (
                                 onChain.slope.toString(),
                                 onChain.totalSupply.toString()
                             );
-                            console.log(`💰 Calculated local price: ${calculatedPrice}`);
                         } catch (e) {
                             console.warn(`⚠️ Failed to calculate price for ${tokenIdStr}`, e);
                         }
@@ -61,9 +54,7 @@ export const enrichTokens = async (
 
                     let fetchedPrice: any = null;
                     try {
-                        console.log(`🌐 Fetching live price for ${tokenIdStr}`);
                         fetchedPrice = await throttledFetchPrice(BigInt(tokenIdStr));
-                        console.log(`💵 Live price fetched: ${fetchedPrice?.toString()}`);
                     } catch (err) {
                         console.warn(`⚠️ Failed to fetch live price for ${tokenIdStr}`, err);
                     }
@@ -71,9 +62,6 @@ export const enrichTokens = async (
                     const base = parseFloat(onChain.basePrice?.toString() || '0');
                     const current = parseFloat(fetchedPrice?.toString() || calculatedPrice?.toString() || '0');
                     const percentChange = base > 0 ? ((current - base) / base) * 100 : null;
-
-                    console.log(`📊 Price comparison — base: ${base}, current: ${current}, change: ${percentChange?.toFixed(2)}%`);
-
                     return {
                         tokenId: token.tokenId,
                         name: token.name,
@@ -106,21 +94,15 @@ export const enrichTokens = async (
         );
 
         const filtered = enriched.filter(Boolean);
-        console.log(`🧹 Filtered enriched tokens: ${filtered.length}`);
-
         const updated = [...currentTokens];
         filtered.forEach((newToken: any) => {
             const index = updated.findIndex((t) => t.tokenId.toString() === newToken.tokenId.toString());
             if (index !== -1) {
                 updated[index] = newToken;
-                console.log(`🔁 Updated existing token: ${newToken.tokenId}`);
             } else {
                 updated.push(newToken);
-                console.log(`➕ Added new token: ${newToken.tokenId}`);
             }
         });
-
-        console.log(`[✅ enrichAndUpdateTokens] Total enriched: ${filtered.length}`);
         setTokens(updated);
         return filtered;
     } catch (error: any) {

@@ -182,6 +182,13 @@
     color: var(--color-neutral-600);
 }
 
+.sortContainer {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 @keyframes ellipsis {
     0% {
         content: '.';

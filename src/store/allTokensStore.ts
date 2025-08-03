@@ -4,6 +4,7 @@ import type { Token } from '../types/token';
 import { deepEqual } from 'wagmi'; // already being used in your trade store
 import { sanitizeTokensForStorage } from '../utils/sanitizeTokenForStorage';
 
+const updatedTokenIds = new Set<string>();
 
 interface TokenStore {
     tokens: Token[];
@@ -15,6 +16,9 @@ interface TokenStore {
     getLatestTimestamp: () => number;
     getTokenById: (tokenId: string) => Token | undefined;
     appendToken: (token: Token) => void;
+
+    hasDominantColorBeenSet: any;
+    markDominantColorAsSet: any;
 }
 
 export const useTokenStore = create<TokenStore>()(
@@ -27,7 +31,6 @@ export const useTokenStore = create<TokenStore>()(
                     if (deepEqual(state.tokens, tokens)) {
                         return state; // no update needed
                     }
-                    console.log('[Token Store] Setting tokens:', tokens);
                     return { tokens };
                 });
             },
@@ -40,7 +43,6 @@ export const useTokenStore = create<TokenStore>()(
                     const updatedTokens = state.tokens.map((t: any) =>
                         t.tokenId.toString() === tokenId.toString() ? { ...t, ...newData } : t
                     );
-                    console.log('[Token Store] Updated tokens:', updatedTokens);
                     return { tokens: updatedTokens };
                 });
             },
@@ -62,7 +64,6 @@ export const useTokenStore = create<TokenStore>()(
                 const exists = tokens.find((t: any) => t.tokenId.toString() === token.tokenId.toString());
                 if (!exists) {
                     set({ tokens: [...tokens, token] });
-                    console.log(`[Token Store] Appended tokenId ${token.tokenId}`);
                 } else {
                     // Optional: merge with new data if needed
                     const merged = { ...existing, ...token };
@@ -71,8 +72,15 @@ export const useTokenStore = create<TokenStore>()(
                             t.tokenId.toString() === token.tokenId.toString() ? merged : t
                         ),
                     });
-                    console.log(`[Token Store] Merged update for tokenId ${token.tokenId}`);
                 }
+            },
+            // New methods for dominant color tracking
+            hasDominantColorBeenSet: (tokenId: string) => {
+                return updatedTokenIds.has(tokenId.toString());
+            },
+
+            markDominantColorAsSet: (tokenId: string) => {
+                updatedTokenIds.add(tokenId.toString());
             },
         }),
         {

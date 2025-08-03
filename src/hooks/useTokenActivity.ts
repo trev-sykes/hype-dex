@@ -140,9 +140,7 @@ export function useAllTrades() {
     const { data, isSuccess, error } = useQuery({
         queryKey: ['all-trades'],
         queryFn: async () => {
-            console.log('[GraphQL] Fetching all trades...');
             const result = await request(url, ALL_TRADES_QUERY, {}, headers);
-            console.log('[GraphQL] Received all trades:', result);
             return result;
         },
         enabled: shouldFetch, // 👈 prevents query if trades already exist

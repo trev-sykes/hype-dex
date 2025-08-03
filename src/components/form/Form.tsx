@@ -31,7 +31,6 @@ const Form: React.FC = () => {
     // Example submit handler (expand as needed)
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Creating coin with params:", coin);
         // Here you could add logic to send data to blockchain or backend
     };
 

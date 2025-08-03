@@ -29,7 +29,6 @@ export const useTradeStore = create<TradeStore>()(
                     if (deepEqual(state.trades[key], trades)) {
                         return state;
                     }
-                    console.log(`[Trade Store] Setting trades for key "${key}". Total: ${trades.length}`);
                     return {
                         trades: { ...state.trades, [key]: trades },
                     };
@@ -46,11 +45,9 @@ export const useTradeStore = create<TradeStore>()(
                 set((state: any) => {
                     const existing = state.trades[key] || [];
                     if (existing.some((t: any) => deepEqual(t, trade))) {
-                        console.log(`[Trade Store] Skipping appendTrade for key "${key}" (duplicate trade)`);
                         return state;
                     }
                     const updated = [...existing, trade].sort((a, b) => a.timestamp - b.timestamp);
-                    console.log(`[Trade Store] Appending trade to key "${key}". Total now: ${updated.length}`);
                     tradeListeners.forEach(cb => cb(trade));
                     return {
                         trades: { ...state.trades, [key]: updated },

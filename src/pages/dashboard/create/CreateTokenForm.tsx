@@ -60,7 +60,6 @@ const CreateTokenForm = () => {
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(true);
-        console.log("Drag over detected", e.dataTransfer.types); // Debug log
     };
 
     const handleDragLeave = (e: React.DragEvent) => {
@@ -157,10 +156,6 @@ const CreateTokenForm = () => {
         setUploadError(null);
         setIsSubmitting(true);
         if (!address || !imageBuffer) {
-            // Error will be shown in UI
-            console.log(
-                !address ? "Please connect your wallet" : "Please upload an image",
-            );
             return;
         }
         if (name && symbol && description && basePrice && slope && imageFile) {

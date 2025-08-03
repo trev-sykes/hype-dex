@@ -28,7 +28,6 @@ export async function pinImageToPinata(
     pinataMetadata: Record<string, unknown>,
 ): Promise<string> {
     const pinataJWT = import.meta.env.VITE_PUBLIC_PINATA_JWT;
-    console.log('Pinanta JWT', pinataJWT);
     if (!pinataJWT) {
         throw new Error("PINATA_JWT is not defined in environment variables.");
     }

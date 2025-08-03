@@ -33,7 +33,6 @@ export const filterTokensForEnrichment = (allFetchedTokens: any, currentTokens: 
     });
     // 🔍 Log incomplete tokens found in store
     if (incompleteTokens.length > 0) {
-        console.log(`[fetchStaticMetadata] Found ${incompleteTokens.length} incomplete tokens in store:`, incompleteTokens.map((t: any) => t.name));
     }
     // 2. Merge new tokens and incomplete ones (avoiding duplicates)
     const tokensToEnrichMap = new Map<string, any>();
@@ -48,9 +47,7 @@ export const filterTokensForEnrichment = (allFetchedTokens: any, currentTokens: 
     const tokensToEnrich = Array.from(tokensToEnrichMap.values());
     // 🧠 Log which tokens we will enrich
     if (tokensToEnrich.length > 0) {
-        console.log(`[fetchStaticMetadata] Enriching ${tokensToEnrich.length} tokens:`, tokensToEnrich.map(t => t.name));
     } else {
-        console.log('[fetchStaticMetadata] No tokens to enrich.');
         return currentTokens;
     }
     return tokensToEnrich.length === 0 ? currentTokens : tokensToEnrich;

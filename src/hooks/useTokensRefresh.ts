@@ -7,7 +7,7 @@ import { convertToIpfsUrl } from '../utils/ipfs';
 import { calculateTokenPrice } from '../utils/calculateTokenPrice';
 import { enrichTokens } from '../utils/enrichTokens';
 
-const REFRESH_INTERVAL_MS = 60 * 10000; // 10 minute
+const REFRESH_INTERVAL_MS = 120 * 10000; // 10 minute
 
 export function useTokensRefresh(tokenId?: string) {
     const { tokens, hydrated, setTokens, clearTokens } = useTokenStore();
@@ -17,8 +17,9 @@ export function useTokensRefresh(tokenId?: string) {
     const shouldFetchInitial = hydrated && tokens.length === 0 && !tokenId;
 
     const fetchStaticMetadata = useCallback(async (source = "unknown") => {
+        console.log(source)
         if (isFetchingRef.current) {
-            console.log(`[fetchStaticMetadata] Skipped: already fetching (${source})`);
+
             return;
         }
 
@@ -26,7 +27,6 @@ export function useTokensRefresh(tokenId?: string) {
         setLoading(true);
 
         try {
-            console.log(`[fetchStaticMetadata] Source: ${source}`);
             const tokenIds = await fetchTokenIds();
             const rawMetadata = await fetchMetaDataFromBlockchain(0, tokenIds.length);
 
@@ -58,12 +58,12 @@ export function useTokensRefresh(tokenId?: string) {
                     needsPriceUpdate: false,
                 };
             });
-            console.log("FORMATTEDDDD TOKENS", formattedTokens);
+
             const enrichedTokens: any = await enrichTokens(tokens, formattedTokens, rawMetadata, setTokens);
-            console.log("ENRICHED TOKENS: ", enrichedTokens);
+
 
             const sanitizedTokens: any = sanitizeTokensForStorage(enrichedTokens);
-            console.log("SANITIZED TOKENS", sanitizedTokens);
+
             setTokens(sanitizedTokens);
 
         } catch (error) {
@@ -99,7 +99,7 @@ export function useTokensRefresh(tokenId?: string) {
     }, [tokens, tokenId]);
 
     return {
-        tokensd: filteredTokens,
+        tokens: filteredTokens,
         loading,
         clearTokens,
         fetchStaticMetadata,

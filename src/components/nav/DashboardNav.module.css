@@ -28,6 +28,7 @@
     position: relative;
     transition: all 0.2s ease;
     min-height: 44px;
+
     /* Touch-friendly minimum size */
 }
 
@@ -167,7 +168,8 @@
 }
 
 .collapsed {
-    max-height: 60px;
+    max-height: 44px;
+    /* or 52px if it looks tight */
     /* enough to show just the toggle button */
     overflow: hidden;
 }

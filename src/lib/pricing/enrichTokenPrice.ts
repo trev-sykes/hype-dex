@@ -9,10 +9,8 @@ export const enrichTokenPrice =
             let meta: any;
 
             if (existingToken) {
-                console.log(`[enrichTokenPrice] Using store data for token ${tokenId}`);
                 meta = existingToken;
             } else {
-                console.log(`[enrichTokenPrice] Token ${tokenId} not in store — fetching metadata`);
                 const metadata: any = await fetchTokenMetadataRange(0, totalTokens);
                 const tokenIdBigInt = BigInt(tokenId);
                 meta = metadata.find((item: any) => BigInt(item.tokenId) === tokenIdBigInt);
@@ -28,9 +26,6 @@ export const enrichTokenPrice =
             const base = parseFloat(meta.basePrice?.toString() || '0');
             const current = parseFloat(price?.toString() || '0');
             const percentChange = base > 0 ? ((current - base) / base) * 100 : null;
-
-            console.log(`[enrichTokenPrice] Enriched ${meta.symbol || tokenId}`);
-
             updateToken(tokenId, {
                 reserve: meta.reserve?.toString(),
                 totalSupply: meta.totalSupply?.toString(),

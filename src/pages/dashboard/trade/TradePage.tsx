@@ -150,16 +150,13 @@ export const TradePage: React.FC<TradePageProps> = ({ refetchBalance, tokenBalan
       setEthInput('')
     }
   };
-
-  console.log(styles.buttonCompact, styles.sell);
-
   return (
     <>
       <div className={styles.container}>
         <div className={styles.left}>
           <div className={styles.cContainer}>
             <BackButton />
-            <TokenCandlestickChart coin={coin} trades={trades} interval={300} tokenId={tokenId} />
+            <TokenCandlestickChart coin={coin} trades={trades} interval={86400} tokenId={tokenId} />
             <div className={styles.tradeCompact}>
               <div className={styles.tradeHeader}>
                 <div className={styles.tradeModeIndicator}>

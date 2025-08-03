@@ -114,6 +114,36 @@
     display: none;
 }
 
+.percentChange {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: default;
+    /* since it’s not a clickable button */
+    user-select: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.positive {
+    /* light green bg */
+    color: var(--color-mint);
+    /* dark green text */
+}
+
+.negative {
+    /* light red bg */
+    color: var(--color-burn);
+    /* dark red text */
+}
+
+.neutral {
+    /* light gray bg */
+    color: #666666;
+    /* dark gray text */
+}
+
 @media (max-width: 640px) {
     .coinCard {
         flex-direction: row;

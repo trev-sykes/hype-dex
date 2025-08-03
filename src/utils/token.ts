@@ -7,17 +7,13 @@ import { convertToIpfsUrl, fetchIpfsMetadata } from "./ipfs";
  */
 export async function fetchSingleToken(tokenId: string | bigint) {
     const idStr = tokenId.toString();
-    console.log("Looking for token ID:", idStr);
 
     try {
         const allTokenIds = await fetchAllTokenIds();
-        console.log("all token ids:", allTokenIds)
         if (!Array.isArray(allTokenIds) || allTokenIds.length === 0) {
             console.warn("[fetchSingleToken] Token list is empty or invalid.");
             return null;
         }
-
-        console.log("Fetched token IDs (sample):", allTokenIds.slice(0, 10));
 
         const index = allTokenIds.findIndex(id => id?.toString?.() === idStr);
 

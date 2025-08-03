@@ -4,7 +4,7 @@ import { useUserTokenBalances } from '../../../hooks/useUserBalances';
 import { useBalanceStore } from '../../../store/balancesStore';
 import { PortfolioBalanceCard } from '../../../components/portfolioBalanceCard/PortfolioBalanceCard';
 import styles from './Portfolio.module.css';
-import { useWitdh } from '../../../hooks/useWidth';
+import { useWidth } from '../../../hooks/useWidth';
 import { ScrollToTopButton } from '../../../components/button/scrollToTop/ScrollToTopButton';
 
 interface MyPortfolioProps {
@@ -14,7 +14,7 @@ interface MyPortfolioProps {
 export const Portfolio: React.FC<MyPortfolioProps> = ({ tokens }) => {
     const [sortBy, setSortBy] = useState<'value' | 'balance' | 'name'>('value');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const width = useWitdh();
+    const width = useWidth();
     const tokenIds = tokens.map((t) => t.tokenId);
     const { balances, loading, error, refetch } = useUserTokenBalances(tokens, tokenIds);
     const hydrated = useBalanceStore((s) => s.hydrated);

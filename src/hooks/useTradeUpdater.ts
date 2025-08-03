@@ -72,7 +72,6 @@ export function useTradeUpdater() {
                     appendTrade('all', trade);
                 });
 
-                console.log(`[TradeUpdater] Appended ${newTrades.length} new trades`);
             } catch (e) {
                 console.error('[TradeUpdater] Error fetching new trades', e);
             }

@@ -65,7 +65,6 @@ export const CoinInfo: React.FC = () => {
         );
     }
     const handleImageToggle = () => {
-        console.log("Image Toggle State", isImageToggled)
         setIsImageToggled(prev => !prev);
     }
     // useEffect(() => {

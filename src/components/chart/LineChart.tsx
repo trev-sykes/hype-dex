@@ -378,7 +378,7 @@ export default function LineChart({
             chartRef.current?.timeScale().fitContent();
             setIsLoading(false);
         },
-        [coin.price, width, height]
+        [coin.price, width, height, trades, selectedInterval]
     );
 
     // Chart initialization effect - only run when DOM is ready
