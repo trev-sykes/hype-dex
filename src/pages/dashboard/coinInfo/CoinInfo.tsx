@@ -17,10 +17,8 @@ export const CoinInfo: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'balance' | 'insights'>('balance');
     const [showCTA, setShowCTA] = useState(true);
     const [isImageToggled, setIsImageToggled] = useState<boolean>(false);
-    // const [action, setAction] = useState<'buy' | 'sell' | ''>('');
     const { getTokenById } = useTokenStore();
     const { setCoin } = useCoinStore();
-    // const [amount, setAmount] = useState<string>("");
     const { tokenId }: any = useParams<{ tokenId: string }>();
     const coin: any = getTokenById(tokenId);
     const trades = useTokenActivity(tokenId);
@@ -28,7 +26,7 @@ export const CoinInfo: React.FC = () => {
     const isScrollingUp = useScrollDirection();
     useEffect(() => {
         if (tokenId) {
-            const token: any = getTokenById(tokenId); // however your app stores them
+            const token: any = getTokenById(tokenId);
             setCoin(token);
         }
     }, [tokenId]);
@@ -67,15 +65,6 @@ export const CoinInfo: React.FC = () => {
     const handleImageToggle = () => {
         setIsImageToggled(prev => !prev);
     }
-    // useEffect(() => {
-    //     const handler = setTimeout(() => {
-    //         setDebouncedAmount(amount);
-    //     }, 600); // debounce delay in ms
-
-    //     return () => {
-    //         clearTimeout(handler);
-    //     };
-    // }, [amount]);
     useEffect(() => {
         if (isImageToggled) {
             // Disable scroll
@@ -200,42 +189,6 @@ export const CoinInfo: React.FC = () => {
                     Trade
                 </Link>
             </div>
-            {/* {action !== '' && (
-
-                <div className={styles.modalCalculationPreview}>
-                    {action == 'buy' ? (
-                        <>
-                            <p>Your ETH Balance: <strong>{Number(ethBalance.data?.formatted || 0).toFixed(4)} ETH</strong></p>
-                            {debouncedAmount !== "" && parseEther(debouncedAmount) < coin.price && (
-                                <p className={styles.modalErrorText}>Entered amount is too low.</p>
-                            )}
-
-                            {debouncedAmount !== "" && parseEther(debouncedAmount) > (ethBalance.data?.value ?? 0n) ? (
-                                <p className={styles.modalErrorText}>Insufficient ETH for this purchase</p>
-                            ) : mintEstimation ? (
-                                <>
-                                    <p>You will receive: <strong>{mintEstimation.tokensToMint}</strong> tokens</p>
-                                    <p>Total cost: <strong>{mintEstimation.totalCostETH.toFixed(6)}</strong> ETH</p>
-                                    <p>Refund: <strong>{mintEstimation.refundETH.toFixed(6)}</strong> ETH</p>
-                                </>
-                            ) : null}
-                        </>
-                    ) : (
-                        <>
-                            <p>Your Token Balance: <strong>{tokenBalance} {coin?.symbol}</strong></p>
-                            {debouncedAmount !== "" && Number(debouncedAmount) > tokenBalance ? (
-                                <p className={styles.modalErrorText}>Insufficient balance to sell that many tokens</p>
-                            ) : burnEstimation ? (
-                                <>
-                                    <p>You will receive: <strong>{burnEstimation.ethToReceive.toFixed(6)}</strong> ETH</p>
-                                    <p>Tokens to burn: <strong>{burnEstimation.burnAmount}</strong></p>
-                                </>
-                            ) : null}
-                        </>
-                    )}
-                </div>
-            )} */}
-
             <div ref={bottomRef} style={{ height: '1px' }} />
         </div>
     );

@@ -7,7 +7,7 @@ import { convertToIpfsUrl } from '../utils/ipfs';
 import { calculateTokenPrice } from '../utils/calculateTokenPrice';
 import { enrichTokens } from '../utils/enrichTokens';
 
-const REFRESH_INTERVAL_MS = 120 * 10000; // 10 minute
+const REFRESH_INTERVAL_MS = 60 * 60 * 10000; // 1 hour
 
 export function useTokensRefresh(tokenId?: string) {
     const { tokens, hydrated, setTokens, clearTokens } = useTokenStore();

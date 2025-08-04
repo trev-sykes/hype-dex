@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './TokenCard.module.css';
 import { useCoinStore } from '../../store/coinStore';
@@ -20,10 +20,11 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     const width = useWidth();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
-    const hasRunRef = React.useRef(false);
+    const hasRunMap = useRef<Record<string, boolean>>({});
 
     useEffect(() => {
         const alreadySet = hasDominantColorBeenSet(coin.tokenId);
+        const hasRun = hasRunMap.current[coin.tokenId];
 
         if (
             !coin.dominantColor &&
@@ -31,9 +32,9 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
             !imageError &&
             (imageLoaded || loadState === true) &&
             !alreadySet &&
-            !hasRunRef.current
+            !hasRun
         ) {
-            hasRunRef.current = true;
+            hasRunMap.current[coin.tokenId] = true;
 
             getDominantColor(coin.imageUrl)
                 .then((color) => {
@@ -48,7 +49,6 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     }, [
         coin.tokenId,
         coin.imageUrl,
-        coin.dominantColor,
         imageLoaded,
         loadState,
         imageError,
@@ -167,18 +167,6 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
                     <span className={styles.priceValue}>
                         {coin.price != null ? coin.price.toString() : 'N/A'}
                     </span>
-                </p>
-                <p>
-                    {coin && coin.percentChange && coin.percentChange > 0 && < span
-                        className={`${styles.percentChange} ${coin.percentChange > 0
-                            ? styles.positive
-                            : coin.percentChange < 0
-                                ? styles.negative
-                                : styles.neutral
-                            }`}
-                    >
-                        {coin.percentChange.toFixed(0)}%
-                    </span>}
                 </p>
             </div>
 

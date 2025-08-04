@@ -253,6 +253,182 @@
 
 
 
+/* Sort Container */
+.sortContainer {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+}
+
+/* Sort Wrapper (Label + Select) */
+.sortWrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sortLabel {
+    font-size: 1rem;
+    color: var(--color-neutral-600);
+    font-weight: 500;
+}
+
+/* Select Container (Icon + Select) */
+.selectContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.sortIcon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-accent);
+    width: 1.25rem;
+    height: 1.25rem;
+    pointer-events: none;
+    /* Prevent icon from intercepting clicks */
+}
+
+.sortSelect {
+    padding: 0.75rem 2.5rem 0.75rem 2.5rem;
+    /* Space for icon */
+    font-size: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--color-neutral-300);
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+    transition: all 0.3s ease;
+    font-family: var(--font-family-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    appearance: none;
+    /* Remove default browser styling */
+}
+
+.sortSelect:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px #1a5c9639;
+}
+
+.sortSelect:hover {
+    background-color: var(--color-neutral-200);
+}
+
+/* Refresh Button */
+.refreshButton {
+    padding: 0.75rem 1.5rem 0.75rem 2.5rem;
+    /* Space for icon */
+    font-size: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--color-neutral-300);
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-900);
+    transition: all 0.3s ease;
+    font-family: var(--font-family-text);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.refreshButton:hover {
+    background-color: var(--color-neutral-200);
+    border-color: var(--color-accent);
+}
+
+.refreshButton:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px #1a5c9639;
+}
+
+.refreshIcon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-accent);
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Disabled State */
+.refreshButton.disabled {
+    background-color: var(--color-neutral-200);
+    color: var(--color-neutral-500);
+    cursor: not-allowed;
+    border-color: var(--color-neutral-300);
+}
+
+.refreshButton.disabled .refreshIcon {
+    color: var(--color-neutral-500);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+    .sortContainer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .sortSelect,
+    .refreshButton {
+        width: 100%;
+        padding: 0.625rem 2.25rem 0.625rem 2.5rem;
+        font-size: 0.875rem;
+    }
+
+    .sortIcon,
+    .refreshIcon {
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .sortSelect,
+    .refreshButton {
+        padding: 0.5rem 2rem 0.5rem 2.25rem;
+        font-size: 0.875rem;
+    }
+}
+
+.selectContainer::after {
+    content: '▼';
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-accent);
+    font-size: 0.75rem;
+    pointer-events: none;
+}
+
+.refreshButton.primary {
+    background-color: var(--color-accent);
+    color: var(--color-neutral-100);
+    border-color: var(--color-accent);
+}
+
+.refreshButton.primary:hover {
+    background-color: var(--color-accent-light);
+}
+
+.refreshButton.primary .refreshIcon {
+    color: var(--color-neutral-100);
+}
 
 /* Mobile landscape and small tablets (≤ 640px) */
 /* Mobile: single column */

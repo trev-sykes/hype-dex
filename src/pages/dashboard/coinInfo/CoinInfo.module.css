@@ -585,6 +585,7 @@
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
+    cursor: zoom-in;
 }
 
 .tokenIdentity {

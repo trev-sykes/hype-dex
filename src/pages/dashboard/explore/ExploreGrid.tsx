@@ -24,8 +24,7 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     const [isSearching, setIsSearching] = useState(false);
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
     const [loadStates, setLoadStates] = useState<Map<string, boolean | null>>(new Map());
-    const [sortOption, setSortOption] = useState<'percentChange' | 'a-z'>('percentChange');
-
+    const [sortOption, setSortOption] = useState<'priceHighLow' | 'priceLowHigh' | 'a-z' | 'z-a'>('priceHighLow');
     const inputRef = useRef<HTMLInputElement | null>(null);
 
     const COOLDOWN_TIME = 60 * 60 * 1000; // 1 hour
@@ -113,10 +112,12 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     const coinsToDisplay = searchTerm ? filteredCoins : tokens;
     const sortedCoins = [...coinsToDisplay].sort((a, b) => {
         switch (sortOption) {
-            case 'percentChange':
-                // Sort descending by percentChange
-                return (b.percentChange ?? 0) - (a.percentChange ?? 0);
-
+            case 'priceHighLow':
+                // Sort descending by price
+                return (b.price ?? 0) - (a.price ?? 0);
+            case 'priceLowHigh':
+                // Sort ascending by price
+                return (a.price ?? 0) - (b.price ?? 0);
             case 'a-z':
                 // Sort alphabetically by name or symbol
                 const nameA = a.name?.toLowerCase() || a.symbol.toLowerCase();
@@ -124,6 +125,14 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                 if (nameA < nameB) return -1;
                 if (nameA > nameB) return 1;
                 return 0;
+            case 'z-a':
+                // Sort reverse-alphabetically by name or symbol
+                const nameAz = a.name?.toLowerCase() || a.symbol.toLowerCase();
+                const nameBz = b.name?.toLowerCase() || b.symbol.toLowerCase();
+                if (nameAz < nameBz) return 1;
+                if (nameAz > nameBz) return -1;
+                return 0;
+
             default:
                 return 0;
         }
@@ -178,40 +187,67 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                 </div>
             </div>
 
-            <div className={`${styles.symbolText} ${styles.tokenCount}`}>
-                {coinsToDisplay.length} Tokens
-            </div>
+
             <div className={styles.sortContainer}>
-                <label htmlFor="sort-select">Sort by: </label>
-                <select
-                    id="sort-select"
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value as any)}
-                >
-                    <option value="percentChange">Percent Change</option>
-                    <option value="a-z">A-Z</option>
-                </select>
+                <div className={styles.sortWrapper}>
+                    <label htmlFor="sort-select" className={styles.sortLabel}>Sort by:</label>
+                    <div className={styles.selectContainer}>
+                        <svg
+                            className={styles.sortIcon}
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 4h13M3 8h9M3 12h6M3 16h3M13 16h8M13 12h8M13 8h8"
+                            />
+                        </svg>
+                        <select
+                            id="sort-select"
+                            className={styles.sortSelect}
+                            value={sortOption}
+                            onChange={(e: any) => setSortOption(e.target.value)}
+                        >
+                            <option value="priceHighLow">Price: High to Low</option>
+                            <option value="priceLowHigh">Price: Low to High</option>
+                            <option value="a-z">A-Z</option>
+                            <option value="z-a">Z-A</option>
+                        </select>
+                    </div>
+                </div>
                 <button
+                    className={`${styles.refreshButton} ${isCooldownActive ? styles.disabled : ''}`}
                     disabled={isCooldownActive || isCooldownActive == null}
                     onClick={async () => {
                         if (isCooldownActive) return;
-
                         const now = Date.now();
                         localStorage.setItem(LAST_REFRESH_KEY, now.toString());
-
-                        // Immediately update state
-                        setCooldownRemaining(Math.ceil(COOLDOWN_TIME / 1000 / 60)); // convert to minutes
-
+                        setCooldownRemaining(Math.ceil(COOLDOWN_TIME / 1000 / 60));
                         setIsCooldownActive(true);
-
                         await fetchStaticMetadata("Manual Refresh");
                     }}
-
                 >
+                    <svg
+                        className={styles.refreshIcon}
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h5M4 4l5 5m11-1v-5h-5m1 5l-5-5"
+                        />
+                    </svg>
                     {isCooldownActive && isCooldownActive != null ? `${cooldownRemaining}m` : 'Refresh'}
                 </button>
             </div>
-
             {/* Grid of Coins */}
             {isSearching ? (
                 <div className={styles.loadingMore}>
