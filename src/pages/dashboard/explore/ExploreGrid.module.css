@@ -430,6 +430,91 @@
     color: var(--color-neutral-100);
 }
 
+.newTokensBar {
+    padding: 1rem 0.5rem;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 1rem;
+}
+
+.newTokensTitle {
+    font-size: 1.2rem;
+    margin: 0 0 0.5rem 0.5rem;
+    font-weight: 600;
+}
+
+.newTokensScroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 0 0.5rem;
+}
+
+.newTokenCard {
+    position: relative;
+    flex: 0 0 auto;
+    width: 140px;
+    background: var(--color-neutral-100);
+    border-radius: 10px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 12px rgba(76, 186, 255, 0.12);
+    text-align: center;
+}
+
+.newTokenImage {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    margin-bottom: 0.25rem;
+}
+
+.imageFallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    width: 48px;
+    /* match the image width */
+    height: 48px;
+    text-align: center;
+    user-select: none;
+}
+
+.newTokenInfo {
+    font-size: 0.85rem;
+}
+
+.newTokenName {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tokenWrapper {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.highlight {
+    box-shadow: 0 0 0 4px var(--color-accent-light);
+    transform: scale(1.02);
+    border-radius: 8px;
+    z-index: 1;
+}
+
+.tokenAge {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #888;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
 /* Mobile landscape and small tablets (≤ 640px) */
 /* Mobile: single column */
 @media (max-width: 1399px) {

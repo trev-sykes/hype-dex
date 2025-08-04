@@ -19,3 +19,18 @@ export function timeAgo(timestamp: any) {
         return `${months}m ${days % 30}d ago`;
     }
 }
+export function timeAgoExplore(timestamp: number): string {
+    const now = Date.now();
+    const secondsAgo = Math.floor((now - timestamp * 1000) / 1000);
+
+    if (secondsAgo < 60) return `${secondsAgo}s`;
+    const minutes = Math.floor(secondsAgo / 60);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}d`;
+    const months = Math.floor(days / 30);
+    return `${months}mo`;
+}
+

@@ -37,7 +37,6 @@ export const Portfolio: React.FC<MyPortfolioProps> = ({ tokens }) => {
 
     const totalEth = portfolioTokens.reduce((acc, t) => acc + (t.totalValueEth ?? 0), 0);
     const totalUsd = portfolioTokens.reduce((acc, t) => acc + (t.totalValueUsd ?? 0), 0);
-
     if (!hydrated || loading) {
         return (
             <div className={styles.centeredBox}>
@@ -63,12 +62,12 @@ export const Portfolio: React.FC<MyPortfolioProps> = ({ tokens }) => {
             <div className={styles.totalBalanceBox}>
                 <div className={styles.balanceValue}>
                     {totalUsd > 0
-                        ? `$${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-                        : `Ξ ${totalEth.toFixed(2)}`
+                        ? `$${(totalUsd.toFixed(2)).toString()}`
+                        : `Ξ ${totalEth.toFixed(2).toString()}`
                     }
                 </div>
                 {totalUsd > 0 && (
-                    <div className={styles.ethValue}>Ξ {totalEth.toFixed(4)}</div>
+                    <div className={styles.ethValue}>Ξ {totalEth.toFixed(2)}</div>
                 )}
             </div>
 

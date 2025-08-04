@@ -9,7 +9,6 @@ import styles from './CoinInfo.module.css';
 import { useParams } from 'react-router-dom';
 import { useScrollDirection } from '../../../hooks/useScrollDirection';
 import { useTokenStore } from '../../../store/allTokensStore';
-const formatEther = (wei: any) => (Number(wei) / 1e18).toFixed(4);
 
 export const CoinInfo: React.FC = () => {
     const { balanceEth, totalValueEth } = useUserTokenBalance();
@@ -81,10 +80,8 @@ export const CoinInfo: React.FC = () => {
     }, [isImageToggled]);
 
     const totalSupply = Number(coin.totalSupply);
-    const currentPriceEth = Number(formatEther(coin.price));  // converts from wei to ETH
-
+    const currentPriceEth = Number(coin.price);  // converts from wei to ETH
     const marketCapEth = totalSupply * currentPriceEth;
-
     return (
         <div className={styles.container}>
             {isImageToggled && (
@@ -160,7 +157,7 @@ export const CoinInfo: React.FC = () => {
                             <div className={styles.tokenIdentity}>Stats</div>
                             <div>
                                 <label>Current Price</label>
-                                <span>{formatEther(coin.price)} ETH</span>
+                                <span>{coin.price} ETH</span>
                             </div>
                             <div>
                                 <label>Market Cap</label>

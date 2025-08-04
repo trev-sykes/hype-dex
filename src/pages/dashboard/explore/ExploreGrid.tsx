@@ -7,6 +7,7 @@ import { useWidth } from '../../../hooks/useWidth';
 import { TokenCard } from '../../../components/tokenCard/TokenCard';
 import type { Token } from '../../../types/token';
 import { ScrollToTopButton } from '../../../components/button/scrollToTop/ScrollToTopButton';
+import { timeAgoExplore } from '../../../utils/formatTimeAgo';
 
 interface ExploreGridProps {
     tokens: any,
@@ -24,11 +25,26 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
     const [isSearching, setIsSearching] = useState(false);
     const [filteredCoins, setFilteredCoins] = useState<any[]>([]);
     const [loadStates, setLoadStates] = useState<Map<string, boolean | null>>(new Map());
-    const [sortOption, setSortOption] = useState<'priceHighLow' | 'priceLowHigh' | 'a-z' | 'z-a'>('priceHighLow');
+    const [sortOption, setSortOption] = useState<
+        'priceHighLow' | 'priceLowHigh' | 'a-z' | 'z-a' | 'newest' | 'oldest'
+    >('priceHighLow');
     const inputRef = useRef<HTMLInputElement | null>(null);
+    const tokenRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+    const [now, setNow] = useState(Date.now());
+    useEffect(() => {
+        now;
+        const interval = setInterval(() => {
+            setNow(Date.now());
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const ONE_WEEK_SECONDS = 7 * 24 * 60 * 60;
+
 
     const COOLDOWN_TIME = 60 * 60 * 1000; // 1 hour
     const LAST_REFRESH_KEY = 'last_soft_refresh';
+    const [highlightedTokenId, setHighlightedTokenId] = useState<string | null>(null);
 
     const [cooldownRemaining, setCooldownRemaining] = useState(0);
     const [isCooldownActive, setIsCooldownActive] = useState<boolean | null>(null);
@@ -50,7 +66,6 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
 
         return () => clearInterval(interval);
     }, []);
-
 
     // Handle image load states
     const handleLoad = useCallback((tokenId: string, status: boolean) => {
@@ -83,9 +98,6 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
         });
     }, [tokens, handleLoad]);
 
-
-
-
     useEffect(() => {
         if (!searchTerm.trim()) {
             setFilteredCoins([]);
@@ -111,33 +123,32 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
 
     const coinsToDisplay = searchTerm ? filteredCoins : tokens;
     const sortedCoins = [...coinsToDisplay].sort((a, b) => {
-        switch (sortOption) {
-            case 'priceHighLow':
-                // Sort descending by price
-                return (b.price ?? 0) - (a.price ?? 0);
-            case 'priceLowHigh':
-                // Sort ascending by price
-                return (a.price ?? 0) - (b.price ?? 0);
-            case 'a-z':
-                // Sort alphabetically by name or symbol
-                const nameA = a.name?.toLowerCase() || a.symbol.toLowerCase();
-                const nameB = b.name?.toLowerCase() || b.symbol.toLowerCase();
-                if (nameA < nameB) return -1;
-                if (nameA > nameB) return 1;
-                return 0;
-            case 'z-a':
-                // Sort reverse-alphabetically by name or symbol
-                const nameAz = a.name?.toLowerCase() || a.symbol.toLowerCase();
-                const nameBz = b.name?.toLowerCase() || b.symbol.toLowerCase();
-                if (nameAz < nameBz) return 1;
-                if (nameAz > nameBz) return -1;
-                return 0;
+        const priceA = a.price ?? 0;
+        const priceB = b.price ?? 0;
+        const nameA = a.name?.toLowerCase() || a.symbol.toLowerCase();
+        const nameB = b.name?.toLowerCase() || b.symbol.toLowerCase();
+        const timeA = parseInt(a.blockTimestamp);
+        const timeB = parseInt(b.blockTimestamp);
 
-            default:
-                return 0;
+        switch (sortOption) {
+            case 'priceHighLow': return priceB - priceA;
+            case 'priceLowHigh': return priceA - priceB;
+            case 'a-z': return nameA.localeCompare(nameB);
+            case 'z-a': return nameB.localeCompare(nameA);
+            case 'newest': return timeB - timeA;
+            case 'oldest': return timeA - timeB;
+            default: return 0;
         }
     });
-
+    const newestTokens = tokens
+        .sort((a: any, b: any) => parseInt(b.blockTimestamp) - parseInt(a.blockTimestamp))
+        // Filter tokens created within last week (using seconds timestamp)
+        .filter((token: any) => {
+            const created = parseInt(token.blockTimestamp);
+            const nowSeconds = Math.floor(Date.now() / 1000);
+            return nowSeconds - created <= ONE_WEEK_SECONDS;
+        })
+        .slice(0, 10);
     if (!isOnline) return <div className={styles.error}>No Internet Connection</div>;
 
     return (
@@ -210,13 +221,16 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                             id="sort-select"
                             className={styles.sortSelect}
                             value={sortOption}
-                            onChange={(e: any) => setSortOption(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortOption(e.target.value as typeof sortOption)}
                         >
                             <option value="priceHighLow">Price: High to Low</option>
                             <option value="priceLowHigh">Price: Low to High</option>
-                            <option value="a-z">A-Z</option>
-                            <option value="z-a">Z-A</option>
+                            <option value="a-z">Name: A-Z</option>
+                            <option value="z-a">Name: Z-A</option>
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
                         </select>
+
                     </div>
                 </div>
                 <button
@@ -248,6 +262,45 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                     {isCooldownActive && isCooldownActive != null ? `${cooldownRemaining}m` : 'Refresh'}
                 </button>
             </div>
+            {newestTokens.length > 0 && (
+                <div className={styles.newTokensBar}>
+                    <h2 className={styles.newTokensTitle}>Recently Created Tokens</h2>
+                    <div className={styles.newTokensScroll}>
+                        {newestTokens.map((coin: Token) => {
+                            // coin.blockTimestamp is probably a seconds timestamp (string or number)
+                            const createdTimestamp = Number(coin.blockTimestamp); // seconds
+                            return (
+                                <div
+                                    key={coin.tokenId}
+                                    className={styles.newTokenCard}
+                                    onClick={() => {
+                                        const id = coin.tokenId.toString();
+                                        const el = tokenRefs.current.get(id);
+                                        if (el) {
+                                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            setHighlightedTokenId(id);
+                                            setTimeout(() => setHighlightedTokenId(null), 2000);
+                                        }
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {!coin.imageUrl || coin.imageUrl === '' ? <div className={styles.imageFallback}></div> : <img
+                                        loading="lazy"
+                                        src={coin.imageUrl}
+                                        alt={coin.name || 'Coin'}
+                                        className={styles.newTokenImage}
+                                    />}
+                                    <div className={styles.newTokenInfo}>
+                                        <div className={styles.newTokenName}>{coin.name}</div>
+                                        <div className={styles.tokenAge}>{timeAgoExplore(createdTimestamp)}</div> {/* Use your helper */}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* Grid of Coins */}
             {isSearching ? (
                 <div className={styles.loadingMore}>
@@ -257,11 +310,19 @@ export const ExploreGrid: React.FC<ExploreGridProps> = ({ tokens, fetchNextPage,
                 <>
                     <div className={styles.gridContainer}>
                         {sortedCoins.map((coin: Token) => (
-                            <TokenCard
+                            <div
                                 key={coin.tokenId.toString()}
-                                coin={coin}
-                                loadState={loadStates.get(coin.tokenId.toString()) ?? null}
-                            />
+                                ref={(el) => {
+                                    tokenRefs.current.set(coin.tokenId.toString(), el);
+                                }}
+                                className={`${styles.tokenWrapper} ${highlightedTokenId === coin.tokenId.toString() ? styles.highlight : ''}`}
+                            >
+                                <TokenCard
+                                    key={coin.tokenId.toString()}
+                                    coin={coin}
+                                    loadState={loadStates.get(coin.tokenId.toString()) ?? null}
+                                />
+                            </div>
                         ))}
 
                     </div>

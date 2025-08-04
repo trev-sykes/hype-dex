@@ -144,6 +144,134 @@
     /* dark gray text */
 }
 
+@keyframes priceFlashUp {
+    0% {
+        background-color: var(--color-mint);
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    10% {
+        transform: translateX(-9px);
+        opacity: 0.85;
+    }
+
+    20% {
+        transform: translateX(9px);
+        opacity: 0.9;
+    }
+
+    30% {
+        transform: translateX(-7px);
+        opacity: 0.8;
+    }
+
+    40% {
+        transform: translateX(7px);
+        opacity: 0.88;
+    }
+
+    50% {
+        background-color: rgb(69, 255, 106);
+        transform: translateX(-5px);
+        opacity: 0.92;
+    }
+
+    60% {
+        transform: translateX(5px);
+        opacity: 0.85;
+    }
+
+    70% {
+        transform: translateX(-3px);
+        opacity: 0.9;
+    }
+
+    80% {
+        transform: translateX(3px);
+        opacity: 0.95;
+    }
+
+    90% {
+        transform: translateX(-2px);
+        opacity: 1;
+    }
+
+    100% {
+        background-color: transparent;
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes priceFlashDown {
+    0% {
+        background-color: var(--color-burn);
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    10% {
+        transform: translateX(9px);
+        opacity: 0.85;
+    }
+
+    20% {
+        transform: translateX(-9px);
+        opacity: 0.9;
+    }
+
+    30% {
+        transform: translateX(7px);
+        opacity: 0.8;
+    }
+
+    40% {
+        transform: translateX(-7px);
+        opacity: 0.88;
+    }
+
+    50% {
+        background-color: #fd4b48;
+        transform: translateX(5px);
+        opacity: 0.92;
+    }
+
+    60% {
+        transform: translateX(-5px);
+        opacity: 0.85;
+    }
+
+    70% {
+        transform: translateX(3px);
+        opacity: 0.9;
+    }
+
+    80% {
+        transform: translateX(-3px);
+        opacity: 0.95;
+    }
+
+    90% {
+        transform: translateX(2px);
+        opacity: 1;
+    }
+
+    100% {
+        background-color: transparent;
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.priceChangeUp {
+    animation: priceFlashUp 0.75s ease-out;
+}
+
+.priceChangeDown {
+    animation: priceFlashDown 0.75s ease-out;
+}
+
 @media (max-width: 640px) {
     .coinCard {
         flex-direction: row;

@@ -36,9 +36,7 @@ export const PortfolioBalanceCard: React.FC<PortfolioBalanceCardProps> = ({
 
                 <div className={styles.balanceBlock}>
                     <div className={styles.balanceAmount}>
-                        {parseFloat(balance).toLocaleString(undefined, {
-                            maximumFractionDigits: 0
-                        })}
+                        {balance.toString()}
                     </div>
                     <div className={styles.balanceLabel}>Balance</div>
                 </div>
@@ -46,13 +44,13 @@ export const PortfolioBalanceCard: React.FC<PortfolioBalanceCardProps> = ({
                 <div className={styles.valueBlock}>
                     {totalValueUsd != null ? (
                         <div className={styles.usdValue}>
-                            ${totalValueUsd.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            ${totalValueUsd.toFixed(2).toString()}
                         </div>
                     ) : (
-                        <div className={styles.ethValue}>Ξ {totalValueEth.toFixed(4)}</div>
+                        <div className={styles.ethValue}>Ξ {totalValueEth.toFixed(2)}</div>
                     )}
                     {totalValueUsd != null && (
-                        <div className={styles.ethValueSecondary}>Ξ {totalValueEth.toFixed(4)}</div>
+                        <div className={styles.ethValueSecondary}>Ξ {totalValueEth.toFixed(2)}</div>
                     )}
                 </div>
 

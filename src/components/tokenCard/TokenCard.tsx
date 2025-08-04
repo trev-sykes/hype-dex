@@ -7,7 +7,7 @@ import { getDominantColor } from '../../utils/colorTheif';
 import TransparentCandlestickChart from '../chart/LineChart';
 import { useTokenStore } from '../../store/allTokensStore';
 import { useTokenActivity } from '../../hooks/useTokenActivity';
-
+import clsx from 'clsx'; // optional utility for combining classNames
 interface TokenCardProps {
     coin: any;
     loadState?: boolean | null;
@@ -21,6 +21,8 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const hasRunMap = useRef<Record<string, boolean>>({});
+    const [priceDirection, setPriceDirection] = useState<'up' | 'down' | null>(null);
+    const prevPriceRef = useRef<number | null>(null);
 
     useEffect(() => {
         const alreadySet = hasDominantColorBeenSet(coin.tokenId);
@@ -83,7 +85,21 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
             };
         }
     }, [coin.imageUrl, loadState]);
+    useEffect(() => {
+        const prevPrice = prevPriceRef.current;
+        const currentPrice = coin.price;
 
+        if (prevPrice != null && currentPrice != null && prevPrice !== currentPrice) {
+            setPriceDirection(currentPrice > prevPrice ? 'up' : 'down');
+
+            // Reset after animation duration
+            setTimeout(() => {
+                setPriceDirection(null);
+            }, 1000);
+        }
+
+        prevPriceRef.current = currentPrice;
+    }, [coin.price]);
     const renderImageContent = () => {
         if (!coin.imageUrl || coin.imageUrl === '') {
             return <div className={styles.imageFallback}>{coin.symbol}</div>;
@@ -135,7 +151,11 @@ export const TokenCard: React.FC<TokenCardProps> = ({ coin, loadState }) => {
     return (
         <Link
             to={`/dashboard/explore/${coin.tokenId}`}
-            className={styles.coinCard}
+            className={clsx(
+                styles.coinCard,
+                priceDirection === 'up' && styles.priceChangeUp,
+                priceDirection === 'down' && styles.priceChangeDown
+            )}
             onClick={() => {
                 setCoin(coin);
             }}
