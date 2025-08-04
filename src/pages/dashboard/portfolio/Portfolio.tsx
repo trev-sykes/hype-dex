@@ -64,7 +64,7 @@ export const Portfolio: React.FC<MyPortfolioProps> = ({ tokens }) => {
                 <div className={styles.balanceValue}>
                     {totalUsd > 0
                         ? `$${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-                        : `Ξ ${totalEth.toFixed(4)}`
+                        : `Ξ ${totalEth.toFixed(2)}`
                     }
                 </div>
                 {totalUsd > 0 && (
